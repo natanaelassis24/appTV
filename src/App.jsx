@@ -1,10 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Hls from 'hls.js';
 import { CHANNELS } from './channels';
+import { MOVIES } from './movies';
 import { SERIES } from './series';
 
 function formatClock() {
   return new Date().toLocaleTimeString('pt-BR', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+function formatFutureClock(minutesAhead = 90) {
+  const date = new Date();
+  date.setMinutes(date.getMinutes() + minutesAhead);
+  return date.toLocaleTimeString('pt-BR', {
     hour: '2-digit',
     minute: '2-digit'
   });
@@ -79,7 +89,9 @@ function buildLogoThumb(channel, index) {
 
 export default function App() {
   const [activeShelf, setActiveShelf] = useState('channels');
+  const [guideDrawerOpen, setGuideDrawerOpen] = useState(false);
   const [selectedChannelUrl, setSelectedChannelUrl] = useState(CHANNELS[0]?.url || '');
+  const [selectedMovieUrl, setSelectedMovieUrl] = useState(MOVIES[0]?.url || '');
   const [selectedSeriesId, setSelectedSeriesId] = useState('');
   const [selectedSeasonNumber, setSelectedSeasonNumber] = useState(1);
   const [selectedEpisodeId, setSelectedEpisodeId] = useState('');
@@ -90,19 +102,14 @@ export default function App() {
   const [playbackNonce, setPlaybackNonce] = useState(0);
 
   const playerRef = useRef(null);
+  const channelListRef = useRef(null);
   const hlsRef = useRef(null);
   const recoveryRef = useRef({ network: 0, media: 0, fallbackTried: false });
 
-  const filteredChannels = useMemo(() => {
-    if (activeShelf === 'movies') {
-      return CHANNELS.filter(channel => channel.category === 'Filmes' || channel.category === 'Filmes e Series');
-    }
-
-    return CHANNELS.filter(channel => channel.category !== 'Filmes');
-  }, [activeShelf]);
+  const filteredChannels = useMemo(() => CHANNELS, []);
 
   const movieChannels = useMemo(() => {
-    return CHANNELS.filter(channel => channel.category === 'Filmes' || channel.category === 'Filmes e Series');
+    return MOVIES;
   }, []);
 
   const selectedSeries = useMemo(() => {
@@ -133,19 +140,41 @@ export default function App() {
     );
   }, [filteredChannels, selectedChannelUrl]);
 
+  const selectedMovie = useMemo(() => {
+    return movieChannels.find(movie => movie.url === selectedMovieUrl) || movieChannels[0] || null;
+  }, [movieChannels, selectedMovieUrl]);
+
   const selectedIndex = useMemo(() => {
     return filteredChannels.findIndex(channel => channel.url === selectedChannel?.url);
   }, [filteredChannels, selectedChannel]);
+
+  const selectedMovieIndex = useMemo(() => {
+    return movieChannels.findIndex(movie => movie.url === selectedMovie?.url);
+  }, [movieChannels, selectedMovie]);
 
   const selectedSeriesIndex = useMemo(() => {
     return SERIES.findIndex(series => series.id === selectedSeries?.id);
   }, [selectedSeries]);
 
-  const selectedMedia = activeShelf === 'series' ? selectedEpisode : selectedChannel;
+  const selectedMedia =
+    activeShelf === 'series' ? selectedEpisode : activeShelf === 'movies' ? selectedMovie : selectedChannel;
+
+  function moveSelectedChannel(delta) {
+    if (!filteredChannels.length) return;
+
+    const nextIndex =
+      selectedIndex >= 0
+        ? (selectedIndex + delta + filteredChannels.length) % filteredChannels.length
+        : 0;
+
+    setSelectedChannelUrl(filteredChannels[nextIndex].url);
+  }
 
   const externalUrl = useMemo(() => {
     return selectedMedia?.externalUrl || selectedMedia?.url || '';
   }, [selectedMedia]);
+
+  const guideEndTime = useMemo(() => formatFutureClock(90), [nowTime]);
 
   const heroStyle =
     activeShelf === 'series' && selectedSeries?.backdropImage
@@ -172,6 +201,17 @@ export default function App() {
       setSelectedChannelUrl(filteredChannels[0].url);
     }
   }, [filteredChannels, selectedChannelUrl]);
+
+  useEffect(() => {
+    if (!movieChannels.length) {
+      return;
+    }
+
+    const hasSelectedMovie = movieChannels.some(movie => movie.url === selectedMovieUrl);
+    if (!hasSelectedMovie) {
+      setSelectedMovieUrl(movieChannels[0].url);
+    }
+  }, [movieChannels, selectedMovieUrl]);
 
   useEffect(() => {
     if (!selectedSeries) {
@@ -223,6 +263,17 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (!guideDrawerOpen || !channelListRef.current) {
+      return;
+    }
+
+    const activeItem = channelListRef.current.querySelector('.guide-channel-item.active');
+    if (activeItem) {
+      activeItem.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+  }, [guideDrawerOpen, selectedChannelUrl]);
+
+  useEffect(() => {
     function onKeyDown(event) {
       if (activeShelf === 'series') {
         if (!SERIES.length) return;
@@ -253,19 +304,34 @@ export default function App() {
         return;
       }
 
+      if (activeShelf === 'movies') {
+        if (!movieChannels.length) return;
+
+        if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
+          event.preventDefault();
+          const nextIndex = selectedMovieIndex >= 0 ? (selectedMovieIndex + 1) % movieChannels.length : 0;
+          setSelectedMovieUrl(movieChannels[nextIndex].url);
+        } else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
+          event.preventDefault();
+          const nextIndex =
+            selectedMovieIndex >= 0 ? (selectedMovieIndex - 1 + movieChannels.length) % movieChannels.length : 0;
+          setSelectedMovieUrl(movieChannels[nextIndex].url);
+        } else if (event.key === 'Enter') {
+          event.preventDefault();
+          setPlaybackNonce(current => current + 1);
+        }
+
+        return;
+      }
+
       if (!filteredChannels.length) return;
 
       if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
         event.preventDefault();
-        const nextIndex = selectedIndex >= 0 ? (selectedIndex + 1) % filteredChannels.length : 0;
-        setSelectedChannelUrl(filteredChannels[nextIndex].url);
+        moveSelectedChannel(1);
       } else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
         event.preventDefault();
-        const nextIndex =
-          selectedIndex >= 0
-            ? (selectedIndex - 1 + filteredChannels.length) % filteredChannels.length
-            : 0;
-        setSelectedChannelUrl(filteredChannels[nextIndex].url);
+        moveSelectedChannel(-1);
       } else if (event.key === 'Enter') {
         event.preventDefault();
         setPlaybackNonce(current => current + 1);
@@ -274,7 +340,7 @@ export default function App() {
 
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [activeShelf, filteredChannels, selectedIndex, selectedSeriesIndex]);
+  }, [activeShelf, filteredChannels, movieChannels, selectedIndex, selectedMovieIndex, selectedSeriesIndex]);
 
   useEffect(() => {
     const player = playerRef.current;
@@ -420,6 +486,144 @@ export default function App() {
 
   return (
     <div className="app-shell">
+      {activeShelf === 'channels' ? (
+        <header className="guide-hero">
+          <div className="guide-topbar">
+            <div className="section-head">
+              <div>
+                <span className="section-kicker">Catalogo ao vivo</span>
+                <h2>Canais em destaque</h2>
+              </div>
+              <p>Use clique, setas do teclado ou Enter para trocar rapidamente.</p>
+            </div>
+
+            <div className="shelf-tabs">
+              <button
+                type="button"
+                className={`shelf-tab${activeShelf === 'channels' ? ' active' : ''}`}
+                onClick={() => setActiveShelf('channels')}
+              >
+                Canais
+              </button>
+              <button
+                type="button"
+                className={`shelf-tab${activeShelf === 'movies' ? ' active' : ''}`}
+                onClick={() => setActiveShelf('movies')}
+              >
+                Filmes
+              </button>
+              <button
+                type="button"
+                className={`shelf-tab${activeShelf === 'series' ? ' active' : ''}`}
+                onClick={() => setActiveShelf('series')}
+              >
+                Series
+              </button>
+            </div>
+          </div>
+
+          <div className="guide-stage">
+            <button
+              type="button"
+              className={`guide-handle${guideDrawerOpen ? ' open' : ''}`}
+              onClick={() => setGuideDrawerOpen(current => !current)}
+              aria-label={guideDrawerOpen ? 'Fechar canais' : 'Abrir canais'}
+              title={guideDrawerOpen ? 'Fechar canais' : 'Abrir canais'}
+            >
+              {guideDrawerOpen ? '<' : '>'}
+            </button>
+
+            <div className={`guide-stage-frame${guideDrawerOpen ? ' open' : ''}`}>
+              <aside className={`guide-sidebar${guideDrawerOpen ? ' open' : ''}`}>
+                <button
+                  type="button"
+                  className="guide-nav-button guide-nav-up"
+                  onClick={() => moveSelectedChannel(-1)}
+                  aria-label="Canal anterior"
+                  title="Canal anterior"
+                >
+                  ^
+                </button>
+
+                <ul ref={channelListRef} className="guide-channel-list">
+                  {filteredChannels.map((channel, index) => {
+                    const isActive = channel.url === selectedChannel?.url;
+
+                    return (
+                      <li key={`${channel.name}-${channel.url}`}>
+                        <button
+                          type="button"
+                          className={`guide-channel-item${isActive ? ' active' : ''}`}
+                          onClick={() => {
+                            setSelectedChannelUrl(channel.url);
+                            setGuideDrawerOpen(false);
+                          }}
+                          aria-label={channel.name}
+                          title={channel.name}
+                        >
+                          <span className="guide-channel-number">{channel.number || index + 1}</span>
+                          {channel.logoImage ? (
+                            <img
+                              className="guide-channel-logo"
+                              src={channel.logoImage}
+                              alt={`Logo ${channel.name}`}
+                            />
+                          ) : (
+                            <span className="guide-channel-fallback">{channel.logo || channel.name?.slice(0, 2)}</span>
+                          )}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+
+                <button
+                  type="button"
+                  className="guide-nav-button guide-nav-down"
+                  onClick={() => moveSelectedChannel(1)}
+                  aria-label="Proximo canal"
+                  title="Proximo canal"
+                >
+                  v
+                </button>
+              </aside>
+
+              <div className="guide-player-shell">
+                {!embedUrl ? (
+                  <video ref={playerRef} id="tvPlayer" controls autoPlay playsInline crossOrigin="anonymous" />
+                ) : (
+                  <iframe
+                    id="tvEmbed"
+                    title="Player incorporado"
+                    src={embedUrl}
+                    allow="autoplay; encrypted-media; picture-in-picture"
+                    allowFullScreen
+                    referrerPolicy="strict-origin-when-cross-origin"
+                  />
+                )}
+                <div className="guide-overlay" />
+              </div>
+            </div>
+          </div>
+
+          <div className="guide-footer">
+            <div className="guide-footer-main">
+              <div className="guide-footer-heading">
+                <strong>{selectedChannel?.name || 'Canal ao vivo'}</strong>
+                <span>{selectedChannel?.category || 'Canais'}</span>
+              </div>
+              <p className="guide-footer-description">
+                {selectedChannel?.description || 'Canal ao vivo selecionado na gaveta lateral.'}
+              </p>
+            </div>
+            <div className="guide-footer-meta">
+              <span className="guide-meta-pill">{`Canal ${selectedChannel?.number || '-'}`}</span>
+              <span className="guide-meta-pill">{selectedChannel?.sourceType === 'embed' ? 'Embed' : selectedChannel?.sourceType === 'file' ? 'Arquivo' : 'HLS'}</span>
+              <span className="guide-meta-pill status">{status}</span>
+            </div>
+          </div>
+        </header>
+      ) : (
       <header className={`hero${activeShelf === 'series' ? ' hero-series' : ''}${activeShelf === 'movies' ? ' hero-movies' : ''}`} style={heroStyle}>
         <div className="hero-copy">
           <span className="hero-kicker">
@@ -527,52 +731,47 @@ export default function App() {
           </div>
         </div>
       </header>
+      )}
 
       <main className="content">
         <section className="shelf">
-          <div className="section-head">
-            <div>
-              <span className="section-kicker">
-                {activeShelf === 'movies'
-                  ? 'Catalogo de filmes'
-                  : activeShelf === 'series'
-                    ? 'Catalogo de series'
-                    : 'Catalogo ao vivo'}
-              </span>
-              <h2>
-                {activeShelf === 'movies'
-                  ? 'Filmes em destaque'
-                  : activeShelf === 'series'
-                    ? 'Series em destaque'
-                    : 'Canais em destaque'}
-              </h2>
-            </div>
-            <p>Use clique, setas do teclado ou Enter para trocar rapidamente.</p>
-          </div>
+          {activeShelf !== 'channels' ? (
+            <>
+              <div className="shelf-tabs">
+                <button
+                  type="button"
+                  className={`shelf-tab${activeShelf === 'channels' ? ' active' : ''}`}
+                  onClick={() => setActiveShelf('channels')}
+                >
+                  Canais
+                </button>
+                <button
+                  type="button"
+                  className={`shelf-tab${activeShelf === 'movies' ? ' active' : ''}`}
+                  onClick={() => setActiveShelf('movies')}
+                >
+                  Filmes
+                </button>
+                <button
+                  type="button"
+                  className={`shelf-tab${activeShelf === 'series' ? ' active' : ''}`}
+                  onClick={() => setActiveShelf('series')}
+                >
+                  Series
+                </button>
+              </div>
 
-          <div className="shelf-tabs">
-            <button
-              type="button"
-              className={`shelf-tab${activeShelf === 'channels' ? ' active' : ''}`}
-              onClick={() => setActiveShelf('channels')}
-            >
-              Canais
-            </button>
-            <button
-              type="button"
-              className={`shelf-tab${activeShelf === 'movies' ? ' active' : ''}`}
-              onClick={() => setActiveShelf('movies')}
-            >
-              Filmes
-            </button>
-            <button
-              type="button"
-              className={`shelf-tab${activeShelf === 'series' ? ' active' : ''}`}
-              onClick={() => setActiveShelf('series')}
-            >
-              Series
-            </button>
-          </div>
+              <div className="section-head">
+                <div>
+                  <span className="section-kicker">
+                    {activeShelf === 'movies' ? 'Catalogo de filmes' : 'Catalogo de series'}
+                  </span>
+                  <h2>{activeShelf === 'movies' ? 'Filmes em destaque' : 'Series em destaque'}</h2>
+                </div>
+                <p>Use clique, setas do teclado ou Enter para trocar rapidamente.</p>
+              </div>
+            </>
+          ) : null}
 
           {activeShelf === 'series' ? (
             <>
@@ -683,12 +882,12 @@ export default function App() {
 
                 <ul className="series-row">
                   {movieChannels.map(movie => {
-                    const isActive = movie.url === selectedChannel?.url;
+                    const isActive = movie.url === selectedMovie?.url;
                     return (
                       <li
                         key={`${movie.name}-${movie.url}`}
                         className={`series-poster${isActive ? ' active' : ''}`}
-                        onClick={() => setSelectedChannelUrl(movie.url)}
+                        onClick={() => setSelectedMovieUrl(movie.url)}
                       >
                         <div
                           className="series-poster-art"
@@ -709,46 +908,15 @@ export default function App() {
                   })}
                 </ul>
               </div>
-            </>
-          ) : (
-            <>
-              <div className="series-strip">
-                <div className="series-strip-head">
-                  <span className="section-kicker">Canais ao vivo</span>
-                  <p>Selecione um canal pelo grid abaixo para trocar rapidamente no player.</p>
-                </div>
 
-                <ul className="channel-rail channel-grid-clean">
-                  {filteredChannels.map(channel => {
-                    const isActive = channel.url === selectedChannel?.url;
-                    return (
-                      <li key={`${channel.name}-${channel.url}`}>
-                        <button
-                          type="button"
-                          className={`channel-item live-card${isActive ? ' active' : ''}`}
-                          onClick={() => setSelectedChannelUrl(channel.url)}
-                          style={
-                            channel.posterImage || channel.logoImage
-                              ? {
-                                  '--channel-image': `url("${channel.posterImage || channel.logoImage}")`
-                                }
-                              : undefined
-                          }
-                        >
-                          {buildLogoThumb(channel)}
-                          <span className="live-card-pill">
-                            {channel.unavailable ? 'Indisponivel' : channel.category || 'Ao vivo'}
-                          </span>
-                          <strong>{channel.name || 'Canal sem nome'}</strong>
-                          <span>{channel.category || 'Ao vivo'}</span>
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
+              {!movieChannels.length ? (
+                <div className="episodes-panel episodes-empty">
+                  <strong>Nenhum filme cadastrado</strong>
+                  <span>Adicione os filmes em [movies.js] usando o modelo MOVIE_TEMPLATE.</span>
+                </div>
+              ) : null}
             </>
-          )}
+          ) : null}
         </section>
       </main>
     </div>
