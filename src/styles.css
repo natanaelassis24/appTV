@@ -70,12 +70,28 @@ label {
 
 .guide-hero {
   position: relative;
-  min-height: auto;
+  min-height: calc(100vh - 32px);
   overflow: hidden;
   border-radius: var(--radius-xl);
   border: 1px solid var(--line);
   background: linear-gradient(180deg, #091119 0%, #05080d 100%);
   box-shadow: var(--shadow);
+}
+
+.guide-hero-fullscreen {
+  display: block;
+}
+
+.tv-mode .guide-hero-fullscreen {
+  display: grid;
+  grid-template-rows: 1fr;
+  min-height: calc(100vh - 32px);
+}
+
+.tv-mode .guide-hero-fullscreen .guide-topbar,
+.tv-mode .guide-hero-fullscreen .guide-footer,
+.tv-mode .guide-hero-fullscreen + .content {
+  display: none;
 }
 
 .guide-handle {
@@ -122,9 +138,8 @@ label {
   width: var(--channel-rail-width);
   height: auto;
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: 1fr;
   justify-items: center;
-  gap: 10px;
   padding: 12px 0;
   background: transparent;
   border-radius: 28px;
@@ -174,21 +189,6 @@ label {
 .guide-channel-list::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.14);
   border-radius: 999px;
-}
-
-.guide-nav-button {
-  width: 34px;
-  height: 34px;
-  display: grid;
-  place-items: center;
-  padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 999px;
-  background: rgba(6, 10, 18, 0.78);
-  color: var(--text);
-  cursor: pointer;
-  font-size: 1rem;
-  line-height: 1;
 }
 
 .guide-channel-item {
@@ -523,17 +523,15 @@ label {
     padding-bottom: 16px;
   }
 
-  .hero,
-  .guide-hero {
+  .hero {
     min-height: calc(100vh - 32px);
   }
 
-  .guide-hero {
-    display: grid;
-    grid-template-rows: auto 1fr auto;
+  .tv-mode .guide-hero {
+    min-height: calc(100vh - 32px);
   }
 
-  .guide-stage {
+  .tv-mode .guide-stage {
     min-height: 0;
   }
 

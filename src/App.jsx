@@ -88,6 +88,30 @@ function buildLogoThumb(channel, index) {
 }
 
 export default function App() {
+  const isAndroidTv = useMemo(() => {
+    const search =
+      typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+
+    if (search?.get('tv') === '1') {
+      return true;
+    }
+
+    if (typeof navigator === 'undefined') {
+      return false;
+    }
+
+    const agent = `${navigator.userAgent} ${navigator.vendor || ''}`.toLowerCase();
+    return (
+      agent.includes('android tv') ||
+      agent.includes('google tv') ||
+      agent.includes('smart-tv') ||
+      agent.includes('smarttv') ||
+      agent.includes('aft') ||
+      agent.includes('bravia') ||
+      (agent.includes('android') && agent.includes('tv'))
+    );
+  }, []);
+
   const [activeShelf, setActiveShelf] = useState('channels');
   const [guideDrawerOpen, setGuideDrawerOpen] = useState(false);
   const [selectedChannelUrl, setSelectedChannelUrl] = useState(CHANNELS[0]?.url || '');
@@ -326,21 +350,30 @@ export default function App() {
 
       if (!filteredChannels.length) return;
 
-      if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        setGuideDrawerOpen(true);
+      } else if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        setGuideDrawerOpen(false);
+      } else if (event.key === 'ArrowDown') {
         event.preventDefault();
         moveSelectedChannel(1);
-      } else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
+      } else if (event.key === 'ArrowUp') {
         event.preventDefault();
         moveSelectedChannel(-1);
       } else if (event.key === 'Enter') {
         event.preventDefault();
+        if (guideDrawerOpen) {
+          setGuideDrawerOpen(false);
+        }
         setPlaybackNonce(current => current + 1);
       }
     }
 
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [activeShelf, filteredChannels, movieChannels, selectedIndex, selectedMovieIndex, selectedSeriesIndex]);
+  }, [activeShelf, filteredChannels, guideDrawerOpen, movieChannels, selectedIndex, selectedMovieIndex, selectedSeriesIndex]);
 
   useEffect(() => {
     const player = playerRef.current;
@@ -485,9 +518,9 @@ export default function App() {
   }, [activeShelf, playbackNonce, selectedEpisode, selectedMedia, selectedSeason]);
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell${isAndroidTv ? ' tv-mode' : ''}`}>
       {activeShelf === 'channels' ? (
-        <header className="guide-hero">
+        <header className="guide-hero guide-hero-fullscreen">
           <div className="guide-topbar">
             <div className="section-head">
               <div>
@@ -535,16 +568,6 @@ export default function App() {
 
             <div className={`guide-stage-frame${guideDrawerOpen ? ' open' : ''}`}>
               <aside className={`guide-sidebar${guideDrawerOpen ? ' open' : ''}`}>
-                <button
-                  type="button"
-                  className="guide-nav-button guide-nav-up"
-                  onClick={() => moveSelectedChannel(-1)}
-                  aria-label="Canal anterior"
-                  title="Canal anterior"
-                >
-                  ^
-                </button>
-
                 <ul ref={channelListRef} className="guide-channel-list">
                   {filteredChannels.map((channel, index) => {
                     const isActive = channel.url === selectedChannel?.url;
@@ -576,16 +599,6 @@ export default function App() {
                     );
                   })}
                 </ul>
-
-                <button
-                  type="button"
-                  className="guide-nav-button guide-nav-down"
-                  onClick={() => moveSelectedChannel(1)}
-                  aria-label="Proximo canal"
-                  title="Proximo canal"
-                >
-                  v
-                </button>
               </aside>
 
               <div className="guide-player-shell">
