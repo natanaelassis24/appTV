@@ -216,10 +216,13 @@ label {
   cursor: pointer;
   scroll-snap-align: start;
   justify-self: center;
+  transition: transform 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
 }
 
 .guide-channel-item.active {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.18);
+  transform: scale(1.05);
 }
 
 .guide-channel-number {
@@ -236,6 +239,14 @@ label {
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+}
+
+.guide-channel-item.active .guide-channel-logo,
+.guide-channel-item.active .guide-channel-fallback {
+  border-color: rgba(255, 255, 255, 0.42);
+  box-shadow: 0 0 0 2px rgba(225, 29, 46, 0.45);
+  background: rgba(255, 255, 255, 0.16);
 }
 
 .guide-topbar {

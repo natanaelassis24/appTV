@@ -116,6 +116,7 @@ export default function App() {
   const [guideDrawerOpen, setGuideDrawerOpen] = useState(false);
   const [selectedChannelUrl, setSelectedChannelUrl] = useState(CHANNELS[0]?.url || '');
   const [drawerChannelUrl, setDrawerChannelUrl] = useState(CHANNELS[0]?.url || '');
+  const [drawerHandleTop, setDrawerHandleTop] = useState(null);
   const [selectedMovieUrl, setSelectedMovieUrl] = useState(MOVIES[0]?.url || '');
   const [selectedSeriesId, setSelectedSeriesId] = useState('');
   const [selectedSeasonNumber, setSelectedSeasonNumber] = useState(1);
@@ -127,6 +128,7 @@ export default function App() {
   const [playbackNonce, setPlaybackNonce] = useState(0);
 
   const playerRef = useRef(null);
+  const guideStageRef = useRef(null);
   const channelListRef = useRef(null);
   const hlsRef = useRef(null);
   const recoveryRef = useRef({ network: 0, media: 0, fallbackTried: false });
@@ -319,7 +321,38 @@ export default function App() {
     if (activeItem) {
       activeItem.scrollIntoView({ block: 'center', behavior: 'smooth' });
     }
-  }, [guideDrawerOpen, selectedChannelUrl]);
+  }, [drawerChannelUrl, guideDrawerOpen]);
+
+  useEffect(() => {
+    if (!guideDrawerOpen || !guideStageRef.current || !channelListRef.current) {
+      setDrawerHandleTop(null);
+      return;
+    }
+
+    const updateDrawerHandlePosition = () => {
+      const stageRect = guideStageRef.current?.getBoundingClientRect();
+      const activeItem = channelListRef.current?.querySelector('.guide-channel-item.active');
+      const itemRect = activeItem?.getBoundingClientRect();
+
+      if (!stageRect || !itemRect) {
+        return;
+      }
+
+      setDrawerHandleTop(itemRect.top + itemRect.height / 2 - stageRect.top);
+    };
+
+    const frame = requestAnimationFrame(updateDrawerHandlePosition);
+    const list = channelListRef.current;
+
+    list.addEventListener('scroll', updateDrawerHandlePosition, { passive: true });
+    window.addEventListener('resize', updateDrawerHandlePosition);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      list.removeEventListener('scroll', updateDrawerHandlePosition);
+      window.removeEventListener('resize', updateDrawerHandlePosition);
+    };
+  }, [drawerChannelUrl, guideDrawerOpen]);
 
   useEffect(() => {
     function onKeyDown(event) {
@@ -595,10 +628,11 @@ export default function App() {
             </div>
           </div>
 
-          <div className="guide-stage">
+          <div className="guide-stage" ref={guideStageRef}>
             <button
               type="button"
               className={`guide-handle${guideDrawerOpen ? ' open' : ''}`}
+              style={guideDrawerOpen && drawerHandleTop !== null ? { top: `${drawerHandleTop}px` } : undefined}
               onClick={() => {
                 if (guideDrawerOpen) {
                   setDrawerChannelUrl(selectedChannelUrl);
