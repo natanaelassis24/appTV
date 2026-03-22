@@ -85,13 +85,25 @@ label {
 .tv-mode .guide-hero-fullscreen {
   display: grid;
   grid-template-rows: 1fr;
-  min-height: calc(100vh - 32px);
+  min-height: 100vh;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: #000;
 }
 
 .tv-mode .guide-hero-fullscreen .guide-topbar,
 .tv-mode .guide-hero-fullscreen .guide-footer,
 .tv-mode .guide-hero-fullscreen + .content {
   display: none;
+}
+
+.tv-mode {
+  background: #000;
+}
+
+.tv-mode .app-shell {
+  padding: 0;
 }
 
 .guide-handle {
@@ -262,6 +274,11 @@ label {
   margin: 0 24px;
 }
 
+.tv-mode .guide-stage {
+  min-height: 100vh;
+  margin: 0;
+}
+
 .guide-player-shell {
   position: relative;
   min-width: 0;
@@ -272,6 +289,21 @@ label {
   background: #000;
   border: 1px solid rgba(255, 255, 255, 0.06);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
+.tv-mode .guide-stage-frame,
+.tv-mode .guide-player-shell,
+.tv-mode .guide-player-shell #tvPlayer,
+.tv-mode .guide-player-shell #tvEmbed {
+  min-height: 100vh;
+  height: 100vh;
+}
+
+.tv-mode .guide-player-shell {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: #000;
 }
 
 .guide-player-shell #tvPlayer,
@@ -528,11 +560,11 @@ label {
   }
 
   .tv-mode .guide-hero {
-    min-height: calc(100vh - 32px);
+    min-height: 100vh;
   }
 
   .tv-mode .guide-stage {
-    min-height: 0;
+    min-height: 100vh;
   }
 
   .content {
