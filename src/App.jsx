@@ -115,6 +115,7 @@ export default function App() {
   const [activeShelf, setActiveShelf] = useState('channels');
   const [guideDrawerOpen, setGuideDrawerOpen] = useState(false);
   const [selectedChannelUrl, setSelectedChannelUrl] = useState(CHANNELS[0]?.url || '');
+  const [drawerChannelUrl, setDrawerChannelUrl] = useState(CHANNELS[0]?.url || '');
   const [selectedMovieUrl, setSelectedMovieUrl] = useState(MOVIES[0]?.url || '');
   const [selectedSeriesId, setSelectedSeriesId] = useState('');
   const [selectedSeasonNumber, setSelectedSeasonNumber] = useState(1);
@@ -194,6 +195,18 @@ export default function App() {
     setSelectedChannelUrl(filteredChannels[nextIndex].url);
   }
 
+  function moveDrawerChannel(delta) {
+    if (!filteredChannels.length) return;
+
+    const currentIndex = filteredChannels.findIndex(channel => channel.url === drawerChannelUrl);
+    const nextIndex =
+      currentIndex >= 0
+        ? (currentIndex + delta + filteredChannels.length) % filteredChannels.length
+        : 0;
+
+    setDrawerChannelUrl(filteredChannels[nextIndex].url);
+  }
+
   const externalUrl = useMemo(() => {
     return selectedMedia?.externalUrl || selectedMedia?.url || '';
   }, [selectedMedia]);
@@ -225,6 +238,17 @@ export default function App() {
       setSelectedChannelUrl(filteredChannels[0].url);
     }
   }, [filteredChannels, selectedChannelUrl]);
+
+  useEffect(() => {
+    if (!filteredChannels.length) {
+      return;
+    }
+
+    const hasDrawerChannel = filteredChannels.some(channel => channel.url === drawerChannelUrl);
+    if (!hasDrawerChannel) {
+      setDrawerChannelUrl(filteredChannels[0].url);
+    }
+  }, [drawerChannelUrl, filteredChannels]);
 
   useEffect(() => {
     if (!movieChannels.length) {
@@ -350,30 +374,46 @@ export default function App() {
 
       if (!filteredChannels.length) return;
 
-      if (event.key === 'ArrowRight') {
-        event.preventDefault();
-        setGuideDrawerOpen(true);
-      } else if (event.key === 'ArrowLeft') {
-        event.preventDefault();
-        setGuideDrawerOpen(false);
-      } else if (event.key === 'ArrowDown') {
-        event.preventDefault();
-        moveSelectedChannel(1);
-      } else if (event.key === 'ArrowUp') {
-        event.preventDefault();
-        moveSelectedChannel(-1);
-      } else if (event.key === 'Enter') {
-        event.preventDefault();
-        if (guideDrawerOpen) {
+      if (guideDrawerOpen) {
+        if (event.key === 'ArrowDown') {
+          event.preventDefault();
+          moveDrawerChannel(1);
+        } else if (event.key === 'ArrowUp') {
+          event.preventDefault();
+          moveDrawerChannel(-1);
+        } else if (event.key === 'Enter') {
+          event.preventDefault();
+          setSelectedChannelUrl(drawerChannelUrl);
+          setGuideDrawerOpen(false);
+          setPlaybackNonce(current => current + 1);
+        } else if (event.key === 'ArrowLeft' || event.key === 'Escape' || event.key === 'Backspace') {
+          event.preventDefault();
+          setDrawerChannelUrl(selectedChannelUrl);
           setGuideDrawerOpen(false);
         }
-        setPlaybackNonce(current => current + 1);
+
+        return;
+      }
+
+      if (event.key === 'ArrowRight' || event.key === 'Enter') {
+        event.preventDefault();
+        setDrawerChannelUrl(selectedChannelUrl);
+        setGuideDrawerOpen(true);
       }
     }
 
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [activeShelf, filteredChannels, guideDrawerOpen, movieChannels, selectedIndex, selectedMovieIndex, selectedSeriesIndex]);
+  }, [
+    activeShelf,
+    drawerChannelUrl,
+    filteredChannels,
+    guideDrawerOpen,
+    movieChannels,
+    selectedChannelUrl,
+    selectedMovieIndex,
+    selectedSeriesIndex
+  ]);
 
   useEffect(() => {
     const player = playerRef.current;
@@ -559,7 +599,16 @@ export default function App() {
             <button
               type="button"
               className={`guide-handle${guideDrawerOpen ? ' open' : ''}`}
-              onClick={() => setGuideDrawerOpen(current => !current)}
+              onClick={() => {
+                if (guideDrawerOpen) {
+                  setDrawerChannelUrl(selectedChannelUrl);
+                  setGuideDrawerOpen(false);
+                  return;
+                }
+
+                setDrawerChannelUrl(selectedChannelUrl);
+                setGuideDrawerOpen(true);
+              }}
               aria-label={guideDrawerOpen ? 'Fechar canais' : 'Abrir canais'}
               title={guideDrawerOpen ? 'Fechar canais' : 'Abrir canais'}
             >
@@ -570,7 +619,7 @@ export default function App() {
               <aside className={`guide-sidebar${guideDrawerOpen ? ' open' : ''}`}>
                 <ul ref={channelListRef} className="guide-channel-list">
                   {filteredChannels.map((channel, index) => {
-                    const isActive = channel.url === selectedChannel?.url;
+                    const isActive = channel.url === (guideDrawerOpen ? drawerChannelUrl : selectedChannel?.url);
 
                     return (
                       <li key={`${channel.name}-${channel.url}`}>
@@ -578,8 +627,10 @@ export default function App() {
                           type="button"
                           className={`guide-channel-item${isActive ? ' active' : ''}`}
                           onClick={() => {
+                            setDrawerChannelUrl(channel.url);
                             setSelectedChannelUrl(channel.url);
                             setGuideDrawerOpen(false);
+                            setPlaybackNonce(current => current + 1);
                           }}
                           aria-label={channel.name}
                           title={channel.name}
