@@ -722,24 +722,26 @@ export default function App() {
                   {filteredChannels.map(channel => {
                     const isActive = channel.url === selectedChannel?.url;
                     return (
-                      <li
-                        key={`${channel.name}-${channel.url}`}
-                        className={`channel-item live-card${isActive ? ' active' : ''}`}
-                        onClick={() => setSelectedChannelUrl(channel.url)}
-                        style={
-                          channel.posterImage || channel.logoImage
-                            ? {
-                                '--channel-image': `url("${channel.posterImage || channel.logoImage}")`
-                              }
-                            : undefined
-                        }
-                      >
-                        {buildLogoThumb(channel)}
-                        <span className="live-card-pill">
-                          {channel.unavailable ? 'Indisponivel' : channel.category || 'Ao vivo'}
-                        </span>
-                        <strong>{channel.name || 'Canal sem nome'}</strong>
-                        <span>{channel.category || 'Ao vivo'}</span>
+                      <li key={`${channel.name}-${channel.url}`}>
+                        <button
+                          type="button"
+                          className={`channel-item live-card${isActive ? ' active' : ''}`}
+                          onClick={() => setSelectedChannelUrl(channel.url)}
+                          style={
+                            channel.posterImage || channel.logoImage
+                              ? {
+                                  '--channel-image': `url("${channel.posterImage || channel.logoImage}")`
+                                }
+                              : undefined
+                          }
+                        >
+                          {buildLogoThumb(channel)}
+                          <span className="live-card-pill">
+                            {channel.unavailable ? 'Indisponivel' : channel.category || 'Ao vivo'}
+                          </span>
+                          <strong>{channel.name || 'Canal sem nome'}</strong>
+                          <span>{channel.category || 'Ao vivo'}</span>
+                        </button>
                       </li>
                     );
                   })}
