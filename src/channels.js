@@ -559,6 +559,16 @@ export const CHANNELS = [
   logo: 'NC',
   sourceType: 'hls',
   description: 'Descricao curta do canal.'
+},
+{
+  name: 'Globo SP',
+  url: 'https://streamverde.s27-usa-cloudfront-net.online/fontes/streamverde/globosp.m3u8',
+  number: '0',
+  category: 'Canais',
+  logoImage: 'https://upload.wikimedia.org/wikipedia/commons/1/1f/TV_Globo_logo_%28April_2025%29.png',
+  logo: 'NC',
+  sourceType: 'hls',
+  description: 'Descricao curta do canal.'
 }
 
 ];
