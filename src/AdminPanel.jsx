@@ -138,13 +138,11 @@ export default function AdminPanel() {
     setLoginError('');
 
     try {
-      const response = await fetch('/api/admin-login', {
-        method: 'POST',
+      const response = await fetch(`/api/admin-login?password=${encodeURIComponent(password)}`, {
+        method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
           Accept: 'application/json'
-        },
-        body: JSON.stringify({ password })
+        }
       });
 
       const payload = await readJson(response);
