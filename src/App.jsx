@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Hls from 'hls.js';
 import { CHANNELS } from './channels';
+import AdminPanel from './AdminPanel';
 import { PUBLIC_RUNTIME_CONFIG } from './runtime-config';
 import { PUBLIC_PLANS } from '../lib/plans.js';
 
@@ -132,10 +133,29 @@ async function readJsonResponse(response, fallbackMessage) {
   }
 }
 
+function tgLink(baseUrl, message) {
+  const raw = String(baseUrl || '').trim() || 'https://t.me/natalinoprr';
+
+  try {
+    const normalized = raw.startsWith('http://') || raw.startsWith('https://') ? raw : `https://${raw}`;
+    const url = new URL(normalized);
+    if (message) {
+      url.searchParams.set('text', message);
+    }
+    return url.toString();
+  } catch (_) {
+    return raw;
+  }
+}
+
 export default function App() {
-  const telegramUrl = PUBLIC_RUNTIME_CONFIG.telegramUrl || '#planos';
+  const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/';
+  if (currentPath.startsWith('/admin')) {
+    return <AdminPanel />;
+  }
+
+  const telegramUrl = PUBLIC_RUNTIME_CONFIG.telegramUrl || 'https://t.me/natalinoprr';
   const apkDownloadUrl = PUBLIC_RUNTIME_CONFIG.apkDownloadUrl;
-  const mercadoPagoPublicKey = PUBLIC_RUNTIME_CONFIG.mercadoPagoPublicKey;
   const isAndroidTv = useMemo(() => {
     const search =
       typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
@@ -164,6 +184,10 @@ export default function App() {
   const [accessLookupState, setAccessLookupState] = useState('idle');
   const [accessLookupResult, setAccessLookupResult] = useState(null);
   const [accessLookupError, setAccessLookupError] = useState('');
+  const [adminPasswordInput, setAdminPasswordInput] = useState('');
+  const [adminAccessState, setAdminAccessState] = useState('idle');
+  const [adminAccessError, setAdminAccessError] = useState('');
+  const [adminLoginOpen, setAdminLoginOpen] = useState(false);
   const [accessBootState, setAccessBootState] = useState(isAndroidTv ? 'booting' : 'idle');
   const [authorizedAccess, setAuthorizedAccess] = useState(null);
   const isPlaybackEnabled = isAndroidTv && authorizedAccess?.status === 'active';
@@ -177,8 +201,6 @@ export default function App() {
   const [statusError, setStatusError] = useState(false);
   const [embedUrl, setEmbedUrl] = useState('');
   const [playbackNonce, setPlaybackNonce] = useState(0);
-  const [checkoutError, setCheckoutError] = useState('');
-  const [paymentLoading, setPaymentLoading] = useState(false);
 
   const playerRef = useRef(null);
   const guideStageRef = useRef(null);
@@ -213,55 +235,6 @@ export default function App() {
 
     setDrawerChannelUrl(filteredChannels[nextIndex].url);
   }
-
-  function createCheckoutSessionId() {
-    if (typeof window !== 'undefined' && window.crypto?.randomUUID) {
-      return `CHK-${window.crypto.randomUUID().replaceAll('-', '').slice(0, 12).toUpperCase()}`;
-    }
-
-    const randomPart = Math.random().toString(36).slice(2, 10).toUpperCase();
-    return `CHK-${Date.now().toString(36).toUpperCase()}${randomPart}`;
-  }
-
-  async function startPaymentFlow(plan) {
-    setCheckoutError('');
-    setPaymentLoading(true);
-
-    try {
-      const response = await fetch(`/api/create-checkout?planId=${encodeURIComponent(plan.id)}`, {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json'
-        }
-      });
-
-      const payload = await readJsonResponse(response, 'Falha ao iniciar o pagamento.');
-
-      if (!response.ok) {
-        throw new Error(payload?.error || `HTTP ${response.status}`);
-      }
-
-      const checkoutUrl =
-        payload?.checkoutUrl ||
-        payload?.sandboxInitPoint ||
-        payload?.init_point ||
-        payload?.initPoint ||
-        payload?.sandbox_init_point ||
-        (payload?.preferenceId
-          ? `https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=${encodeURIComponent(payload.preferenceId)}`
-          : '');
-
-      if (!checkoutUrl) {
-        throw new Error('Checkout sem link de pagamento.');
-      }
-
-      window.location.href = checkoutUrl;
-    } catch (error) {
-      setCheckoutError(error?.message || 'Falha ao iniciar o pagamento.');
-      setPaymentLoading(false);
-    }
-  }
-
   async function lookupAccessById(accessId, { persist = true } = {}) {
     const normalizedId = String(accessId || '')
       .trim()
@@ -624,12 +597,65 @@ export default function App() {
     }
   }
 
+  async function handleAdminAccess(event) {
+    event.preventDefault();
+
+    const password = adminPasswordInput.trim();
+    if (!password) {
+      setAdminAccessState('error');
+      setAdminAccessError('Digite a senha do painel.');
+      return;
+    }
+
+    setAdminAccessState('loading');
+    setAdminAccessError('');
+
+    try {
+      const response = await fetch('/api/admin-login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
+        },
+        body: JSON.stringify({ password })
+      });
+
+      const payload = await readJsonResponse(response, 'Falha ao autenticar.');
+
+      if (!response.ok) {
+        throw new Error(payload?.error || `HTTP ${response.status}`);
+      }
+
+      if (payload?.token) {
+        window.localStorage.setItem('app-tv-admin-session-v1', payload.token);
+        setAdminLoginOpen(false);
+        window.location.href = '/admin';
+        return;
+      }
+
+      throw new Error('Falha ao abrir o painel.');
+    } catch (error) {
+      setAdminAccessState('error');
+      setAdminAccessError(error.message || 'Falha ao autenticar no painel.');
+    }
+  }
+
   return (
     <div className={`app-shell${isAndroidTv ? ' tv-mode' : ''}${!isPlaybackEnabled ? ' promo-mode' : ''}`}>
       {!isPlaybackEnabled ? (
         !isAndroidTv ? (
         <>
           <header className="promo-landing">
+            <div className="promo-landing-topbar">
+              <span className="promo-brand">App TV Android</span>
+              <button
+                type="button"
+                className="secondary-btn promo-admin-trigger"
+                onClick={() => setAdminLoginOpen(true)}
+              >
+                Admin
+              </button>
+            </div>
             <div className="promo-copy promo-copy-public">
               <span className="section-kicker">App TV Android</span>
               <h1>TV ao vivo no Android TV com acesso liberado por assinatura.</h1>
@@ -711,13 +737,6 @@ export default function App() {
                 <p>Todos os planos liberam o acesso ao aplicativo Android TV. O plano trimestral oferece o melhor custo entre valor e periodo.</p>
               </div>
 
-              {checkoutError ? (
-                <div className="checkout-error-banner">
-                  <strong>Falha ao iniciar o pagamento</strong>
-                  <p>{checkoutError}</p>
-                </div>
-              ) : null}
-
               <ul className="plans-grid">
                 {PUBLIC_PLANS.map(plan => (
                   <li key={plan.id}>
@@ -729,14 +748,14 @@ export default function App() {
                         <small>{plan.period}</small>
                       </div>
                       <p>{plan.description}</p>
-                      <button
-                        type="button"
+                      <a
                         className="primary-btn plan-btn"
-                        onClick={() => startPaymentFlow(plan)}
-                        disabled={paymentLoading}
+                        href={tgLink(telegramUrl, `Quero assinar o ${plan.name} do App TV Android.`)}
+                        target="_blank"
+                        rel="noreferrer"
                       >
-                        {paymentLoading ? 'Abrindo...' : 'Assinar agora'}
-                      </button>
+                        Falar no Telegram
+                      </a>
                     </article>
                   </li>
                 ))}
@@ -822,6 +841,57 @@ export default function App() {
                 </div>
               </footer>
             </section>
+
+            {adminLoginOpen ? (
+              <div className="admin-login-modal-backdrop" role="presentation" onClick={() => setAdminLoginOpen(false)}>
+                <section
+                  className="admin-login-modal"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label="Acesso administrativo"
+                  onClick={event => event.stopPropagation()}
+                >
+                  <div className="admin-login-copy">
+                    <span className="section-kicker">Acesso interno</span>
+                    <h2>Entrar no admin</h2>
+                    <p>Digite a senha do painel para abrir a tela administrativa.</p>
+                  </div>
+
+                  <form className="admin-login-form" onSubmit={handleAdminAccess}>
+                    <label className="admin-field">
+                      <span>Senha do painel</span>
+                      <input
+                        type="password"
+                        value={adminPasswordInput}
+                        onChange={event => setAdminPasswordInput(event.target.value)}
+                        placeholder="Digite a senha administrativa"
+                        autoComplete="current-password"
+                        autoFocus
+                      />
+                    </label>
+
+                    {adminAccessError ? <div className="admin-banner error">{adminAccessError}</div> : null}
+
+                    <div className="promo-admin-actions">
+                      <button
+                        type="submit"
+                        className="primary-btn"
+                        disabled={adminAccessState === 'loading'}
+                      >
+                        {adminAccessState === 'loading' ? 'Entrando...' : 'Entrar no admin'}
+                      </button>
+                      <button
+                        type="button"
+                        className="secondary-btn"
+                        onClick={() => setAdminLoginOpen(false)}
+                      >
+                        Fechar
+                      </button>
+                    </div>
+                  </form>
+                </section>
+              </div>
+            ) : null}
           </main>
         </>
         ) : (
@@ -1042,5 +1112,7 @@ export default function App() {
     </div>
   );
 }
+
+
 
 

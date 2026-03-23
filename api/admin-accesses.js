@@ -1,0 +1,93 @@
+import { extractBearerToken, verifyAdminSessionToken } from '../lib/admin-auth.js';
+import { getFirestore } from '../lib/firebase-admin.js';
+
+function sendJson(res, statusCode, payload) {
+  res.status(statusCode).json(payload);
+}
+
+function readStatusFilter(req) {
+  return String(req.query?.status || 'active').trim().toLowerCase();
+}
+
+function formatDateLabel(value) {
+  if (!value) {
+    return 'Nao definida';
+  }
+
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(date);
+}
+
+function normalizeEntry(doc) {
+  const data = doc.data();
+  return {
+    accessId: data?.accessId || doc.id,
+    name: data?.name || 'Cliente',
+    planName: data?.planName || 'Plano nao definido',
+    status: data?.status || 'pending',
+    paymentLabel: data?.paymentLabel || 'Aguardando confirmacao',
+    expiresAt: data?.expiresAt || null,
+    expiresAtLabel: formatDateLabel(data?.expiresAt)
+  };
+}
+
+export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    sendJson(res, 405, { error: 'Metodo nao permitido.' });
+    return;
+  }
+
+  const token = extractBearerToken(req);
+  const session = verifyAdminSessionToken(token);
+
+  if (!session) {
+    sendJson(res, 401, { error: 'Sessao administrativa invalida ou expirada.' });
+    return;
+  }
+
+  try {
+    const firestore = getFirestore();
+    const snapshot = await firestore.collection('access_registry').get();
+
+    const entries = snapshot.docs
+      .map(normalizeEntry)
+      .sort((left, right) => {
+        const leftStamp = left.expiresAt ? new Date(`${left.expiresAt}T00:00:00`).getTime() : 0;
+        const rightStamp = right.expiresAt ? new Date(`${right.expiresAt}T00:00:00`).getTime() : 0;
+
+        if (rightStamp !== leftStamp) {
+          return rightStamp - leftStamp;
+        }
+
+        return String(left.accessId).localeCompare(String(right.accessId));
+      });
+
+    const counts = entries.reduce(
+      (accumulator, entry) => {
+        accumulator.all += 1;
+        if (entry.status in accumulator) {
+          accumulator[entry.status] += 1;
+        }
+        return accumulator;
+      },
+      { all: 0, active: 0, pending: 0, blocked: 0 }
+    );
+
+    const statusFilter = readStatusFilter(req);
+    const filteredEntries =
+      statusFilter === 'all' ? entries : entries.filter(entry => entry.status === statusFilter);
+
+    sendJson(res, 200, {
+      entries: filteredEntries,
+      counts
+    });
+  } catch (error) {
+    sendJson(res, 500, {
+      error: error?.message || 'Falha ao carregar os registros.'
+    });
+  }
+}

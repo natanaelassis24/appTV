@@ -1,79 +1,95 @@
 import { getFirestore } from '../lib/firebase-admin.js';
 
-function buildMessage(entry) {
-  if (entry.status === 'active') {
-    return 'Pagamento confirmado e acesso liberado no aplicativo Android TV.';
-  }
-
-  if (entry.status === 'pending') {
-    return 'Pagamento ainda nao confirmado. Assim que a compensacao ocorrer, o acesso sera liberado.';
-  }
-
-  return 'Esse ID esta bloqueado no momento. Revise o pagamento ou entre em contato no Telegram.';
+function sendJson(res, statusCode, payload) {
+  res.status(statusCode).json(payload);
 }
 
-function formatDate(dateValue) {
-  if (!dateValue) {
+function readAccessId(req) {
+  return String(req.query?.id || req.body?.id || '').trim().toUpperCase();
+}
+
+function formatDateLabel(value) {
+  if (!value) {
     return 'Nao definida';
   }
 
-  try {
-    return new Intl.DateTimeFormat('pt-BR', {
-      dateStyle: 'short'
-    }).format(new Date(`${dateValue}T00:00:00`));
-  } catch (_) {
-    return dateValue;
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) {
+    return value;
   }
+
+  return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(date);
 }
 
-function normalizeEntry(entry) {
+function buildPayload(record, accessId) {
+  const status = record?.status || 'blocked';
+  const planName = record?.planName || 'Plano nao definido';
+  const paymentLabel = record?.paymentLabel || 'Aguardando confirmacao';
+  const expiresAt = record?.expiresAt || null;
+
+  const messages = {
+    active: 'Acesso liberado.',
+    pending: 'Pagamento pendente.',
+    blocked: 'Acesso bloqueado.'
+  };
+
   return {
-    accessId: entry.accessId,
-    name: entry.name || 'Cliente',
-    planId: entry.planId || 'nao-definido',
-    planName: entry.planName || 'Plano nao definido',
-    status: entry.status || 'pending',
-    paymentStatus: entry.paymentStatus || 'pending',
-    paymentLabel: entry.paymentLabel || 'Aguardando confirmacao',
-    expiresAt: entry.expiresAt || null,
-    expiresAtLabel: formatDate(entry.expiresAt),
-    message: buildMessage(entry)
+    accessId: record?.accessId || accessId,
+    name: record?.name || 'Cliente',
+    planName,
+    status,
+    paymentLabel,
+    expiresAt,
+    expiresAtLabel: formatDateLabel(expiresAt),
+    message: messages[status] || 'Status desconhecido.'
   };
 }
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
-    res.status(405).json({ error: 'Metodo nao permitido.' });
+    sendJson(res, 405, { error: 'Metodo nao permitido.' });
     return;
   }
 
-  const accessId = String(req.query.id || '')
-    .trim()
-    .toUpperCase();
-
+  const accessId = readAccessId(req);
   if (!accessId) {
-    res.status(400).json({ error: 'Informe um ID de acesso.' });
+    sendJson(res, 400, { error: 'Informe um ID de acesso.' });
     return;
   }
 
   try {
     const firestore = getFirestore();
-    const accessRef = firestore.collection('access_registry').doc(accessId);
-    const accessSnapshot = await accessRef.get();
+    const doc = await firestore.collection('access_registry').doc(accessId).get();
 
-    if (!accessSnapshot.exists) {
-      res.status(404).json({ error: 'ID de acesso nao encontrado.' });
+    if (doc.exists) {
+      sendJson(res, 200, buildPayload(doc.data(), accessId));
       return;
     }
 
-    const entry = accessSnapshot.data();
+    const fallback = await firestore
+      .collection('access_registry')
+      .where('accessId', '==', accessId)
+      .limit(1)
+      .get();
 
-    res.status(200).json(normalizeEntry(entry));
+    if (!fallback.empty) {
+      sendJson(res, 200, buildPayload(fallback.docs[0].data(), accessId));
+      return;
+    }
+
+    sendJson(res, 200, {
+      accessId,
+      name: 'Cliente',
+      planName: 'Plano nao encontrado',
+      status: 'blocked',
+      paymentLabel: 'Nao localizado',
+      expiresAt: null,
+      expiresAtLabel: 'Nao definida',
+      message: 'ID nao encontrado.'
+    });
   } catch (error) {
-    res.status(500).json({
-      error:
-        error?.message ||
-        'Falha ao consultar o registro de acesso no Firebase.'
+    sendJson(res, 500, {
+      error: error?.message || 'Falha ao consultar o ID.'
     });
   }
 }
