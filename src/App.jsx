@@ -564,40 +564,7 @@ export default function App() {
     setCheckoutError('');
 
     try {
-      const response = await fetch('/api/create-checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json'
-        },
-        body: JSON.stringify({ planId })
-      });
-
-      const rawResponse = await response.text();
-      let payload = null;
-
-      if (rawResponse) {
-        try {
-          payload = JSON.parse(rawResponse);
-        } catch (_) {
-          payload = null;
-        }
-      }
-
-      if (!response.ok) {
-        throw new Error(
-          payload?.error ||
-            `Nao foi possivel iniciar o checkout. HTTP ${response.status}.`
-        );
-      }
-
-      if (!payload?.checkoutUrl) {
-        throw new Error(
-          'A API respondeu sem checkoutUrl. Verifique os logs da funcao /api/create-checkout na Vercel.'
-        );
-      }
-
-      window.location.href = payload.checkoutUrl;
+      window.location.href = `/api/create-checkout?planId=${encodeURIComponent(planId)}`;
     } catch (error) {
       setCheckoutError(error.message || 'Falha ao iniciar o checkout.');
       setCheckoutPlanId('');
