@@ -160,7 +160,6 @@ export default function App() {
   const [statusError, setStatusError] = useState(false);
   const [embedUrl, setEmbedUrl] = useState('');
   const [playbackNonce, setPlaybackNonce] = useState(0);
-  const [checkoutPlanId, setCheckoutPlanId] = useState('');
   const [checkoutError, setCheckoutError] = useState('');
 
   const playerRef = useRef(null);
@@ -559,18 +558,6 @@ export default function App() {
     }
   }
 
-  async function handleCheckout(planId) {
-    setCheckoutPlanId(planId);
-    setCheckoutError('');
-
-    try {
-      window.location.href = `/api/create-checkout?planId=${encodeURIComponent(planId)}`;
-    } catch (error) {
-      setCheckoutError(error.message || 'Falha ao iniciar o checkout.');
-      setCheckoutPlanId('');
-    }
-  }
-
   return (
     <div className={`app-shell${isAndroidTv ? ' tv-mode' : ''}${!isPlaybackEnabled ? ' promo-mode' : ''}`}>
       {!isPlaybackEnabled ? (
@@ -681,13 +668,12 @@ export default function App() {
                         <small>{plan.period}</small>
                       </div>
                       <p>{plan.description}</p>
-                      <button
-                        type="button"
+                      <a
                         className="primary-btn plan-btn"
-                        onClick={() => handleCheckout(plan.id)}
+                        href={`/api/create-checkout?planId=${encodeURIComponent(plan.id)}`}
                       >
-                        {checkoutPlanId === plan.id ? 'Abrindo pagamento...' : 'Assinar agora'}
-                      </button>
+                        Assinar agora
+                      </a>
                     </article>
                   </li>
                 ))}
