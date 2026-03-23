@@ -287,30 +287,12 @@ export default function App() {
     setPaymentResult(null);
 
     try {
-      const response = await fetch(`/api/create-checkout?planId=${encodeURIComponent(plan.id)}`, {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json'
-        }
-      });
-
-      const payload = await readJsonResponse(response, 'Falha ao iniciar o pagamento.');
-
-      if (!response.ok) {
-        throw new Error(payload?.error || `HTTP ${response.status}`);
-      }
-
-      if (!payload?.preferenceId) {
-        throw new Error('Checkout sem preferenceId.');
-      }
-
       setPaymentCheckout({
-        checkoutSessionId: payload.checkoutSessionId || createCheckoutSessionId(),
-        preferenceId: payload.preferenceId,
-        publicKey: payload.publicKey || mercadoPagoPublicKey,
-        amount: Number(payload.amount ?? plan.price),
-        title: payload.title || plan.mercadopagoTitle,
-        planId: payload.planId || plan.id
+        checkoutSessionId: createCheckoutSessionId(),
+        publicKey: mercadoPagoPublicKey,
+        amount: Number(plan.price),
+        title: plan.mercadopagoTitle,
+        planId: plan.id
       });
 
       setPaymentModalOpen(true);
@@ -500,8 +482,7 @@ export default function App() {
 
         paymentBrickControllerRef.current = await bricksBuilder.create('payment', 'paymentBrick_container', {
           initialization: {
-            amount: Number(paymentCheckout.amount),
-            preferenceId: paymentCheckout.preferenceId
+            amount: Number(paymentCheckout.amount)
           },
           customization: {
             paymentMethods: {
@@ -509,8 +490,7 @@ export default function App() {
               bankTransfer: 'all',
               creditCard: 'all',
               debitCard: 'all',
-              prepaidCard: 'all',
-              mercadoPago: 'all'
+              prepaidCard: 'all'
             }
           },
           callbacks: {
