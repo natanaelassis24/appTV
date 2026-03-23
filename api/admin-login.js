@@ -5,7 +5,13 @@ function sendJson(res, statusCode, payload) {
 }
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Allow', 'GET, POST, OPTIONS');
+    sendJson(res, 204, {});
+    return;
+  }
+
+  if (req.method !== 'POST' && req.method !== 'GET') {
     sendJson(res, 405, { error: 'Metodo nao permitido.' });
     return;
   }
@@ -19,7 +25,7 @@ export default async function handler(req, res) {
       return;
     }
 
-    const incomingPassword = String(req.body?.password || '').trim();
+    const incomingPassword = String(req.body?.password || req.query?.password || '').trim();
     if (!incomingPassword) {
       sendJson(res, 400, { error: 'Informe a senha do painel.' });
       return;
