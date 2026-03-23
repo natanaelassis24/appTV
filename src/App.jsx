@@ -668,12 +668,16 @@ export default function App() {
                         <small>{plan.period}</small>
                       </div>
                       <p>{plan.description}</p>
-                      <a
-                        className="primary-btn plan-btn"
-                        href={`/api/create-checkout?planId=${encodeURIComponent(plan.id)}`}
+                      <form
+                        className="plan-checkout-form"
+                        action="/api/create-checkout"
+                        method="GET"
                       >
-                        Assinar agora
-                      </a>
+                        <input type="hidden" name="planId" value={plan.id} />
+                        <button type="submit" className="primary-btn plan-btn">
+                          Assinar agora
+                        </button>
+                      </form>
                     </article>
                   </li>
                 ))}

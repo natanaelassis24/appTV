@@ -931,6 +931,10 @@ label {
   min-height: 48px;
 }
 
+.plan-checkout-form {
+  margin: 0;
+}
+
 .checkout-error-banner {
   display: grid;
   gap: 6px;
