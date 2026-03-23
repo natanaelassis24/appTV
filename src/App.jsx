@@ -287,18 +287,41 @@ export default function App() {
     setPaymentResult(null);
 
     try {
-      setPaymentCheckout({
-        checkoutSessionId: createCheckoutSessionId(),
-        publicKey: mercadoPagoPublicKey,
-        amount: plan.price,
-        title: plan.mercadopagoTitle,
-        planId: plan.id
+      const response = await fetch('/api/create-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
+        },
+        body: JSON.stringify({
+          planId: plan.id
+        })
       });
+
+      const payload = await readJsonResponse(response, 'Falha ao iniciar o pagamento.');
+
+      if (!response.ok) {
+        throw new Error(payload?.error || `HTTP ${response.status}`);
+      }
+
+      if (!payload?.preferenceId) {
+        throw new Error('Checkout sem preferenceId.');
+      }
+
+      setPaymentCheckout({
+        checkoutSessionId: payload.checkoutSessionId || createCheckoutSessionId(),
+        preferenceId: payload.preferenceId,
+        publicKey: payload.publicKey || mercadoPagoPublicKey,
+        amount: Number(payload.amount ?? plan.price),
+        title: payload.title || plan.mercadopagoTitle,
+        planId: payload.planId || plan.id
+      });
+
       setPaymentModalOpen(true);
-      setPaymentLoading(false);
     } catch (error) {
       setCheckoutError(error?.message || 'Falha ao iniciar o pagamento.');
       setPaymentLoading(false);
+      setPaymentModalOpen(false);
     }
   }
 
@@ -481,7 +504,8 @@ export default function App() {
 
         paymentBrickControllerRef.current = await bricksBuilder.create('payment', 'paymentBrick_container', {
           initialization: {
-            amount: Number(paymentCheckout.amount)
+            amount: Number(paymentCheckout.amount),
+            preferenceId: paymentCheckout.preferenceId
           },
           customization: {
             paymentMethods: {
@@ -510,6 +534,7 @@ export default function App() {
                   },
                   body: JSON.stringify({
                     checkoutSessionId: paymentCheckout.checkoutSessionId,
+                    preferenceId: paymentCheckout.preferenceId,
                     planId: paymentCheckout.planId,
                     formData
                   })

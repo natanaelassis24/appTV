@@ -1,5 +1,5 @@
 import { generateCheckoutSessionId, getBaseUrl } from '../lib/access-ids.js';
-import { getMercadoPagoPublicKey } from '../lib/mercadopago.js';
+import { createMercadoPagoPreference, getMercadoPagoPublicKey } from '../lib/mercadopago.js';
 import { getPlanById } from '../lib/plans.js';
 
 export default async function handler(req, res) {
@@ -19,9 +19,27 @@ export default async function handler(req, res) {
 
     const checkoutSessionId = generateCheckoutSessionId();
     const baseUrl = getBaseUrl(req);
+    const preference = await createMercadoPagoPreference({
+      items: [
+        {
+          id: plan.id,
+          title: plan.mercadopagoTitle,
+          quantity: 1,
+          unit_price: Number(plan.price),
+          currency_id: 'BRL'
+        }
+      ],
+      external_reference: checkoutSessionId,
+      notification_url: `${baseUrl}/api/webhooks/mercadopago`,
+      metadata: {
+        checkoutSessionId,
+        planId: plan.id
+      }
+    });
 
     res.status(200).json({
       checkoutSessionId,
+      preferenceId: preference.id,
       publicKey: getMercadoPagoPublicKey(),
       amount: plan.price,
       title: plan.mercadopagoTitle,
