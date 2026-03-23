@@ -290,7 +290,7 @@ export default function App() {
       setPaymentCheckout({
         checkoutSessionId: createCheckoutSessionId(),
         publicKey: mercadoPagoPublicKey,
-        amount: Number(plan.price),
+        amount: Number(plan.priceAmount ?? plan.price ?? 0),
         title: plan.mercadopagoTitle,
         planId: plan.id
       });
