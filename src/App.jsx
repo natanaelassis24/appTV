@@ -287,12 +287,26 @@ export default function App() {
     setPaymentResult(null);
 
     try {
+      const response = await fetch(`/api/create-checkout?planId=${encodeURIComponent(plan.id)}`, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json'
+        }
+      });
+
+      const payload = await readJsonResponse(response, 'Falha ao iniciar o pagamento.');
+
+      if (!response.ok) {
+        throw new Error(payload?.error || `HTTP ${response.status}`);
+      }
+
       setPaymentCheckout({
-        checkoutSessionId: createCheckoutSessionId(),
-        publicKey: mercadoPagoPublicKey,
-        amount: Number(plan.priceAmount ?? plan.price ?? 0),
-        title: plan.mercadopagoTitle,
-        planId: plan.id
+        checkoutSessionId: payload.checkoutSessionId || createCheckoutSessionId(),
+        preferenceId: payload.preferenceId || null,
+        publicKey: payload.publicKey || mercadoPagoPublicKey,
+        amount: Number(payload.amount ?? plan.priceAmount ?? plan.price ?? 0),
+        title: payload.title || plan.mercadopagoTitle,
+        planId: payload.planId || plan.id
       });
 
       setPaymentModalOpen(true);
@@ -482,7 +496,8 @@ export default function App() {
 
         paymentBrickControllerRef.current = await bricksBuilder.create('payment', 'paymentBrick_container', {
           initialization: {
-            amount: Number(paymentCheckout.amount)
+            amount: Number(paymentCheckout.amount),
+            ...(paymentCheckout.preferenceId ? { preferenceId: paymentCheckout.preferenceId } : {})
           },
           customization: {
             paymentMethods: {
@@ -539,6 +554,8 @@ export default function App() {
             }
           }
         });
+
+        setPaymentLoading(false);
       } catch (error) {
         if (!cancelled) {
           setPaymentLoading(false);
