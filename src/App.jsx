@@ -116,6 +116,58 @@ function buildLogoThumb(channel, index) {
   return <span className="channel-thumb">{channel.logo || itemName.slice(0, 2).toUpperCase()}</span>;
 }
 
+async function readJsonResponse(response, fallbackMessage) {
+  const raw = await response.text();
+
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(raw);
+  } catch (_) {
+    return {
+      error: fallbackMessage || raw
+    };
+  }
+}
+
+function loadMercadoPagoSdk() {
+  if (typeof window === 'undefined') {
+    return Promise.reject(new Error('Mercado Pago indisponivel nesta sessao.'));
+  }
+
+  if (window.MercadoPago) {
+    return Promise.resolve(window.MercadoPago);
+  }
+
+  if (window.__mercadoPagoSdkPromise) {
+    return window.__mercadoPagoSdkPromise;
+  }
+
+  window.__mercadoPagoSdkPromise = new Promise((resolve, reject) => {
+    const existingScript = document.querySelector('script[data-mercadopago-sdk="true"]');
+
+    if (existingScript) {
+      existingScript.addEventListener('load', () => resolve(window.MercadoPago));
+      existingScript.addEventListener('error', () => {
+        reject(new Error('Nao foi possivel carregar o checkout do Mercado Pago.'));
+      });
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://sdk.mercadopago.com/js/v2';
+    script.async = true;
+    script.dataset.mercadopagoSdk = 'true';
+    script.onload = () => resolve(window.MercadoPago);
+    script.onerror = () => reject(new Error('Nao foi possivel carregar o checkout do Mercado Pago.'));
+    document.head.appendChild(script);
+  });
+
+  return window.__mercadoPagoSdkPromise;
+}
+
 export default function App() {
   const telegramUrl = PUBLIC_RUNTIME_CONFIG.telegramUrl || '#planos';
   const apkDownloadUrl = PUBLIC_RUNTIME_CONFIG.apkDownloadUrl;
@@ -161,10 +213,17 @@ export default function App() {
   const [embedUrl, setEmbedUrl] = useState('');
   const [playbackNonce, setPlaybackNonce] = useState(0);
   const [checkoutError, setCheckoutError] = useState('');
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentCheckout, setPaymentCheckout] = useState(null);
+  const [paymentError, setPaymentError] = useState('');
+  const [paymentResult, setPaymentResult] = useState(null);
 
   const playerRef = useRef(null);
   const guideStageRef = useRef(null);
   const channelListRef = useRef(null);
+  const paymentBrickRef = useRef(null);
+  const paymentBrickControllerRef = useRef(null);
   const hlsRef = useRef(null);
   const recoveryRef = useRef({ network: 0, media: 0, fallbackTried: false });
 
@@ -194,6 +253,55 @@ export default function App() {
         : 0;
 
     setDrawerChannelUrl(filteredChannels[nextIndex].url);
+  }
+
+  function closePaymentModal() {
+    try {
+      paymentBrickControllerRef.current?.unmount?.();
+    } catch (_) {
+      // no-op
+    }
+
+    paymentBrickControllerRef.current = null;
+    setPaymentModalOpen(false);
+    setPaymentLoading(false);
+    setPaymentCheckout(null);
+    setPaymentError('');
+    setPaymentResult(null);
+  }
+
+  async function startPaymentFlow(planId) {
+    setCheckoutError('');
+    setPaymentLoading(true);
+    setPaymentError('');
+    setPaymentResult(null);
+
+    try {
+      const response = await fetch('/api/create-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
+        },
+        body: JSON.stringify({ planId })
+      });
+
+      const payload = await readJsonResponse(response, 'Falha ao iniciar o checkout.');
+
+      if (!response.ok) {
+        throw new Error(payload?.error || `HTTP ${response.status}`);
+      }
+
+      if (!payload?.publicKey || !payload?.checkoutSessionId) {
+        throw new Error('A API nao retornou os dados do pagamento.');
+      }
+
+      setPaymentCheckout(payload);
+      setPaymentModalOpen(true);
+    } catch (error) {
+      setCheckoutError(error?.message || 'Falha ao iniciar o pagamento.');
+      setPaymentLoading(false);
+    }
   }
 
   async function lookupAccessById(accessId, { persist = true } = {}) {
@@ -317,6 +425,143 @@ export default function App() {
       activeItem.scrollIntoView({ block: 'center', behavior: 'smooth' });
     }
   }, [drawerChannelUrl, guideDrawerOpen]);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return undefined;
+    }
+
+    if (!paymentModalOpen) {
+      document.body.style.overflow = '';
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [paymentModalOpen]);
+
+  useEffect(() => {
+    if (!paymentModalOpen || !paymentCheckout || !paymentBrickRef.current) {
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    const mountBrick = async () => {
+      try {
+        await loadMercadoPagoSdk();
+
+        if (cancelled) {
+          return;
+        }
+
+        if (!window.MercadoPago) {
+          throw new Error('Checkout do Mercado Pago indisponivel.');
+        }
+
+        if (paymentBrickControllerRef.current?.unmount) {
+          paymentBrickControllerRef.current.unmount();
+        }
+
+        if (paymentBrickRef.current) {
+          paymentBrickRef.current.innerHTML = '';
+        }
+
+        const mp = new window.MercadoPago(paymentCheckout.publicKey, {
+          locale: 'pt-BR'
+        });
+
+        const bricksBuilder = mp.bricks();
+
+        paymentBrickControllerRef.current = await bricksBuilder.create('payment', 'paymentBrick_container', {
+          initialization: {
+            amount: Number(paymentCheckout.amount)
+          },
+          customization: {
+            paymentMethods: {
+              ticket: 'all',
+              bankTransfer: 'all',
+              creditCard: 'all',
+              debitCard: 'all',
+              prepaidCard: 'all',
+              mercadoPago: 'all'
+            }
+          },
+          callbacks: {
+            onReady: () => {
+              setPaymentLoading(false);
+            },
+            onSubmit: ({ formData }) => {
+              return new Promise((resolve, reject) => {
+                setPaymentLoading(true);
+                setPaymentError('');
+
+                fetch('/api/process-payment', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json'
+                  },
+                  body: JSON.stringify({
+                    checkoutSessionId: paymentCheckout.checkoutSessionId,
+                    planId: paymentCheckout.planId,
+                    formData
+                  })
+                })
+                  .then(async response => {
+                    const payload = await readJsonResponse(response, 'Falha ao processar o pagamento.');
+
+                    if (!response.ok) {
+                      throw new Error(payload?.error || `HTTP ${response.status}`);
+                    }
+
+                    setPaymentResult(payload);
+                    setPaymentLoading(false);
+                    resolve();
+                  })
+                  .catch(error => {
+                    setPaymentLoading(false);
+                    setPaymentError(error?.message || 'Falha ao processar o pagamento.');
+                    reject(error);
+                  });
+              });
+            },
+            onError: error => {
+              setPaymentLoading(false);
+              setPaymentError(error?.message || 'Nao foi possivel carregar a tela de pagamento.');
+            }
+          }
+        });
+      } catch (error) {
+        if (!cancelled) {
+          setPaymentLoading(false);
+          setPaymentError(error?.message || 'Nao foi possivel abrir o checkout.');
+        }
+      }
+    };
+
+    mountBrick();
+
+    return () => {
+      cancelled = true;
+
+      try {
+        paymentBrickControllerRef.current?.unmount?.();
+      } catch (_) {
+        // no-op
+      }
+
+      paymentBrickControllerRef.current = null;
+
+      if (paymentBrickRef.current) {
+        paymentBrickRef.current.innerHTML = '';
+      }
+    };
+  }, [paymentCheckout, paymentModalOpen]);
 
   useEffect(() => {
     if (!guideDrawerOpen || !guideStageRef.current || !channelListRef.current) {
@@ -571,13 +816,8 @@ export default function App() {
                 Este site apresenta o aplicativo, os canais disponiveis e os planos de acesso. A reproducao fica liberada somente no app Android TV, com interface adaptada para controle remoto e uso em tela cheia.
               </p>
               <div className="promo-cta-row">
-                <a
-                  className="primary-btn"
-                  href={telegramUrl}
-                  target={telegramUrl.startsWith('http') ? '_blank' : undefined}
-                  rel={telegramUrl.startsWith('http') ? 'noreferrer' : undefined}
-                >
-                  Assinar agora
+                <a className="primary-btn" href="#planos">
+                  Ver planos
                 </a>
                 <a className="secondary-btn" href={apkDownloadUrl} download>
                   Baixar app
@@ -668,16 +908,14 @@ export default function App() {
                         <small>{plan.period}</small>
                       </div>
                       <p>{plan.description}</p>
-                      <form
-                        className="plan-checkout-form"
-                        action="/api/create-checkout"
-                        method="GET"
+                      <button
+                        type="button"
+                        className="primary-btn plan-btn"
+                        onClick={() => startPaymentFlow(plan.id)}
+                        disabled={paymentLoading}
                       >
-                        <input type="hidden" name="planId" value={plan.id} />
-                        <button type="submit" className="primary-btn plan-btn">
-                          Assinar agora
-                        </button>
-                      </form>
+                        {paymentLoading ? 'Abrindo...' : 'Assinar agora'}
+                      </button>
                     </article>
                   </li>
                 ))}
@@ -979,6 +1217,86 @@ export default function App() {
           </div>
         </header>
       )}
+
+      {paymentModalOpen ? (
+        <div className="payment-modal-backdrop" role="presentation" onClick={closePaymentModal}>
+          <section
+            className="payment-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="payment-modal-title"
+            onClick={event => event.stopPropagation()}
+          >
+            <div className="payment-modal-header">
+              <div>
+                <span className="section-kicker">Pagamento seguro</span>
+                <h2 id="payment-modal-title">
+                  {paymentCheckout?.title || 'Escolha como pagar'}
+                </h2>
+                <p>
+                  Selecione Pix ou cartão dentro desta tela. O acesso só será liberado depois da confirmação do pagamento.
+                </p>
+              </div>
+
+              <button type="button" className="payment-modal-close" onClick={closePaymentModal}>
+                Fechar
+              </button>
+            </div>
+
+            <div className="payment-modal-grid">
+              <div className="payment-brick-shell">
+                <div id="paymentBrick_container" ref={paymentBrickRef} />
+                {paymentLoading ? <div className="payment-loading">Carregando checkout...</div> : null}
+              </div>
+
+              <aside className="payment-summary">
+                <div className="payment-summary-card">
+                  <span className="payment-summary-label">Plano escolhido</span>
+                  <strong>{paymentCheckout?.title || 'Plano'}</strong>
+                  <p>
+                    Valor total: <strong>{paymentCheckout?.amount ? `R$ ${paymentCheckout.amount}` : '-'}</strong>
+                  </p>
+                  <p>
+                    Depois da confirmacao, o webhook cria o ID de acesso automaticamente no Firebase.
+                  </p>
+                </div>
+
+                {paymentError ? (
+                  <div className="payment-summary-card payment-summary-error">
+                    <strong>Falha no checkout</strong>
+                    <p>{paymentError}</p>
+                  </div>
+                ) : null}
+
+                {paymentResult ? (
+                  <div className="payment-summary-card payment-summary-success">
+                    <strong>Pagamento iniciado</strong>
+                    <p>Status: {paymentResult.status || 'aguardando'}</p>
+                    {paymentResult.qrCodeBase64 ? (
+                      <div className="payment-qr-block">
+                        <img
+                          src={`data:image/png;base64,${paymentResult.qrCodeBase64}`}
+                          alt="QR Code do Pix"
+                        />
+                        <div>
+                          <span>Use o QR Code no app do banco.</span>
+                          {paymentResult.qrCode ? <code>{paymentResult.qrCode}</code> : null}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {paymentResult.ticketUrl ? (
+                      <a className="secondary-btn payment-ticket-btn" href={paymentResult.ticketUrl} target="_blank" rel="noreferrer">
+                        Abrir boleto/checkout
+                      </a>
+                    ) : null}
+                  </div>
+                ) : null}
+              </aside>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </div>
   );
 }
