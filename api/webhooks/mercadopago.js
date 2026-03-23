@@ -1,5 +1,5 @@
 import { getFirestore } from '../../lib/firebase-admin.js';
-import { addMonthsToDate } from '../../lib/access-ids.js';
+import { addMonthsToDate, generateAccessId } from '../../lib/access-ids.js';
 import { getMercadoPagoPayment } from '../../lib/mercadopago.js';
 import { getPlanById } from '../../lib/plans.js';
 
@@ -70,43 +70,57 @@ export default async function handler(req, res) {
     }
 
     const payment = await getMercadoPagoPayment(paymentId);
-    const accessId =
-      payment.external_reference || payment.metadata?.accessId || null;
+    const checkoutSessionId =
+      payment.external_reference ||
+      payment.metadata?.checkoutSessionId ||
+      payment.metadata?.sessionId ||
+      null;
 
-    if (!accessId) {
+    if (!checkoutSessionId) {
       res.status(200).json({ ok: true, ignored: true });
       return;
     }
 
     const firestore = getFirestore();
-    const accessRef = firestore.collection('access_registry').doc(accessId);
-    const accessSnapshot = await accessRef.get();
+    const plan = getPlanById(payment.metadata?.planId || '');
 
-    if (!accessSnapshot.exists) {
-      res.status(404).json({ error: 'ID de acesso nao encontrado.' });
+    if (!plan) {
+      res.status(400).json({ error: 'Plano nao encontrado para este pagamento.' });
       return;
     }
 
-    const currentAccess = accessSnapshot.data();
-    const plan =
-      getPlanById(currentAccess.planId) ||
-      getPlanById(payment.metadata?.planId || '');
     const mappedStatus = mapPaymentStatus(payment.status);
-    const updatePayload = {
-      status: mappedStatus.status,
-      paymentStatus: payment.status,
-      paymentLabel: mappedStatus.paymentLabel,
-      mpPaymentId: String(payment.id),
-      mpStatusDetail: payment.status_detail || null,
-      updatedAt: new Date().toISOString()
-    };
+    let accessId = null;
+    let expiresAt = null;
 
     if (payment.status === 'approved' && plan) {
       const baseDate = payment.date_approved || new Date().toISOString();
-      updatePayload.expiresAt = addMonthsToDate(baseDate, plan.durationMonths);
+      expiresAt = addMonthsToDate(baseDate, plan.durationMonths);
+      accessId = generateAccessId();
     }
 
-    await accessRef.set(updatePayload, { merge: true });
+    if (accessId) {
+      const accessRef = firestore.collection('access_registry').doc(accessId);
+      const accessUpdatePayload = {
+        accessId,
+        checkoutSessionId,
+        planId: plan.id,
+        planName: plan.name,
+        status: mappedStatus.status,
+        paymentStatus: payment.status,
+        paymentLabel: mappedStatus.paymentLabel,
+        mpPaymentId: String(payment.id),
+        mpStatusDetail: payment.status_detail || null,
+        updatedAt: new Date().toISOString(),
+        createdAt: new Date().toISOString()
+      };
+
+      if (expiresAt) {
+        accessUpdatePayload.expiresAt = expiresAt;
+      }
+
+      await accessRef.set(accessUpdatePayload, { merge: true });
+    }
 
     res.status(200).json({ ok: true });
   } catch (error) {

@@ -573,14 +573,28 @@ export default function App() {
         body: JSON.stringify({ planId })
       });
 
-      const payload = await response.json();
+      const rawResponse = await response.text();
+      let payload = null;
+
+      if (rawResponse) {
+        try {
+          payload = JSON.parse(rawResponse);
+        } catch (_) {
+          payload = null;
+        }
+      }
 
       if (!response.ok) {
-        throw new Error(payload?.error || 'Nao foi possivel iniciar o checkout.');
+        throw new Error(
+          payload?.error ||
+            `Nao foi possivel iniciar o checkout. HTTP ${response.status}.`
+        );
       }
 
       if (!payload?.checkoutUrl) {
-        throw new Error('Checkout nao retornou uma URL valida.');
+        throw new Error(
+          'A API respondeu sem checkoutUrl. Verifique os logs da funcao /api/create-checkout na Vercel.'
+        );
       }
 
       window.location.href = payload.checkoutUrl;

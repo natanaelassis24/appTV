@@ -52,9 +52,7 @@ Colecao esperada no Firestore:
 
 - `access_registry`
 
-Cada documento deve usar o proprio `accessId` como ID do documento.
-
-Exemplo de documento:
+Exemplo de `access_registry`:
 
 ```json
 {
@@ -74,8 +72,8 @@ Exemplo de documento:
 Fluxo implementado:
 
 1. O usuario escolhe um plano no site.
-2. A API `api/create-checkout.js` gera um `accessId`.
-3. O checkout do Mercado Pago e criado com `external_reference = accessId`.
-4. O documento entra no Firestore como `pending`.
+2. A API `api/create-checkout.js` gera uma `checkoutSessionId`.
+3. O checkout do Mercado Pago e criado com `external_reference = checkoutSessionId`.
+4. Nenhum ID de acesso e gravado no Firestore nesse momento.
 5. O webhook `api/webhooks/mercadopago.js` recebe a confirmacao do pagamento.
-6. Se aprovado, o status muda para `active` e a validade e calculada pelo plano.
+6. Se aprovado, o sistema gera o `accessId`, grava em `access_registry` e calcula a validade pelo plano.

@@ -1,5 +1,4 @@
-import { getFirestore } from '../lib/firebase-admin.js';
-import { generateAccessId, getBaseUrl } from '../lib/access-ids.js';
+import { generateCheckoutSessionId, getBaseUrl } from '../lib/access-ids.js';
 import { createMercadoPagoPreference } from '../lib/mercadopago.js';
 import { getPlanById } from '../lib/plans.js';
 
@@ -18,8 +17,7 @@ export default async function handler(req, res) {
       return;
     }
 
-    const firestore = getFirestore();
-    const accessId = generateAccessId();
+    const checkoutSessionId = generateCheckoutSessionId();
     const baseUrl = getBaseUrl(req);
 
     const preference = await createMercadoPagoPreference({
@@ -32,35 +30,22 @@ export default async function handler(req, res) {
           unit_price: plan.price
         }
       ],
-      external_reference: accessId,
+      external_reference: checkoutSessionId,
       metadata: {
-        accessId,
+        checkoutSessionId,
         planId: plan.id
       },
       back_urls: {
-        success: `${baseUrl}/?checkout=success&accessId=${accessId}`,
-        pending: `${baseUrl}/?checkout=pending&accessId=${accessId}`,
-        failure: `${baseUrl}/?checkout=failure&accessId=${accessId}`
+        success: `${baseUrl}/?checkout=success`,
+        pending: `${baseUrl}/?checkout=pending`,
+        failure: `${baseUrl}/?checkout=failure`
       },
       auto_return: 'approved',
       notification_url: `${baseUrl}/api/webhooks/mercadopago`
     });
 
-    await firestore.collection('access_registry').doc(accessId).set({
-      accessId,
-      planId: plan.id,
-      planName: plan.name,
-      status: 'pending',
-      paymentStatus: 'pending',
-      paymentLabel: 'Aguardando confirmacao',
-      expiresAt: null,
-      createdAt: new Date().toISOString(),
-      mpPreferenceId: preference.id,
-      mpInitPoint: preference.init_point || null
-    });
-
     res.status(200).json({
-      accessId,
+      checkoutSessionId,
       checkoutUrl: preference.init_point,
       sandboxCheckoutUrl: preference.sandbox_init_point || null
     });
