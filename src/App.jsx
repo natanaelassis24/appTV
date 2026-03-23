@@ -246,7 +246,10 @@ export default function App() {
         payload?.sandboxInitPoint ||
         payload?.init_point ||
         payload?.initPoint ||
-        payload?.sandbox_init_point;
+        payload?.sandbox_init_point ||
+        (payload?.preferenceId
+          ? `https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=${encodeURIComponent(payload.preferenceId)}`
+          : '');
 
       if (!checkoutUrl) {
         throw new Error('Checkout sem link de pagamento.');

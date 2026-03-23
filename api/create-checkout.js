@@ -2,6 +2,15 @@ import { generateCheckoutSessionId, getBaseUrl } from '../lib/access-ids.js';
 import { createMercadoPagoPreference, getMercadoPagoPublicKey } from '../lib/mercadopago.js';
 import { getPlanById } from '../lib/plans.js';
 
+function buildCheckoutUrl(preferenceId) {
+  if (!preferenceId) {
+    return null;
+  }
+
+  const host = process.env.MERCADO_PAGO_CHECKOUT_HOST || 'https://www.mercadopago.com.br';
+  return `${host}/checkout/v1/redirect?pref_id=${encodeURIComponent(preferenceId)}`;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST' && req.method !== 'GET') {
     res.status(405).json({ error: 'Metodo nao permitido.' });
@@ -40,7 +49,10 @@ export default async function handler(req, res) {
     res.status(200).json({
       checkoutSessionId,
       preferenceId: preference.id,
-      checkoutUrl: preference.sandbox_init_point || preference.init_point || null,
+      checkoutUrl:
+        preference.sandbox_init_point ||
+        preference.init_point ||
+        buildCheckoutUrl(preference.id),
       publicKey: getMercadoPagoPublicKey(),
       amount: plan.price,
       title: plan.mercadopagoTitle,
