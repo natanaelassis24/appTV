@@ -184,10 +184,6 @@ export default function App() {
   const [accessLookupState, setAccessLookupState] = useState('idle');
   const [accessLookupResult, setAccessLookupResult] = useState(null);
   const [accessLookupError, setAccessLookupError] = useState('');
-  const [adminPasswordInput, setAdminPasswordInput] = useState('');
-  const [adminAccessState, setAdminAccessState] = useState('idle');
-  const [adminAccessError, setAdminAccessError] = useState('');
-  const [adminLoginOpen, setAdminLoginOpen] = useState(false);
   const [accessBootState, setAccessBootState] = useState(isAndroidTv ? 'booting' : 'idle');
   const [authorizedAccess, setAuthorizedAccess] = useState(null);
   const isPlaybackEnabled = isAndroidTv && authorizedAccess?.status === 'active';
@@ -597,47 +593,6 @@ export default function App() {
     }
   }
 
-  async function handleAdminAccess(event) {
-    event.preventDefault();
-
-    const password = adminPasswordInput.trim();
-    if (!password) {
-      setAdminAccessState('error');
-      setAdminAccessError('Digite a senha do painel.');
-      return;
-    }
-
-    setAdminAccessState('loading');
-    setAdminAccessError('');
-
-    try {
-      const response = await fetch(`/api/admin-login?password=${encodeURIComponent(password)}`, {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json'
-        }
-      });
-
-      const payload = await readJsonResponse(response, 'Falha ao autenticar.');
-
-      if (!response.ok) {
-        throw new Error(payload?.error || `HTTP ${response.status}`);
-      }
-
-      if (payload?.token) {
-        window.localStorage.setItem('app-tv-admin-session-v1', payload.token);
-        setAdminLoginOpen(false);
-        window.location.href = '/admin';
-        return;
-      }
-
-      throw new Error('Falha ao abrir o painel.');
-    } catch (error) {
-      setAdminAccessState('error');
-      setAdminAccessError(error.message || 'Falha ao autenticar no painel.');
-    }
-  }
-
   return (
     <div className={`app-shell${isAndroidTv ? ' tv-mode' : ''}${!isPlaybackEnabled ? ' promo-mode' : ''}`}>
       {!isPlaybackEnabled ? (
@@ -646,13 +601,12 @@ export default function App() {
           <header className="promo-landing">
             <div className="promo-landing-topbar">
               <span className="promo-brand">App TV Android</span>
-              <button
-                type="button"
+              <a
                 className="secondary-btn promo-admin-trigger"
-                onClick={() => setAdminLoginOpen(true)}
+                href="/admin"
               >
                 Admin
-              </button>
+              </a>
             </div>
             <div className="promo-copy promo-copy-public">
               <span className="section-kicker">App TV Android</span>
@@ -840,56 +794,6 @@ export default function App() {
               </footer>
             </section>
 
-            {adminLoginOpen ? (
-              <div className="admin-login-modal-backdrop" role="presentation" onClick={() => setAdminLoginOpen(false)}>
-                <section
-                  className="admin-login-modal"
-                  role="dialog"
-                  aria-modal="true"
-                  aria-label="Acesso administrativo"
-                  onClick={event => event.stopPropagation()}
-                >
-                  <div className="admin-login-copy">
-                    <span className="section-kicker">Acesso interno</span>
-                    <h2>Entrar no admin</h2>
-                    <p>Digite a senha do painel para abrir a tela administrativa.</p>
-                  </div>
-
-                  <form className="admin-login-form" onSubmit={handleAdminAccess}>
-                    <label className="admin-field">
-                      <span>Senha do painel</span>
-                      <input
-                        type="password"
-                        value={adminPasswordInput}
-                        onChange={event => setAdminPasswordInput(event.target.value)}
-                        placeholder="Digite a senha administrativa"
-                        autoComplete="current-password"
-                        autoFocus
-                      />
-                    </label>
-
-                    {adminAccessError ? <div className="admin-banner error">{adminAccessError}</div> : null}
-
-                    <div className="promo-admin-actions">
-                      <button
-                        type="submit"
-                        className="primary-btn"
-                        disabled={adminAccessState === 'loading'}
-                      >
-                        {adminAccessState === 'loading' ? 'Entrando...' : 'Entrar no admin'}
-                      </button>
-                      <button
-                        type="button"
-                        className="secondary-btn"
-                        onClick={() => setAdminLoginOpen(false)}
-                      >
-                        Fechar
-                      </button>
-                    </div>
-                  </form>
-                </section>
-              </div>
-            ) : null}
           </main>
         </>
         ) : (
