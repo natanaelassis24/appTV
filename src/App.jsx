@@ -171,6 +171,7 @@ function loadMercadoPagoSdk() {
 export default function App() {
   const telegramUrl = PUBLIC_RUNTIME_CONFIG.telegramUrl || '#planos';
   const apkDownloadUrl = PUBLIC_RUNTIME_CONFIG.apkDownloadUrl;
+  const mercadoPagoPublicKey = PUBLIC_RUNTIME_CONFIG.mercadoPagoPublicKey;
   const isAndroidTv = useMemo(() => {
     const search =
       typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
@@ -255,6 +256,15 @@ export default function App() {
     setDrawerChannelUrl(filteredChannels[nextIndex].url);
   }
 
+  function createCheckoutSessionId() {
+    if (typeof window !== 'undefined' && window.crypto?.randomUUID) {
+      return `CHK-${window.crypto.randomUUID().replaceAll('-', '').slice(0, 12).toUpperCase()}`;
+    }
+
+    const randomPart = Math.random().toString(36).slice(2, 10).toUpperCase();
+    return `CHK-${Date.now().toString(36).toUpperCase()}${randomPart}`;
+  }
+
   function closePaymentModal() {
     try {
       paymentBrickControllerRef.current?.unmount?.();
@@ -270,20 +280,37 @@ export default function App() {
     setPaymentResult(null);
   }
 
-  async function startPaymentFlow(planId) {
+  async function startPaymentFlow(plan) {
     setCheckoutError('');
     setPaymentLoading(true);
     setPaymentError('');
     setPaymentResult(null);
 
     try {
+      const localCheckout = mercadoPagoPublicKey
+        ? {
+            checkoutSessionId: createCheckoutSessionId(),
+            publicKey: mercadoPagoPublicKey,
+            amount: plan.price,
+            title: plan.mercadopagoTitle,
+            planId: plan.id
+          }
+        : null;
+
+      if (localCheckout) {
+        setPaymentCheckout(localCheckout);
+        setPaymentModalOpen(true);
+        setPaymentLoading(false);
+        return;
+      }
+
       const response = await fetch('/api/create-checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json'
         },
-        body: JSON.stringify({ planId })
+        body: JSON.stringify({ planId: plan.id })
       });
 
       const payload = await readJsonResponse(response, 'Falha ao iniciar o checkout.');
@@ -461,6 +488,10 @@ export default function App() {
 
         if (!window.MercadoPago) {
           throw new Error('Checkout do Mercado Pago indisponivel.');
+        }
+
+        if (!paymentCheckout.publicKey) {
+          throw new Error('Chave publica do Mercado Pago nao definida.');
         }
 
         if (paymentBrickControllerRef.current?.unmount) {
@@ -911,7 +942,7 @@ export default function App() {
                       <button
                         type="button"
                         className="primary-btn plan-btn"
-                        onClick={() => startPaymentFlow(plan.id)}
+                        onClick={() => startPaymentFlow(plan)}
                         disabled={paymentLoading}
                       >
                         {paymentLoading ? 'Abrindo...' : 'Assinar agora'}
