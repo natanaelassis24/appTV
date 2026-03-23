@@ -40,6 +40,7 @@ export default async function handler(req, res) {
     res.status(200).json({
       checkoutSessionId,
       preferenceId: preference.id,
+      checkoutUrl: preference.sandbox_init_point || preference.init_point || null,
       publicKey: getMercadoPagoPublicKey(),
       amount: plan.price,
       title: plan.mercadopagoTitle,
