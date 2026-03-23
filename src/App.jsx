@@ -1,23 +1,65 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Hls from 'hls.js';
 import { CHANNELS } from './channels';
-import { MOVIES } from './movies';
-import { SERIES } from './series';
+import { PUBLIC_PLANS } from '../lib/plans.js';
 
-function formatClock() {
-  return new Date().toLocaleTimeString('pt-BR', {
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+const TELEGRAM_URL = 'https://t.me/natalinoprr';
+const APK_DOWNLOAD_URL = '/app-tv-android.apk';
+const ACCESS_CACHE_KEY = 'app-tv-access-cache-v1';
+const ACTIVE_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
+const INACTIVE_CACHE_TTL_MS = 15 * 60 * 1000;
+const ACCESS_STATUS_LABELS = {
+  active: 'Acesso ativo',
+  pending: 'Pagamento pendente',
+  blocked: 'Acesso bloqueado'
+};
+
+function getAccessCacheTtl(status) {
+  return status === 'active' ? ACTIVE_CACHE_TTL_MS : INACTIVE_CACHE_TTL_MS;
 }
 
-function formatFutureClock(minutesAhead = 90) {
-  const date = new Date();
-  date.setMinutes(date.getMinutes() + minutesAhead);
-  return date.toLocaleTimeString('pt-BR', {
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+function readCachedAccess() {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(ACCESS_CACHE_KEY);
+    if (!raw) {
+      return null;
+    }
+
+    const parsed = JSON.parse(raw);
+    if (!parsed?.accessId || !parsed?.status || !parsed?.checkedAt) {
+      return null;
+    }
+
+    return parsed;
+  } catch (_) {
+    return null;
+  }
+}
+
+function writeCachedAccess(payload) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.localStorage.setItem(
+    ACCESS_CACHE_KEY,
+    JSON.stringify({
+      ...payload,
+      checkedAt: Date.now()
+    })
+  );
+}
+
+function clearCachedAccess() {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.localStorage.removeItem(ACCESS_CACHE_KEY);
 }
 
 function buildEmbedUrl(channel) {
@@ -61,30 +103,18 @@ function isDirectMediaSource(channel) {
   return /\.mp4($|\?)/i.test(url) || /\.mp3($|\?)/i.test(url);
 }
 
-function getItemName(item, fallback = 'Canal sem nome') {
-  return item?.name || item?.title || fallback;
-}
-
 function buildLogoThumb(channel, index) {
-  const itemName = getItemName(channel, `Canal ${index + 1}`);
+  const itemName = channel?.name || `Canal ${index + 1}`;
 
   if (channel.logoImage) {
     return (
       <span className="channel-thumb">
-        <img
-          className="channel-thumb-image"
-          src={channel.logoImage}
-          alt={`Logo ${itemName}`}
-        />
+        <img className="channel-thumb-image" src={channel.logoImage} alt={`Logo ${itemName}`} />
       </span>
     );
   }
 
-  return (
-    <span className="channel-thumb">
-      {channel.logo || itemName.slice(0, 2).toUpperCase()}
-    </span>
-  );
+  return <span className="channel-thumb">{channel.logo || itemName.slice(0, 2).toUpperCase()}</span>;
 }
 
 export default function App() {
@@ -112,52 +142,31 @@ export default function App() {
     );
   }, []);
 
-  const [activeShelf, setActiveShelf] = useState('channels');
+  const [accessIdInput, setAccessIdInput] = useState('');
+  const [accessLookupState, setAccessLookupState] = useState('idle');
+  const [accessLookupResult, setAccessLookupResult] = useState(null);
+  const [accessLookupError, setAccessLookupError] = useState('');
+  const [accessBootState, setAccessBootState] = useState(isAndroidTv ? 'booting' : 'idle');
+  const [authorizedAccess, setAuthorizedAccess] = useState(null);
+  const isPlaybackEnabled = isAndroidTv && authorizedAccess?.status === 'active';
+  const filteredChannels = useMemo(() => CHANNELS, []);
+
   const [guideDrawerOpen, setGuideDrawerOpen] = useState(false);
   const [selectedChannelUrl, setSelectedChannelUrl] = useState(CHANNELS[0]?.url || '');
   const [drawerChannelUrl, setDrawerChannelUrl] = useState(CHANNELS[0]?.url || '');
   const [drawerHandleTop, setDrawerHandleTop] = useState(null);
-  const [selectedMovieUrl, setSelectedMovieUrl] = useState(MOVIES[0]?.url || '');
-  const [selectedSeriesId, setSelectedSeriesId] = useState('');
-  const [selectedSeasonNumber, setSelectedSeasonNumber] = useState(1);
-  const [selectedEpisodeId, setSelectedEpisodeId] = useState('');
   const [status, setStatus] = useState('aguardando');
   const [statusError, setStatusError] = useState(false);
-  const [nowTime, setNowTime] = useState(formatClock());
   const [embedUrl, setEmbedUrl] = useState('');
   const [playbackNonce, setPlaybackNonce] = useState(0);
+  const [checkoutPlanId, setCheckoutPlanId] = useState('');
+  const [checkoutError, setCheckoutError] = useState('');
 
   const playerRef = useRef(null);
   const guideStageRef = useRef(null);
   const channelListRef = useRef(null);
   const hlsRef = useRef(null);
   const recoveryRef = useRef({ network: 0, media: 0, fallbackTried: false });
-
-  const filteredChannels = useMemo(() => CHANNELS, []);
-
-  const movieChannels = useMemo(() => {
-    return MOVIES;
-  }, []);
-
-  const selectedSeries = useMemo(() => {
-    return SERIES.find(series => series.id === selectedSeriesId) || null;
-  }, [selectedSeriesId]);
-
-  const selectedSeason = useMemo(() => {
-    return (
-      selectedSeries?.seasons?.find(season => season.season === selectedSeasonNumber) ||
-      selectedSeries?.seasons?.[0] ||
-      null
-    );
-  }, [selectedSeasonNumber, selectedSeries]);
-
-  const selectedEpisode = useMemo(() => {
-    if (!selectedEpisodeId) {
-      return null;
-    }
-
-    return selectedSeason?.episodes?.find(episode => episode.id === selectedEpisodeId) || null;
-  }, [selectedEpisodeId, selectedSeason]);
 
   const selectedChannel = useMemo(() => {
     return (
@@ -167,35 +176,13 @@ export default function App() {
     );
   }, [filteredChannels, selectedChannelUrl]);
 
-  const selectedMovie = useMemo(() => {
-    return movieChannels.find(movie => movie.url === selectedMovieUrl) || movieChannels[0] || null;
-  }, [movieChannels, selectedMovieUrl]);
-
   const selectedIndex = useMemo(() => {
     return filteredChannels.findIndex(channel => channel.url === selectedChannel?.url);
   }, [filteredChannels, selectedChannel]);
 
-  const selectedMovieIndex = useMemo(() => {
-    return movieChannels.findIndex(movie => movie.url === selectedMovie?.url);
-  }, [movieChannels, selectedMovie]);
-
-  const selectedSeriesIndex = useMemo(() => {
-    return SERIES.findIndex(series => series.id === selectedSeries?.id);
-  }, [selectedSeries]);
-
-  const selectedMedia =
-    activeShelf === 'series' ? selectedEpisode : activeShelf === 'movies' ? selectedMovie : selectedChannel;
-
-  function moveSelectedChannel(delta) {
-    if (!filteredChannels.length) return;
-
-    const nextIndex =
-      selectedIndex >= 0
-        ? (selectedIndex + delta + filteredChannels.length) % filteredChannels.length
-        : 0;
-
-    setSelectedChannelUrl(filteredChannels[nextIndex].url);
-  }
+  const publicChannelLoop = useMemo(() => {
+    return [...filteredChannels, ...filteredChannels];
+  }, [filteredChannels]);
 
   function moveDrawerChannel(delta) {
     if (!filteredChannels.length) return;
@@ -209,108 +196,116 @@ export default function App() {
     setDrawerChannelUrl(filteredChannels[nextIndex].url);
   }
 
-  const externalUrl = useMemo(() => {
-    return selectedMedia?.externalUrl || selectedMedia?.url || '';
-  }, [selectedMedia]);
+  async function lookupAccessById(accessId, { persist = true } = {}) {
+    const normalizedId = String(accessId || '')
+      .trim()
+      .toUpperCase();
 
-  const guideEndTime = useMemo(() => formatFutureClock(90), [nowTime]);
+    if (!normalizedId) {
+      throw new Error('Informe um ID de acesso valido.');
+    }
 
-  const heroStyle =
-    activeShelf === 'series' && selectedSeries?.backdropImage
-      ? {
-          backgroundImage: `linear-gradient(90deg, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.66) 48%, rgba(0, 0, 0, 0.38) 100%), url("${selectedSeries.backdropImage}")`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center'
-        }
-      : activeShelf === 'movies' && (selectedMedia?.posterImage || selectedMedia?.logoImage)
-        ? {
-            backgroundImage: `linear-gradient(90deg, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.68) 48%, rgba(0, 0, 0, 0.48) 100%), url("${selectedMedia?.posterImage || selectedMedia?.logoImage}")`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-          }
-      : undefined;
+    const response = await fetch(`/api/access-status?id=${encodeURIComponent(normalizedId)}`, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json'
+      }
+    });
+
+    const payload = await response.json();
+
+    if (!response.ok) {
+      throw new Error(payload?.error || 'Nao foi possivel consultar o ID.');
+    }
+
+    if (persist) {
+      writeCachedAccess(payload);
+    }
+
+    setAccessLookupResult(payload);
+    setAccessLookupError('');
+    setAuthorizedAccess(payload.status === 'active' ? payload : null);
+    return payload;
+  }
 
   useEffect(() => {
     if (!filteredChannels.length) {
       return;
     }
 
-    const hasSelectedChannel = filteredChannels.some(channel => channel.url === selectedChannelUrl);
-    if (!hasSelectedChannel) {
+    if (!filteredChannels.some(channel => channel.url === selectedChannelUrl)) {
       setSelectedChannelUrl(filteredChannels[0].url);
     }
-  }, [filteredChannels, selectedChannelUrl]);
 
-  useEffect(() => {
-    if (!filteredChannels.length) {
-      return;
-    }
-
-    const hasDrawerChannel = filteredChannels.some(channel => channel.url === drawerChannelUrl);
-    if (!hasDrawerChannel) {
+    if (!filteredChannels.some(channel => channel.url === drawerChannelUrl)) {
       setDrawerChannelUrl(filteredChannels[0].url);
     }
-  }, [drawerChannelUrl, filteredChannels]);
+  }, [drawerChannelUrl, filteredChannels, selectedChannelUrl]);
 
   useEffect(() => {
-    if (!movieChannels.length) {
+    if (!isAndroidTv) {
       return;
     }
 
-    const hasSelectedMovie = movieChannels.some(movie => movie.url === selectedMovieUrl);
-    if (!hasSelectedMovie) {
-      setSelectedMovieUrl(movieChannels[0].url);
-    }
-  }, [movieChannels, selectedMovieUrl]);
+    const cachedAccess = readCachedAccess();
 
-  useEffect(() => {
-    if (!selectedSeries) {
-      setSelectedEpisodeId('');
+    if (!cachedAccess) {
+      setAccessBootState('ready');
       return;
     }
 
-    if (!selectedSeries.seasons?.some(season => season.season === selectedSeasonNumber)) {
-      setSelectedSeasonNumber(selectedSeries.seasons?.[0]?.season || 1);
+    setAccessIdInput(cachedAccess.accessId || '');
+    setAccessLookupResult(cachedAccess);
+
+    const cacheAge = Date.now() - Number(cachedAccess.checkedAt || 0);
+    const cacheTtl = getAccessCacheTtl(cachedAccess.status);
+    const isCacheFresh = cacheAge <= cacheTtl;
+
+    if (cachedAccess.status === 'active' && isCacheFresh) {
+      setAuthorizedAccess(cachedAccess);
+      setAccessLookupState('success');
+      setAccessBootState('ready');
       return;
     }
 
-    const season = selectedSeries.seasons.find(item => item.season === selectedSeasonNumber);
-    if (!season?.episodes?.some(episode => episode.id === selectedEpisodeId)) {
-      setSelectedEpisodeId('');
-    }
-  }, [selectedEpisodeId, selectedSeasonNumber, selectedSeries]);
+    lookupAccessById(cachedAccess.accessId)
+      .then(result => {
+        setAccessLookupState('success');
+        if (result.status !== 'active') {
+          setAuthorizedAccess(null);
+        }
+      })
+      .catch(error => {
+        if (cachedAccess.status === 'active' && isCacheFresh) {
+          setAuthorizedAccess(cachedAccess);
+          setAccessLookupState('success');
+        } else {
+          setAccessLookupState('error');
+          setAccessLookupError(error.message || 'Falha ao validar o ID salvo.');
+          setAuthorizedAccess(null);
+        }
+      })
+      .finally(() => {
+        setAccessBootState('ready');
+      });
+  }, [isAndroidTv]);
 
   useEffect(() => {
-    const player = playerRef.current;
-
-    if (!player || selectedMedia?.url) {
-      return;
+    if (isPlaybackEnabled || filteredChannels.length <= 1) {
+      return undefined;
     }
 
-    setEmbedUrl('');
-    setStatusError(false);
-    setStatus(
-      activeShelf === 'series'
-        ? selectedSeries
-          ? 'Selecione um episodio para reproduzir.'
-          : 'Clique em uma serie para ver os episodios.'
-        : 'aguardando'
-    );
+    const timer = window.setInterval(() => {
+      setSelectedChannelUrl(current => {
+        const currentIndex = filteredChannels.findIndex(channel => channel.url === current);
+        const nextIndex =
+          currentIndex >= 0 ? (currentIndex + 1) % filteredChannels.length : 0;
+        return filteredChannels[nextIndex].url;
+      });
+    }, 4500);
 
-    if (hlsRef.current) {
-      hlsRef.current.destroy();
-      hlsRef.current = null;
-    }
-
-    player.pause();
-    player.removeAttribute('src');
-    player.load();
-  }, [activeShelf, selectedMedia?.url, selectedSeries]);
-
-  useEffect(() => {
-    const timer = window.setInterval(() => setNowTime(formatClock()), 1000);
     return () => window.clearInterval(timer);
-  }, []);
+  }, [filteredChannels, isPlaybackEnabled]);
 
   useEffect(() => {
     if (!guideDrawerOpen || !channelListRef.current) {
@@ -355,57 +350,14 @@ export default function App() {
   }, [drawerChannelUrl, guideDrawerOpen]);
 
   useEffect(() => {
-    function onKeyDown(event) {
-      if (activeShelf === 'series') {
-        if (!SERIES.length) return;
-
-        if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
-          event.preventDefault();
-          const nextIndex = selectedSeriesIndex >= 0 ? (selectedSeriesIndex + 1) % SERIES.length : 0;
-          setSelectedSeriesId(SERIES[nextIndex].id);
-          setSelectedSeasonNumber(SERIES[nextIndex].seasons?.[0]?.season || 1);
-          setSelectedEpisodeId('');
-        } else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
-          event.preventDefault();
-          const nextIndex = selectedSeriesIndex >= 0 ? (selectedSeriesIndex - 1 + SERIES.length) % SERIES.length : 0;
-          setSelectedSeriesId(SERIES[nextIndex].id);
-          setSelectedSeasonNumber(SERIES[nextIndex].seasons?.[0]?.season || 1);
-          setSelectedEpisodeId('');
-        } else if (event.key === 'Enter') {
-          event.preventDefault();
-          if (!selectedSeries && SERIES[0]) {
-            setSelectedSeriesId(SERIES[0].id);
-            setSelectedSeasonNumber(SERIES[0].seasons?.[0]?.season || 1);
-            setSelectedEpisodeId('');
-          } else if (selectedEpisode) {
-            setPlaybackNonce(current => current + 1);
-          }
-        }
-
+    const onKeyDown = event => {
+      if (!isPlaybackEnabled || !filteredChannels.length) {
         return;
       }
 
-      if (activeShelf === 'movies') {
-        if (!movieChannels.length) return;
-
-        if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
-          event.preventDefault();
-          const nextIndex = selectedMovieIndex >= 0 ? (selectedMovieIndex + 1) % movieChannels.length : 0;
-          setSelectedMovieUrl(movieChannels[nextIndex].url);
-        } else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
-          event.preventDefault();
-          const nextIndex =
-            selectedMovieIndex >= 0 ? (selectedMovieIndex - 1 + movieChannels.length) % movieChannels.length : 0;
-          setSelectedMovieUrl(movieChannels[nextIndex].url);
-        } else if (event.key === 'Enter') {
-          event.preventDefault();
-          setPlaybackNonce(current => current + 1);
-        }
-
-        return;
+      if ([' ', 'Spacebar'].includes(event.key)) {
+        event.preventDefault();
       }
-
-      if (!filteredChannels.length) return;
 
       if (guideDrawerOpen) {
         if (event.key === 'ArrowDown') {
@@ -432,27 +384,44 @@ export default function App() {
         event.preventDefault();
         setDrawerChannelUrl(selectedChannelUrl);
         setGuideDrawerOpen(true);
+      } else if (
+        event.key === 'ArrowUp' ||
+        event.key === 'ArrowDown' ||
+        event.key === 'ArrowLeft' ||
+        event.key === ' '
+      ) {
+        event.preventDefault();
       }
-    }
+    };
 
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [
-    activeShelf,
-    drawerChannelUrl,
-    filteredChannels,
-    guideDrawerOpen,
-    movieChannels,
-    selectedChannelUrl,
-    selectedMovieIndex,
-    selectedSeriesIndex
-  ]);
+  }, [drawerChannelUrl, filteredChannels, guideDrawerOpen, isPlaybackEnabled, selectedChannelUrl]);
 
   useEffect(() => {
     const player = playerRef.current;
 
-    if (!player || !selectedMedia?.url) {
-      return undefined;
+    if (!isPlaybackEnabled) {
+      setEmbedUrl('');
+      setStatusError(false);
+      setStatus('Disponivel apenas no app Android TV.');
+
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+
+      if (player) {
+        player.pause();
+        player.removeAttribute('src');
+        player.load();
+      }
+
+      return;
+    }
+
+    if (!player || !selectedChannel?.url) {
+      return;
     }
 
     const setPlayerStatus = (text, isError = false) => {
@@ -471,62 +440,39 @@ export default function App() {
       cleanupHls();
       recoveryRef.current.fallbackTried = true;
       player.pause();
-      player.src = selectedMedia.url;
+      player.src = selectedChannel.url;
       player.load();
       setPlayerStatus(message);
       player.play().catch(() => {
         setPlayerStatus(
-          'Nao foi possivel reproduzir o stream. A fonte deste canal pode estar offline, bloqueada ou exigir outro player.',
+          'Nao foi possivel reproduzir o stream. A fonte pode estar offline ou bloqueada.',
           true
         );
       });
     };
 
-    const resetSurface = () => {
-      setEmbedUrl('');
-      recoveryRef.current = { network: 0, media: 0, fallbackTried: false };
-      cleanupHls();
-
-      player.pause();
-      player.removeAttribute('src');
-      player.load();
-    };
-
-    resetSurface();
+    setEmbedUrl('');
+    recoveryRef.current = { network: 0, media: 0, fallbackTried: false };
+    cleanupHls();
+    player.pause();
+    player.removeAttribute('src');
+    player.load();
     setPlayerStatus('Conectando transmissao...');
 
-    if (selectedMedia.unavailable) {
-      setPlayerStatus(
-        'Este canal esta indisponivel no momento. Use "Abrir fora do app" se quiser tentar a fonte original.',
-        true
-      );
-      return undefined;
+    if (selectedChannel.unavailable) {
+      setPlayerStatus('Canal indisponivel no momento.', true);
+      return;
     }
 
-    if (selectedMedia.sourceType === 'embed') {
-      setEmbedUrl(buildEmbedUrl(selectedMedia));
-      setPlayerStatus('Embed carregado. Se o provedor bloquear a incorporacao, use "Abrir fora do app".');
-      return undefined;
+    if (selectedChannel.sourceType === 'embed') {
+      setEmbedUrl(buildEmbedUrl(selectedChannel));
+      setPlayerStatus('Embed carregado.');
+      return;
     }
 
-    if (isDirectMediaSource(selectedMedia)) {
-      playWithNativeSource('Abrindo midia direta no player nativo...');
-      const onEnded = () => {
-        if (activeShelf !== 'series' || !selectedSeason?.episodes?.length) {
-          return;
-        }
-
-        const currentEpisodeIndex = selectedSeason.episodes.findIndex(episode => episode.id === selectedEpisode?.id);
-        const nextEpisode = selectedSeason.episodes[currentEpisodeIndex + 1];
-        if (nextEpisode) {
-          setSelectedEpisodeId(nextEpisode.id);
-        }
-      };
-
-      player.addEventListener('ended', onEnded);
-      return () => {
-        player.removeEventListener('ended', onEnded);
-      };
+    if (isDirectMediaSource(selectedChannel)) {
+      playWithNativeSource('Abrindo midia direta...');
+      return;
     }
 
     if (Hls.isSupported()) {
@@ -534,8 +480,9 @@ export default function App() {
         enableWorker: true,
         lowLatencyMode: false
       });
+
       hlsRef.current = hls;
-      hls.loadSource(selectedMedia.url);
+      hls.loadSource(selectedChannel.url);
       hls.attachMedia(player);
 
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -552,29 +499,24 @@ export default function App() {
 
         if (data.type === Hls.ErrorTypes.NETWORK_ERROR && recoveryRef.current.network < 2) {
           recoveryRef.current.network += 1;
-          setPlayerStatus(
-            `Erro de rede ao abrir o stream. Tentando novamente (${recoveryRef.current.network}/2)...`
-          );
+          setPlayerStatus(`Erro de rede. Tentando novamente (${recoveryRef.current.network}/2)...`);
           hls.startLoad();
           return;
         }
 
         if (data.type === Hls.ErrorTypes.MEDIA_ERROR && recoveryRef.current.media < 1) {
           recoveryRef.current.media += 1;
-          setPlayerStatus('Erro de midia detectado. Tentando recuperar a transmissao...');
+          setPlayerStatus('Erro de midia. Tentando recuperar...');
           hls.recoverMediaError();
           return;
         }
 
         if (!recoveryRef.current.fallbackTried) {
-          playWithNativeSource('Tentando abrir o stream com fallback nativo do navegador...');
+          playWithNativeSource('Tentando fallback nativo...');
           return;
         }
 
-        setPlayerStatus(
-          `Erro HLS: ${data.details || data.type}. A fonte deste canal pode estar indisponivel.`,
-          true
-        );
+        setPlayerStatus(`Erro HLS: ${data.details || data.type}`, true);
       });
 
       return () => {
@@ -583,51 +525,363 @@ export default function App() {
       };
     }
 
-    playWithNativeSource('Abrindo stream com player nativo do navegador...');
+    playWithNativeSource('Abrindo stream com player nativo...');
 
     return () => {
       cleanupHls();
     };
-  }, [activeShelf, playbackNonce, selectedEpisode, selectedMedia, selectedSeason]);
+  }, [isPlaybackEnabled, playbackNonce, selectedChannel]);
+
+  async function handleAccessLookup(event) {
+    event.preventDefault();
+
+    const normalizedId = accessIdInput.trim().toUpperCase();
+    if (!normalizedId) {
+      setAccessLookupState('error');
+      setAccessLookupResult(null);
+      setAccessLookupError('Informe um ID de acesso valido.');
+      return;
+    }
+
+    setAccessLookupState('loading');
+    setAccessLookupResult(null);
+    setAccessLookupError('');
+
+    try {
+      const payload = await lookupAccessById(normalizedId);
+      setAccessLookupState('success');
+    } catch (error) {
+      setAccessLookupState('error');
+      setAccessLookupResult(null);
+      setAuthorizedAccess(null);
+      setAccessLookupError(error.message || 'Falha ao consultar o ID.');
+    }
+  }
+
+  async function handleCheckout(planId) {
+    setCheckoutPlanId(planId);
+    setCheckoutError('');
+
+    try {
+      const response = await fetch('/api/create-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
+        },
+        body: JSON.stringify({ planId })
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Nao foi possivel iniciar o checkout.');
+      }
+
+      if (!payload?.checkoutUrl) {
+        throw new Error('Checkout nao retornou uma URL valida.');
+      }
+
+      window.location.href = payload.checkoutUrl;
+    } catch (error) {
+      setCheckoutError(error.message || 'Falha ao iniciar o checkout.');
+      setCheckoutPlanId('');
+    }
+  }
 
   return (
-    <div className={`app-shell${isAndroidTv ? ' tv-mode' : ''}`}>
-      {activeShelf === 'channels' ? (
-        <header className="guide-hero guide-hero-fullscreen">
-          <div className="guide-topbar">
-            <div className="section-head">
-              <div>
-                <span className="section-kicker">Catalogo ao vivo</span>
-                <h2>Canais em destaque</h2>
+    <div className={`app-shell${isAndroidTv ? ' tv-mode' : ''}${!isPlaybackEnabled ? ' promo-mode' : ''}`}>
+      {!isPlaybackEnabled ? (
+        !isAndroidTv ? (
+        <>
+          <header className="promo-landing">
+            <div className="promo-copy promo-copy-public">
+              <span className="section-kicker">App TV Android</span>
+              <h1>TV ao vivo no Android TV com acesso liberado por assinatura.</h1>
+              <p>
+                Este site apresenta o aplicativo, os canais disponiveis e os planos de acesso. A reproducao fica liberada somente no app Android TV, com interface adaptada para controle remoto e uso em tela cheia.
+              </p>
+              <div className="promo-cta-row">
+                <a className="primary-btn" href={TELEGRAM_URL} target="_blank" rel="noreferrer">
+                  Assinar agora
+                </a>
+                <a className="secondary-btn" href={APK_DOWNLOAD_URL} download>
+                  Baixar app
+                </a>
+                <a className="secondary-btn" href="#como-funciona">Como funciona</a>
               </div>
-              <p>Use clique, setas do teclado ou Enter para trocar rapidamente.</p>
+              <ul className="promo-summary-list">
+                <li>Uso exclusivo no app Android TV</li>
+                <li>Canais organizados para controle remoto</li>
+                <li>Planos mensal, trimestral e anual</li>
+              </ul>
             </div>
+          </header>
 
-            <div className="shelf-tabs">
-              <button
-                type="button"
-                className={`shelf-tab${activeShelf === 'channels' ? ' active' : ''}`}
-                onClick={() => setActiveShelf('channels')}
-              >
-                Canais
-              </button>
-              <button
-                type="button"
-                className={`shelf-tab${activeShelf === 'movies' ? ' active' : ''}`}
-                onClick={() => setActiveShelf('movies')}
-              >
-                Filmes
-              </button>
-              <button
-                type="button"
-                className={`shelf-tab${activeShelf === 'series' ? ' active' : ''}`}
-                onClick={() => setActiveShelf('series')}
-              >
-                Series
-              </button>
-            </div>
-          </div>
+          <main className="content">
+            <section className="shelf">
+              <div className="section-head" id="como-funciona">
+                <div>
+                  <span className="section-kicker">Como funciona</span>
+                  <h2>Assine aqui e use no aplicativo</h2>
+                </div>
+                <p>O fluxo e simples: escolha um plano, libere seu acesso e use o aplicativo na Android TV para assistir aos canais ao vivo.</p>
+              </div>
 
+              <div className="promo-info-grid">
+                <article className="promo-info-card">
+                  <strong>1. Escolha seu periodo</strong>
+                  <p>Voce pode contratar acesso mensal, trimestral ou anual, de acordo com o tempo que pretende usar o aplicativo.</p>
+                </article>
+                <article className="promo-info-card">
+                  <strong>2. Ative o app</strong>
+                  <p>Depois da confirmacao da assinatura, o acesso fica liberado para uso dentro do aplicativo Android TV.</p>
+                </article>
+                <article className="promo-info-card">
+                  <strong>3. Assista na TV</strong>
+                  <p>No aplicativo, a navegacao e feita pelo controle remoto, com troca de canais rapida, gaveta lateral e tela cheia.</p>
+                </article>
+              </div>
+
+              <div className="section-head">
+                <div>
+                  <span className="section-kicker">Canais disponiveis</span>
+                  <h2>Conheca alguns dos canais incluidos no aplicativo</h2>
+                </div>
+                <p>Esta faixa mostra parte da grade disponivel para quem acessa pelo app Android TV.</p>
+              </div>
+
+              <div className="promo-channel-marquee" aria-label="Canais do aplicativo">
+                <div className="promo-channel-track">
+                  {publicChannelLoop.map((channel, index) => (
+                    <article
+                      key={`${channel.name}-${index}`}
+                      className={`promo-channel-badge${channel.url === selectedChannel?.url ? ' active' : ''}`}
+                    >
+                      {buildLogoThumb(channel, index)}
+                      <div className="promo-channel-copy">
+                        <strong>{channel.name}</strong>
+                        <span>{channel.category || 'Canal'}</span>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </div>
+
+              <div className="section-head plans-head" id="planos">
+                <div>
+                  <span className="section-kicker">Planos</span>
+                  <h2>Escolha a assinatura</h2>
+                </div>
+                <p>Todos os planos liberam o acesso ao aplicativo Android TV. O plano trimestral oferece o melhor custo entre valor e periodo.</p>
+              </div>
+
+              {checkoutError ? (
+                <div className="checkout-error-banner">
+                  <strong>Falha ao iniciar o pagamento</strong>
+                  <p>{checkoutError}</p>
+                </div>
+              ) : null}
+
+              <ul className="plans-grid">
+                {PUBLIC_PLANS.map(plan => (
+                  <li key={plan.id}>
+                    <article className={`plan-card${plan.id === 'trimestral' ? ' featured' : ''}`}>
+                      <span className="plan-badge">{plan.id === 'trimestral' ? 'Mais vendido' : 'Android TV'}</span>
+                      <strong>{plan.name}</strong>
+                      <div className="plan-price">
+                        <span>{plan.price}</span>
+                        <small>{plan.period}</small>
+                      </div>
+                      <p>{plan.description}</p>
+                      <button
+                        type="button"
+                        className="primary-btn plan-btn"
+                        onClick={() => handleCheckout(plan.id)}
+                      >
+                        {checkoutPlanId === plan.id ? 'Abrindo pagamento...' : 'Assinar agora'}
+                      </button>
+                    </article>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="section-head" id="consulta-acesso">
+                <div>
+                  <span className="section-kicker">Consulta de acesso</span>
+                  <h2>Verifique seu ID</h2>
+                </div>
+                <p>Consulte aqui se o acesso esta ativo, pendente ou bloqueado.</p>
+              </div>
+
+              <section className="access-check-panel">
+                <form className="access-check-form" onSubmit={handleAccessLookup}>
+                  <label className="access-check-field">
+                    <span>ID de acesso</span>
+                    <input
+                      type="text"
+                      value={accessIdInput}
+                      onChange={event => setAccessIdInput(event.target.value.toUpperCase())}
+                      placeholder="Ex.: ATV-0001"
+                      autoComplete="off"
+                    />
+                  </label>
+
+                  <button type="submit" className="primary-btn access-check-btn">
+                    {accessLookupState === 'loading' ? 'Consultando...' : 'Verificar ID'}
+                  </button>
+                </form>
+
+                <div className="access-check-result">
+                  {accessLookupState === 'idle' ? (
+                    <div className="access-result-card neutral">
+                      <strong>Nenhuma consulta feita</strong>
+                      <p>Digite o ID de acesso para consultar a situacao atual.</p>
+                    </div>
+                  ) : null}
+
+                  {accessLookupState === 'error' ? (
+                    <div className="access-result-card blocked">
+                      <strong>Falha na consulta</strong>
+                      <p>{accessLookupError}</p>
+                    </div>
+                  ) : null}
+
+                  {accessLookupState === 'success' && accessLookupResult ? (
+                    <div className={`access-result-card ${accessLookupResult.status}`}>
+                      <strong>{ACCESS_STATUS_LABELS[accessLookupResult.status] || 'Status desconhecido'}</strong>
+                      <p>{accessLookupResult.message}</p>
+                      <dl className="access-result-grid">
+                        <div>
+                          <dt>ID</dt>
+                          <dd>{accessLookupResult.accessId}</dd>
+                        </div>
+                        <div>
+                          <dt>Plano</dt>
+                          <dd>{accessLookupResult.planName}</dd>
+                        </div>
+                        <div>
+                          <dt>Pagamento</dt>
+                          <dd>{accessLookupResult.paymentLabel}</dd>
+                        </div>
+                        <div>
+                          <dt>Validade</dt>
+                          <dd>{accessLookupResult.expiresAtLabel}</dd>
+                        </div>
+                      </dl>
+                    </div>
+                  ) : null}
+                </div>
+              </section>
+
+              <footer className="promo-footer">
+                <div>
+                  <strong>App TV Android</strong>
+                  <p>Site oficial de apresentacao e assinatura do App TV Android. A exibicao dos canais acontece exclusivamente dentro do aplicativo.</p>
+                </div>
+                <div className="promo-footer-links">
+                  <span>Mensal R$ 20</span>
+                  <span>Trimestral R$ 45</span>
+                  <span>Anual R$ 120</span>
+                </div>
+              </footer>
+            </section>
+          </main>
+        </>
+        ) : (
+          <main className="tv-access-screen">
+            <section className="tv-access-card">
+              <span className="section-kicker">Ativacao do app</span>
+              <h1>Informe seu ID de assinatura</h1>
+              <p>
+                O acesso aos canais e liberado somente para IDs ativos. Depois da validacao, o app salva o status localmente e evita consultas repetidas ao Firebase.
+              </p>
+
+              <form className="tv-access-form" onSubmit={handleAccessLookup}>
+                <label className="tv-access-field">
+                  <span>ID de acesso</span>
+                  <input
+                    type="text"
+                    value={accessIdInput}
+                    onChange={event => setAccessIdInput(event.target.value.toUpperCase())}
+                    placeholder="ATV-0001"
+                    autoComplete="off"
+                  />
+                </label>
+
+                <div className="tv-access-actions">
+                  <button type="submit" className="primary-btn">
+                    {accessLookupState === 'loading' || accessBootState === 'booting'
+                      ? 'Validando...'
+                      : 'Validar acesso'}
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary-btn"
+                    onClick={() => {
+                      clearCachedAccess();
+                      setAccessIdInput('');
+                      setAccessLookupState('idle');
+                      setAccessLookupResult(null);
+                      setAccessLookupError('');
+                      setAuthorizedAccess(null);
+                    }}
+                  >
+                    Limpar ID
+                  </button>
+                </div>
+              </form>
+
+              <div className="tv-access-hint">
+                <span>Sem ID ativo?</span>
+                <a href={TELEGRAM_URL} target="_blank" rel="noreferrer">
+                  Falar no Telegram
+                </a>
+              </div>
+
+              {accessBootState === 'booting' ? (
+                <div className="tv-access-result neutral">
+                  <strong>Sincronizando acesso salvo</strong>
+                  <p>O app esta validando o ultimo ID armazenado antes de liberar os canais.</p>
+                </div>
+              ) : null}
+
+              {accessLookupState === 'error' ? (
+                <div className="tv-access-result blocked">
+                  <strong>Falha na validacao</strong>
+                  <p>{accessLookupError}</p>
+                </div>
+              ) : null}
+
+              {accessLookupState === 'success' && accessLookupResult ? (
+                <div className={`tv-access-result ${accessLookupResult.status}`}>
+                  <strong>{ACCESS_STATUS_LABELS[accessLookupResult.status] || 'Status desconhecido'}</strong>
+                  <p>{accessLookupResult.message}</p>
+                  <dl className="tv-access-meta">
+                    <div>
+                      <dt>ID</dt>
+                      <dd>{accessLookupResult.accessId}</dd>
+                    </div>
+                    <div>
+                      <dt>Plano</dt>
+                      <dd>{accessLookupResult.planName}</dd>
+                    </div>
+                    <div>
+                      <dt>Pagamento</dt>
+                      <dd>{accessLookupResult.paymentLabel}</dd>
+                    </div>
+                    <div>
+                      <dt>Validade</dt>
+                      <dd>{accessLookupResult.expiresAtLabel}</dd>
+                    </div>
+                  </dl>
+                </div>
+              ) : null}
+            </section>
+          </main>
+        )
+      ) : (
+        <header className="guide-hero guide-hero-fullscreen">
           <div className="guide-stage" ref={guideStageRef}>
             <button
               type="button"
@@ -688,7 +942,17 @@ export default function App() {
 
               <div className="guide-player-shell">
                 {!embedUrl ? (
-                  <video ref={playerRef} id="tvPlayer" controls autoPlay playsInline crossOrigin="anonymous" />
+                  <video
+                    ref={playerRef}
+                    id="tvPlayer"
+                    autoPlay
+                    playsInline
+                    crossOrigin="anonymous"
+                    controls={false}
+                    disablePictureInPicture
+                    controlsList="nodownload noplaybackrate noremoteplayback nofullscreen"
+                    tabIndex={-1}
+                  />
                 ) : (
                   <iframe
                     id="tvEmbed"
@@ -697,326 +961,43 @@ export default function App() {
                     allow="autoplay; encrypted-media; picture-in-picture"
                     allowFullScreen
                     referrerPolicy="strict-origin-when-cross-origin"
+                    tabIndex={-1}
                   />
                 )}
                 <div className="guide-overlay" />
-              </div>
-            </div>
-          </div>
 
-          <div className="guide-footer">
-            <div className="guide-footer-main">
-              <div className="guide-footer-heading">
-                <strong>{selectedChannel?.name || 'Canal ao vivo'}</strong>
-                <span>{selectedChannel?.category || 'Canais'}</span>
+                {authorizedAccess ? (
+                  <div className="guide-access-summary">
+                    <div className="guide-access-copy">
+                      <strong>{authorizedAccess.planName || 'Acesso ativo'}</strong>
+                      <span>{authorizedAccess.expiresAtLabel ? `Validade: ${authorizedAccess.expiresAtLabel}` : 'Validade nao definida'}</span>
+                    </div>
+                    <button
+                      type="button"
+                      className="guide-access-reset"
+                      onClick={() => {
+                        clearCachedAccess();
+                        setGuideDrawerOpen(false);
+                        setSelectedChannelUrl(CHANNELS[0]?.url || '');
+                        setDrawerChannelUrl(CHANNELS[0]?.url || '');
+                        setAuthorizedAccess(null);
+                        setAccessLookupState('idle');
+                        setAccessLookupResult(null);
+                        setAccessLookupError('');
+                        setAccessIdInput('');
+                        setStatus('aguardando');
+                        setStatusError(false);
+                      }}
+                    >
+                      Trocar ID
+                    </button>
+                  </div>
+                ) : null}
               </div>
-              <p className="guide-footer-description">
-                {selectedChannel?.description || 'Canal ao vivo selecionado na gaveta lateral.'}
-              </p>
-            </div>
-            <div className="guide-footer-meta">
-              <span className="guide-meta-pill">{`Canal ${selectedChannel?.number || '-'}`}</span>
-              <span className="guide-meta-pill">{selectedChannel?.sourceType === 'embed' ? 'Embed' : selectedChannel?.sourceType === 'file' ? 'Arquivo' : 'HLS'}</span>
-              <span className="guide-meta-pill status">{status}</span>
             </div>
           </div>
         </header>
-      ) : (
-      <header className={`hero${activeShelf === 'series' ? ' hero-series' : ''}${activeShelf === 'movies' ? ' hero-movies' : ''}`} style={heroStyle}>
-        <div className="hero-copy">
-          <span className="hero-kicker">
-            {activeShelf === 'movies' ? 'Filmes' : activeShelf === 'series' ? 'Series' : 'TV ao vivo'}
-          </span>
-          <h1>
-            {activeShelf === 'series' ? selectedSeries?.title || 'Series' : getItemName(selectedMedia, 'TV ao vivo')}
-          </h1>
-          <p>
-            {activeShelf === 'series'
-              ? selectedSeries?.synopsis || 'Selecione uma serie e deixe o player seguir automaticamente para o proximo episodio.'
-              : selectedMedia?.description ||
-                'Uma interface inspirada em streaming para abrir canais ao vivo de forma simples e direta.'}
-          </p>
-
-          <div className="hero-actions">
-            <button
-              type="button"
-              id="watchNowBtn"
-              className="primary-btn"
-              onClick={() => setPlaybackNonce(current => current + 1)}
-            >
-              Assistir agora
-            </button>
-              <span className="secondary-btn">
-                {activeShelf === 'series' || activeShelf === 'movies' ? 'Catalogo estilo streaming' : 'Canais no codigo'}
-              </span>
-            {externalUrl ? (
-              <a
-                id="openExternalBtn"
-                className="secondary-btn"
-                href={externalUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Abrir fora do app
-              </a>
-            ) : null}
-          </div>
-
-          <div className="hero-meta">
-            <div className="meta-pill">
-              <span className="meta-label">Status</span>
-              <strong>
-                {selectedMedia
-                  ? activeShelf === 'series'
-                    ? selectedEpisode
-                      ? `Reproduzindo ${selectedSeries?.title} - ${getItemName(selectedEpisode)}`
-                      : `Serie selecionada: ${selectedSeries?.title}`
-                    : `Transmitindo ${getItemName(selectedMedia)}`
-                  : 'Carregando catalogo...'}
-              </strong>
-            </div>
-            <div className="meta-pill">
-              <span className="meta-label">Horario</span>
-              <strong>{nowTime}</strong>
-            </div>
-          </div>
-        </div>
-
-        <div className="hero-player">
-          <div className="player-card">
-            {!embedUrl ? (
-              <video ref={playerRef} id="tvPlayer" controls autoPlay playsInline crossOrigin="anonymous" />
-            ) : (
-              <iframe
-                id="tvEmbed"
-                title="Player incorporado"
-                src={embedUrl}
-                allow="autoplay; encrypted-media; picture-in-picture"
-                allowFullScreen
-                referrerPolicy="strict-origin-when-cross-origin"
-              />
-            )}
-          </div>
-
-          <div className="player-status">
-            <div className="channel-info">
-              <strong>{activeShelf === 'series' ? selectedSeries?.title || 'Serie sem nome' : getItemName(selectedMedia)}</strong>
-              <div>
-                {activeShelf === 'series'
-                  ? [
-                      selectedSeries?.title || '',
-                      selectedSeason ? `Temporada ${selectedSeason.season}` : '',
-                      selectedEpisode?.number ? `Episodio ${selectedEpisode.number}` : '',
-                      selectedEpisode?.duration || ''
-                    ]
-                      .filter(Boolean)
-                      .join(' | ')
-                  : [selectedMedia?.number ? `Canal ${selectedMedia.number}` : '', selectedMedia?.category || '']
-                      .filter(Boolean)
-                      .join(' | ') || 'Transmissao ao vivo'}
-              </div>
-              <div>
-                {activeShelf === 'series'
-                  ? selectedEpisode?.description ||
-                    selectedSeries?.synopsis ||
-                    'Clique em uma serie para abrir a lista de episodios.'
-                  : selectedMedia?.description || 'Canal embutido diretamente no codigo.'}
-              </div>
-            </div>
-            <div className="status" style={{ color: statusError ? '#ffb3b3' : '#b8b8b3' }}>
-              {`Status: ${selectedMedia?.url ? status : activeShelf === 'series' ? 'Clique em uma serie para ver os episodios.' : status}`}
-            </div>
-          </div>
-        </div>
-      </header>
       )}
-
-      <main className="content">
-        <section className="shelf">
-          {activeShelf !== 'channels' ? (
-            <>
-              <div className="shelf-tabs">
-                <button
-                  type="button"
-                  className={`shelf-tab${activeShelf === 'channels' ? ' active' : ''}`}
-                  onClick={() => setActiveShelf('channels')}
-                >
-                  Canais
-                </button>
-                <button
-                  type="button"
-                  className={`shelf-tab${activeShelf === 'movies' ? ' active' : ''}`}
-                  onClick={() => setActiveShelf('movies')}
-                >
-                  Filmes
-                </button>
-                <button
-                  type="button"
-                  className={`shelf-tab${activeShelf === 'series' ? ' active' : ''}`}
-                  onClick={() => setActiveShelf('series')}
-                >
-                  Series
-                </button>
-              </div>
-
-              <div className="section-head">
-                <div>
-                  <span className="section-kicker">
-                    {activeShelf === 'movies' ? 'Catalogo de filmes' : 'Catalogo de series'}
-                  </span>
-                  <h2>{activeShelf === 'movies' ? 'Filmes em destaque' : 'Series em destaque'}</h2>
-                </div>
-                <p>Use clique, setas do teclado ou Enter para trocar rapidamente.</p>
-              </div>
-            </>
-          ) : null}
-
-          {activeShelf === 'series' ? (
-            <>
-              <div className="series-strip">
-                <div className="series-strip-head">
-                  <span className="section-kicker">Explorar series</span>
-                  <p>Escolha um titulo e continue pelo destaque do topo.</p>
-                </div>
-
-                <ul className="series-row">
-                  {SERIES.map((series, index) => (
-                    <li
-                      key={series.id}
-                      className={`series-poster${index === selectedSeriesIndex ? ' active' : ''}`}
-                      onClick={() => {
-                        setSelectedSeriesId(series.id);
-                        setSelectedSeasonNumber(series.seasons?.[0]?.season || 1);
-                        setSelectedEpisodeId('');
-                      }}
-                    >
-                      <div
-                        className="series-poster-art"
-                        style={
-                          series.posterImage
-                            ? { backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.5)), url("${series.posterImage}")` }
-                            : undefined
-                        }
-                      >
-                        <span className="series-poster-badge">{series.badge || 'Serie'}</span>
-                      </div>
-                      <strong>{series.title}</strong>
-                      <span>{series.year || 'Catalogo'}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {selectedSeries ? (
-                <div className="episodes-panel">
-                  <div className="episodes-head">
-                    <strong>{selectedSeries.title}</strong>
-                    <span>Autoplay do proximo episodio ativado</span>
-                  </div>
-
-                  <div className="season-tabs">
-                    {selectedSeries.seasons.map(season => (
-                      <button
-                        key={season.season}
-                        type="button"
-                        className={`season-tab${season.season === selectedSeason?.season ? ' active' : ''}`}
-                        onClick={() => {
-                          setSelectedSeasonNumber(season.season);
-                          setSelectedEpisodeId('');
-                        }}
-                      >
-                        {`Temporada ${season.season}`}
-                      </button>
-                    ))}
-                  </div>
-
-                  <ul className="episode-list episode-grid">
-                    {selectedSeason?.episodes?.map(episode => (
-                      <li
-                        key={episode.id}
-                        className={`episode-item episode-card${episode.id === selectedEpisodeId ? ' active' : ''}`}
-                        onClick={() => setSelectedEpisodeId(episode.id)}
-                      >
-                        <div
-                          className="episode-thumb"
-                          style={
-                            episode.thumbImage
-                              ? {
-                                  backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.12), rgba(0,0,0,0.56)), url("${episode.thumbImage}")`
-                                }
-                              : undefined
-                          }
-                        >
-                          <span className="episode-play">{episode.id === selectedEpisodeId ? 'Assistindo' : 'Play'}</span>
-                        </div>
-                        <div className="episode-body">
-                          <div className="episode-heading">
-                            <span className="episode-number">{episode.number}</span>
-                            <div className="episode-copy">
-                              <strong>{episode.title}</strong>
-                              <span>{episode.description || 'Episodio disponivel para reproducao.'}</span>
-                            </div>
-                          </div>
-                          <span className="episode-duration">{episode.duration || '00:00'}</span>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : (
-                <div className="episodes-panel episodes-empty">
-                  <strong>Selecione uma serie</strong>
-                  <span>Quando voce abrir uma serie, a pagina mostra temporadas, capa, resumo e os episodios em destaque.</span>
-                </div>
-              )}
-            </>
-          ) : activeShelf === 'movies' ? (
-            <>
-              <div className="series-strip">
-                <div className="series-strip-head">
-                  <span className="section-kicker">Explorar filmes</span>
-                  <p>Escolha um titulo e continue pelo destaque do topo.</p>
-                </div>
-
-                <ul className="series-row">
-                  {movieChannels.map(movie => {
-                    const isActive = movie.url === selectedMovie?.url;
-                    return (
-                      <li
-                        key={`${movie.name}-${movie.url}`}
-                        className={`series-poster${isActive ? ' active' : ''}`}
-                        onClick={() => setSelectedMovieUrl(movie.url)}
-                      >
-                        <div
-                          className="series-poster-art"
-                          style={
-                            movie.posterImage || movie.logoImage
-                              ? {
-                                  backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.5)), url("${movie.posterImage || movie.logoImage}")`
-                                }
-                              : undefined
-                          }
-                        >
-                          <span className="series-poster-badge">{movie.category || 'Filme'}</span>
-                        </div>
-                        <strong>{movie.name}</strong>
-                        <span>{movie.sourceType === 'file' ? 'Arquivo direto' : movie.category || 'Filme'}</span>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-
-              {!movieChannels.length ? (
-                <div className="episodes-panel episodes-empty">
-                  <strong>Nenhum filme cadastrado</strong>
-                  <span>Adicione os filmes em [movies.js] usando o modelo MOVIE_TEMPLATE.</span>
-                </div>
-              ) : null}
-            </>
-          ) : null}
-        </section>
-      </main>
     </div>
   );
 }
