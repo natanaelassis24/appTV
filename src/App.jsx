@@ -287,15 +287,11 @@ export default function App() {
     setPaymentResult(null);
 
     try {
-      const response = await fetch('/api/create-checkout', {
-        method: 'POST',
+      const response = await fetch(`/api/create-checkout?planId=${encodeURIComponent(plan.id)}`, {
+        method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
           Accept: 'application/json'
-        },
-        body: JSON.stringify({
-          planId: plan.id
-        })
+        }
       });
 
       const payload = await readJsonResponse(response, 'Falha ao iniciar o pagamento.');
