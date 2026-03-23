@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Hls from 'hls.js';
 import { CHANNELS } from './channels';
+import { PUBLIC_RUNTIME_CONFIG } from './runtime-config';
 import { PUBLIC_PLANS } from '../lib/plans.js';
 
-const TELEGRAM_URL = 'https://t.me/natalinoprr';
-const APK_DOWNLOAD_URL = '/app-tv-android.apk';
 const ACCESS_CACHE_KEY = 'app-tv-access-cache-v1';
 const ACTIVE_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 const INACTIVE_CACHE_TTL_MS = 15 * 60 * 1000;
@@ -118,6 +117,8 @@ function buildLogoThumb(channel, index) {
 }
 
 export default function App() {
+  const telegramUrl = PUBLIC_RUNTIME_CONFIG.telegramUrl || '#planos';
+  const apkDownloadUrl = PUBLIC_RUNTIME_CONFIG.apkDownloadUrl;
   const isAndroidTv = useMemo(() => {
     const search =
       typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
@@ -602,10 +603,15 @@ export default function App() {
                 Este site apresenta o aplicativo, os canais disponiveis e os planos de acesso. A reproducao fica liberada somente no app Android TV, com interface adaptada para controle remoto e uso em tela cheia.
               </p>
               <div className="promo-cta-row">
-                <a className="primary-btn" href={TELEGRAM_URL} target="_blank" rel="noreferrer">
+                <a
+                  className="primary-btn"
+                  href={telegramUrl}
+                  target={telegramUrl.startsWith('http') ? '_blank' : undefined}
+                  rel={telegramUrl.startsWith('http') ? 'noreferrer' : undefined}
+                >
                   Assinar agora
                 </a>
-                <a className="secondary-btn" href={APK_DOWNLOAD_URL} download>
+                <a className="secondary-btn" href={apkDownloadUrl} download>
                   Baixar app
                 </a>
                 <a className="secondary-btn" href="#como-funciona">Como funciona</a>
@@ -834,7 +840,11 @@ export default function App() {
 
               <div className="tv-access-hint">
                 <span>Sem ID ativo?</span>
-                <a href={TELEGRAM_URL} target="_blank" rel="noreferrer">
+                <a
+                  href={telegramUrl}
+                  target={telegramUrl.startsWith('http') ? '_blank' : undefined}
+                  rel={telegramUrl.startsWith('http') ? 'noreferrer' : undefined}
+                >
                   Falar no Telegram
                 </a>
               </div>
