@@ -287,44 +287,15 @@ export default function App() {
     setPaymentResult(null);
 
     try {
-      const localCheckout = mercadoPagoPublicKey
-        ? {
-            checkoutSessionId: createCheckoutSessionId(),
-            publicKey: mercadoPagoPublicKey,
-            amount: plan.price,
-            title: plan.mercadopagoTitle,
-            planId: plan.id
-          }
-        : null;
-
-      if (localCheckout) {
-        setPaymentCheckout(localCheckout);
-        setPaymentModalOpen(true);
-        setPaymentLoading(false);
-        return;
-      }
-
-      const response = await fetch('/api/create-checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json'
-        },
-        body: JSON.stringify({ planId: plan.id })
+      setPaymentCheckout({
+        checkoutSessionId: createCheckoutSessionId(),
+        publicKey: mercadoPagoPublicKey,
+        amount: plan.price,
+        title: plan.mercadopagoTitle,
+        planId: plan.id
       });
-
-      const payload = await readJsonResponse(response, 'Falha ao iniciar o checkout.');
-
-      if (!response.ok) {
-        throw new Error(payload?.error || `HTTP ${response.status}`);
-      }
-
-      if (!payload?.publicKey || !payload?.checkoutSessionId) {
-        throw new Error('A API nao retornou os dados do pagamento.');
-      }
-
-      setPaymentCheckout(payload);
       setPaymentModalOpen(true);
+      setPaymentLoading(false);
     } catch (error) {
       setCheckoutError(error?.message || 'Falha ao iniciar o pagamento.');
       setPaymentLoading(false);
