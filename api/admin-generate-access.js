@@ -1,6 +1,6 @@
-import { extractBearerToken, verifyAdminSessionToken } from '../lib/admin-auth.js';
+import { extractBearerToken } from '../lib/admin-auth.js';
 import { addMonthsToDate, generateAccessId } from '../lib/access-ids.js';
-import { getFirestore } from '../lib/firebase-admin.js';
+import { getAuth, getFirestore } from '../lib/firebase-admin.js';
 
 function sendJson(res, statusCode, payload) {
   res.status(statusCode).json(payload);
@@ -37,12 +37,6 @@ export default async function handler(req, res) {
   }
 
   const token = extractBearerToken(req);
-  const session = verifyAdminSessionToken(token);
-
-  if (!session) {
-    sendJson(res, 401, { error: 'Sessao administrativa invalida ou expirada.' });
-    return;
-  }
 
   const name = String(req.body?.name || 'Cliente').trim() || 'Cliente';
   const planName = String(req.body?.planName || 'Plano manual').trim() || 'Plano manual';
@@ -54,6 +48,14 @@ export default async function handler(req, res) {
 
   try {
     const firestore = getFirestore();
+    const auth = getAuth();
+    const session = await auth.verifyIdToken(token);
+
+    if (!session?.uid) {
+      sendJson(res, 401, { error: 'Sessao administrativa invalida ou expirada.' });
+      return;
+    }
+
     let generated = null;
 
     for (let attempt = 0; attempt < 20; attempt += 1) {

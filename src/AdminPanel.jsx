@@ -1,31 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { PUBLIC_RUNTIME_CONFIG } from './runtime-config';
 
-const ADMIN_SESSION_KEY = 'app-tv-admin-session-v1';
 const ACCESS_STATUS_LABELS = {
   active: 'Acesso ativo',
   pending: 'Pagamento pendente',
   blocked: 'Acesso bloqueado'
-};
-
-const readToken = () => {
-  try {
-    return typeof window === 'undefined' ? '' : window.localStorage.getItem(ADMIN_SESSION_KEY) || '';
-  } catch {
-    return '';
-  }
-};
-
-const saveToken = token => {
-  try {
-    if (typeof window !== 'undefined') window.localStorage.setItem(ADMIN_SESSION_KEY, token);
-  } catch {}
-};
-
-const clearToken = () => {
-  try {
-    if (typeof window !== 'undefined') window.localStorage.removeItem(ADMIN_SESSION_KEY);
-  } catch {}
 };
 
 const readJson = async response => {
@@ -37,6 +16,94 @@ const readJson = async response => {
     return { error: raw };
   }
 };
+
+const FIREBASE_AUTH_SESSION_KEY = 'app-tv-admin-firebase-session-v1';
+
+const readAuthSession = () => {
+  try {
+    if (typeof window === 'undefined') return null;
+    const raw = window.localStorage.getItem(FIREBASE_AUTH_SESSION_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.idToken ? parsed : null;
+  } catch {
+    return null;
+  }
+};
+
+const saveAuthSession = session => {
+  try {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(FIREBASE_AUTH_SESSION_KEY, JSON.stringify(session));
+    }
+  } catch {}
+};
+
+const clearAuthSession = () => {
+  try {
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem(FIREBASE_AUTH_SESSION_KEY);
+    }
+  } catch {}
+};
+
+async function firebaseAuthRequest(endpoint, payload) {
+  const apiKey = PUBLIC_RUNTIME_CONFIG.firebaseWebApiKey;
+  if (!apiKey) {
+    throw new Error('Defina VITE_FIREBASE_WEB_API_KEY nas variaveis do projeto.');
+  }
+
+  const response = await fetch(
+    `https://identitytoolkit.googleapis.com/v1/accounts:${endpoint}?key=${encodeURIComponent(apiKey)}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json'
+      },
+      body: JSON.stringify(payload)
+    }
+  );
+
+  const data = await readJson(response);
+  if (!response.ok) {
+    throw new Error(data?.error?.message || data?.error || `HTTP ${response.status}`);
+  }
+
+  return data;
+}
+
+async function refreshFirebaseAuthSession(refreshToken) {
+  const apiKey = PUBLIC_RUNTIME_CONFIG.firebaseWebApiKey;
+  if (!apiKey || !refreshToken) {
+    throw new Error('Sessao expirada.');
+  }
+
+  const response = await fetch(
+    `https://securetoken.googleapis.com/v1/token?key=${encodeURIComponent(apiKey)}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        refresh_token: refreshToken
+      })
+    }
+  );
+
+  const data = await readJson(response);
+  if (!response.ok) {
+    throw new Error(data?.error?.message || data?.error || `HTTP ${response.status}`);
+  }
+
+  return {
+    idToken: data.id_token,
+    refreshToken: data.refresh_token || refreshToken,
+    email: data.user_email || ''
+  };
+}
 
 const formatDate = value => {
   if (!value) return 'Nao definida';
@@ -58,11 +125,12 @@ const normalize = (entry, id) => ({
 });
 
 export default function AdminPanel() {
-  const telegramUrl = PUBLIC_RUNTIME_CONFIG.telegramUrl || 'https://t.me/natalinoprr';
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [sessionToken, setSessionToken] = useState('');
-  const [loginState, setLoginState] = useState('idle');
-  const [loginError, setLoginError] = useState('');
+  const [setupRequired, setSetupRequired] = useState(true);
+  const [authState, setAuthState] = useState('idle');
+  const [authError, setAuthError] = useState('');
   const [statusFilter, setStatusFilter] = useState('active');
   const [searchTerm, setSearchTerm] = useState('');
   const [loadState, setLoadState] = useState('idle');
@@ -80,10 +148,46 @@ export default function AdminPanel() {
   const [generatedAccess, setGeneratedAccess] = useState(null);
 
   useEffect(() => {
-    const token = readToken();
-    if (token) {
-      setSessionToken(token);
-      setLoginState('success');
+    const loadSetupState = async () => {
+      try {
+        const response = await fetch('/api/admin-status', {
+          headers: { Accept: 'application/json' }
+        });
+        const payload = await readJson(response);
+        if (response.ok) {
+          setSetupRequired(Boolean(payload?.setupRequired));
+          return;
+        }
+      } catch (_) {
+        // keep default hidden button state if the check fails
+      }
+    };
+
+    loadSetupState();
+
+    const session = readAuthSession();
+    const restoreSession = async () => {
+      if (!session?.refreshToken) return;
+
+      try {
+        const refreshed = await refreshFirebaseAuthSession(session.refreshToken);
+        const nextSession = {
+          ...session,
+          ...refreshed,
+          expiresAt: Date.now() + 55 * 60 * 1000
+        };
+        saveAuthSession(nextSession);
+        setSessionToken(nextSession.idToken || '');
+        setEmail(nextSession.email || session.email || '');
+      } catch {
+        clearAuthSession();
+      }
+    };
+
+    if (session?.idToken) {
+      setSessionToken(session.idToken);
+      setEmail(session.email || '');
+      restoreSession();
     }
   }, []);
 
@@ -132,38 +236,73 @@ export default function AdminPanel() {
     });
   }, [rows, searchTerm]);
 
-  const handleLogin = async event => {
-    event.preventDefault();
-    setLoginState('loading');
-    setLoginError('');
+  const handleAuth = async mode => {
+    const action = mode === 'register' ? 'register' : 'login';
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+    const normalizedPassword = String(password || '').trim();
+
+    if (!normalizedEmail || !normalizedPassword) {
+      setAuthState('error');
+      setAuthError('Informe email e senha.');
+      return;
+    }
+
+    setAuthState('loading');
+    setAuthError('');
 
     try {
-      const response = await fetch(`/api/admin-login?password=${encodeURIComponent(password)}`, {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json'
-        }
-      });
+      const authResult =
+        action === 'register'
+          ? await firebaseAuthRequest('signUp', {
+              email: normalizedEmail,
+              password: normalizedPassword,
+              returnSecureToken: true
+            })
+          : await firebaseAuthRequest('signInWithPassword', {
+              email: normalizedEmail,
+              password: normalizedPassword,
+              returnSecureToken: true
+            });
 
-      const payload = await readJson(response);
-      if (!response.ok) {
-        throw new Error(payload?.error || `HTTP ${response.status}`);
+      const session = {
+        email: authResult.email || normalizedEmail,
+        idToken: authResult.idToken,
+        refreshToken: authResult.refreshToken,
+        expiresAt: Date.now() + Number(authResult.expiresIn || 3600) * 1000
+      };
+
+      if (action === 'register') {
+        await fetch('/api/admin-bootstrap', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${session.idToken}`,
+            Accept: 'application/json'
+          }
+        });
       }
 
-      saveToken(payload.token);
-      setSessionToken(payload.token);
-      setLoginState('success');
+      saveAuthSession(session);
+      setSessionToken(session.idToken);
+      setSetupRequired(false);
+      setAuthState('success');
+      setAuthError('');
     } catch (error) {
-      clearToken();
+      clearAuthSession();
       setSessionToken('');
-      setLoginState('error');
-      setLoginError(error?.message || 'Falha ao autenticar no painel.');
+      setAuthState('error');
+      setAuthError(error?.message || 'Falha ao autenticar no painel.');
     }
   };
 
+  const handleLogin = async event => {
+    event.preventDefault();
+    handleAuth(setupRequired ? 'register' : 'login');
+  };
+
   const handleLogout = () => {
-    clearToken();
+    clearAuthSession();
     setSessionToken('');
+    setEmail('');
     setPassword('');
     setRows([]);
     setCounts({ all: 0, active: 0, pending: 0, blocked: 0 });
@@ -171,10 +310,11 @@ export default function AdminPanel() {
     setStatusFilter('active');
     setLoadState('idle');
     setLoadError('');
-    setLoginState('idle');
     setGenerateState('idle');
     setGenerateError('');
     setGeneratedAccess(null);
+    setAuthState('idle');
+    setAuthError('');
   };
 
   const handleGenerateAccess = async event => {
@@ -219,33 +359,64 @@ export default function AdminPanel() {
   };
 
   if (!sessionToken) {
+    const isSetupMode = setupRequired;
+
     return (
       <main className="admin-shell">
         <section className="admin-card admin-login-card">
           <div className="admin-login-copy">
-            <span className="section-kicker">Painel administrativo</span>
-            <h1>IDs e vencimentos</h1>
-            <p>Entre com a senha para ver os IDs ativos, pendentes e bloqueados de qualquer lugar.</p>
+            <span className="section-kicker">{isSetupMode ? 'Registro inicial' : 'Login administrativo'}</span>
+            <h1>{isSetupMode ? 'Criar conta do admin' : 'Entrar no admin'}</h1>
+            <p>
+              {isSetupMode
+                ? 'Na primeira vez, crie a conta do administrador com email e senha. Depois disso, o registro some e fica só o login.'
+                : 'Entre com o email e a senha do administrador criado no primeiro acesso.'}
+            </p>
           </div>
           <form className="admin-login-form" onSubmit={handleLogin}>
             <label className="admin-field">
-              <span>Senha do painel</span>
+              <span>Email</span>
+              <input
+                type="email"
+                value={email}
+                onChange={event => {
+                  setEmail(event.target.value);
+                  if (authError) setAuthError('');
+                }}
+                placeholder="Digite o email do admin"
+                autoComplete="email"
+              />
+            </label>
+            <label className="admin-field">
+              <span>Senha</span>
               <input
                 type="password"
                 value={password}
-                onChange={event => setPassword(event.target.value)}
-                placeholder="Digite a senha administrativa"
-                autoComplete="current-password"
+                onChange={event => {
+                  setPassword(event.target.value);
+                  if (authError) setAuthError('');
+                }}
+                placeholder={isSetupMode ? 'Crie a senha inicial' : 'Digite sua senha'}
+                autoComplete={isSetupMode ? 'new-password' : 'current-password'}
               />
             </label>
-            {loginError ? <div className="admin-banner error">{loginError}</div> : null}
+            {authError ? <div className="admin-banner error">{authError}</div> : null}
+            {isSetupMode ? (
+              <div className="admin-banner">
+                <strong>Primeiro acesso</strong>
+                <p>Depois de criar esta conta, o painel muda para login e o cadastro some.</p>
+              </div>
+            ) : null}
             <div className="admin-login-actions">
-              <button type="submit" className="primary-btn" disabled={loginState === 'loading'}>
-                {loginState === 'loading' ? 'Entrando...' : 'Entrar no painel'}
+              <button type="submit" className="primary-btn" disabled={authState === 'loading'}>
+                {authState === 'loading'
+                  ? isSetupMode
+                    ? 'Criando conta...'
+                    : 'Entrando...'
+                  : isSetupMode
+                    ? 'Criar conta do admin'
+                    : 'Entrar com email e senha'}
               </button>
-              <a className="secondary-btn" href={telegramUrl} target="_blank" rel="noreferrer">
-                Falar no Telegram
-              </a>
             </div>
           </form>
         </section>
@@ -297,7 +468,7 @@ export default function AdminPanel() {
               <input value={generatorPlanName} onChange={event => setGeneratorPlanName(event.target.value)} />
             </label>
             <label className="admin-field">
-              <span>Código do plano</span>
+              <span>CÃ³digo do plano</span>
               <input value={generatorPlanId} onChange={event => setGeneratorPlanId(event.target.value)} />
             </label>
             <label className="admin-field">

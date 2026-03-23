@@ -1,6 +1,6 @@
 # App TV React
 
-Projeto React com Vite para uma landing page do App TV Android, tela de ativacao do Android TV e painel administrativo.
+Projeto React com Vite para a landing publica, a tela de ativacao da Android TV e o painel administrativo.
 
 ## Rodar localmente
 
@@ -21,24 +21,36 @@ npm run build
 - `/?tv=1` modo Android TV
 - `/admin` painel administrativo
 
-## Painel administrativo
+## Admin
 
-O painel usa:
+O admin usa Firebase Auth com email e senha.
 
-- `api/admin-login.js`
+Fluxo:
+
+1. Ao abrir `/admin`, o app consulta `/api/admin-status`.
+2. Se o painel ainda nao existir, aparece a tela de registro inicial com email e senha.
+3. Depois do primeiro cadastro, o registro some e fica apenas a tela de login.
+4. O acesso administrativo usa Firebase Auth e a sessao local no navegador.
+
+Rotas de apoio:
+
+- `api/admin-status.js`
+- `api/admin-bootstrap.js`
 - `api/admin-accesses.js`
-- `lib/admin-auth.js`
-- `lib/firebase-admin.js`
+- `api/admin-generate-access.js`
 
 Configure estas variaveis:
 
-- `ADMIN_PANEL_PASSWORD`
-- `ADMIN_SESSION_SECRET`
+- `VITE_FIREBASE_WEB_API_KEY`
 - `FIREBASE_PROJECT_ID`
 - `FIREBASE_CLIENT_EMAIL`
 - `FIREBASE_PRIVATE_KEY`
 
-Use a rota `/admin` para entrar no painel. O gerador cria IDs aleatorios no formato `ATA-0000`, `ATA-2547`, `ATA-9081` e assim por diante.
+Exemplo de acesso admin no Firebase:
+
+- primeira vez: crie o admin com email e senha
+- depois: entre com o mesmo email e senha
+- o registro inicial desaparece quando o painel e criado
 
 ## Firebase
 
@@ -50,7 +62,7 @@ Exemplo de documento:
 
 ```json
 {
-  "accessId": "ATV-0001",
+  "accessId": "ATA-2547",
   "name": "Cliente Teste",
   "planId": "mensal",
   "planName": "Plano Mensal",
