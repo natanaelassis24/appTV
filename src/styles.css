@@ -422,6 +422,31 @@ label {
   display: none;
 }
 
+.guide-expiry-banner {
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  z-index: 4;
+  display: grid;
+  gap: 4px;
+  max-width: min(92vw, 360px);
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 184, 0, 0.26);
+  background: rgba(255, 184, 0, 0.12);
+  backdrop-filter: blur(8px);
+  color: #fff3c4;
+}
+
+.guide-expiry-banner strong {
+  font-size: 0.95rem;
+}
+
+.guide-expiry-banner span {
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
 .tv-access-screen {
   min-height: 100vh;
   display: grid;

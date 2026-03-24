@@ -62,6 +62,24 @@ function clearCachedAccess() {
   window.localStorage.removeItem(ACCESS_CACHE_KEY);
 }
 
+function isCachedAccessExpired(access) {
+  const expiresAt = String(access?.expiresAt || '').trim();
+  if (!expiresAt) {
+    return false;
+  }
+
+  const parsed = new Date(`${expiresAt}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) {
+    return false;
+  }
+
+  const today = new Date();
+  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const expiresStart = new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+
+  return todayStart.getTime() > expiresStart.getTime();
+}
+
 function parseLocalDate(value) {
   const raw = String(value || '').trim();
   if (!raw) {
@@ -242,6 +260,7 @@ export default function App() {
   const channelListRef = useRef(null);
   const hlsRef = useRef(null);
   const expiryRefreshTimerRef = useRef(null);
+  const cacheRevalidateTimerRef = useRef(null);
   const recoveryRef = useRef({ network: 0, media: 0, fallbackTried: false });
 
   const selectedChannel = useMemo(() => {
@@ -349,6 +368,11 @@ export default function App() {
       return;
     }
 
+    if (cacheRevalidateTimerRef.current) {
+      window.clearTimeout(cacheRevalidateTimerRef.current);
+      cacheRevalidateTimerRef.current = null;
+    }
+
     const cachedAccess = readCachedAccess();
 
     if (!cachedAccess) {
@@ -359,37 +383,59 @@ export default function App() {
     setAccessIdInput(cachedAccess.accessId || '');
     setAccessLookupResult(cachedAccess);
 
-    const cacheAge = Date.now() - Number(cachedAccess.checkedAt || 0);
-    const cacheTtl = getAccessCacheTtl(cachedAccess.accessGranted);
-    const isCacheFresh = cacheAge <= cacheTtl;
-
-    if (cachedAccess.accessGranted && isCacheFresh) {
-      setAuthorizedAccess(cachedAccess);
-      setAccessLookupState('success');
+    if (cachedAccess.accessGranted && isCachedAccessExpired(cachedAccess)) {
+      clearCachedAccess();
+      setAccessLookupState('error');
+      setAccessLookupError('Seu acesso venceu.');
+      setAccessLookupResult(null);
+      setAuthorizedAccess(null);
       setAccessBootState('ready');
       return;
     }
 
-    lookupAccessById(cachedAccess.accessId)
-      .then(result => {
-        setAccessLookupState('success');
-        if (!result.accessGranted) {
-          setAuthorizedAccess(null);
-        }
-      })
-      .catch(error => {
-        if (cachedAccess.accessGranted && isCacheFresh) {
-          setAuthorizedAccess(cachedAccess);
-          setAccessLookupState('success');
-        } else {
-          setAccessLookupState('error');
-          setAccessLookupError(error.message || 'Falha ao validar o ID salvo.');
-          setAuthorizedAccess(null);
-        }
-      })
-      .finally(() => {
-        setAccessBootState('ready');
-      });
+    const cacheAge = Date.now() - Number(cachedAccess.checkedAt || 0);
+    const cacheTtl = getAccessCacheTtl(cachedAccess.accessGranted);
+    const isCacheFresh = cacheAge <= cacheTtl;
+
+    if (cachedAccess.accessGranted) {
+      setAuthorizedAccess(cachedAccess);
+      setAccessLookupState('success');
+    } else {
+      setAuthorizedAccess(null);
+      setAccessLookupState('success');
+    }
+
+    setAccessBootState('ready');
+
+    if (isCacheFresh) {
+      return;
+    }
+
+    const delayMs = cachedAccess.accessGranted ? 2 * 60 * 1000 : 5 * 60 * 1000;
+    cacheRevalidateTimerRef.current = window.setTimeout(() => {
+      lookupAccessById(cachedAccess.accessId)
+        .then(result => {
+          if (!result.accessGranted) {
+            clearCachedAccess();
+            setAuthorizedAccess(null);
+            setAccessLookupResult(result);
+            setAccessLookupState('success');
+            setAccessLookupError('');
+          }
+        })
+        .catch(error => {
+          if (cachedAccess.accessGranted) {
+            setAccessLookupError(error.message || 'Falha ao validar o ID salvo.');
+          }
+        });
+    }, delayMs);
+
+    return () => {
+      if (cacheRevalidateTimerRef.current) {
+        window.clearTimeout(cacheRevalidateTimerRef.current);
+        cacheRevalidateTimerRef.current = null;
+      }
+    };
   }, [isAndroidTv]);
 
   useEffect(() => {
@@ -1082,6 +1128,12 @@ export default function App() {
                   />
                 )}
                 <div className="guide-overlay" />
+                {authorizedAccess?.warning ? (
+                  <div className="guide-expiry-banner">
+                    <strong>Vencimento proximo</strong>
+                    <span>{authorizedAccess.warningMessage}</span>
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>
