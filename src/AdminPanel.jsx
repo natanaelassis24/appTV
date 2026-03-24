@@ -65,6 +65,9 @@ const resetAdminView = setters => {
   setters.setDiagnosticState('idle');
   setters.setDiagnosticError('');
   setters.setDiagnosticResult(null);
+  setters.setReadDiagnosticState('idle');
+  setters.setReadDiagnosticError('');
+  setters.setReadDiagnosticResult(null);
   setters.setAuthState('error');
   setters.setAuthError('Sessao expirada. Entre novamente.');
 };
@@ -166,6 +169,9 @@ export default function AdminPanel() {
   const [diagnosticState, setDiagnosticState] = useState('idle');
   const [diagnosticError, setDiagnosticError] = useState('');
   const [diagnosticResult, setDiagnosticResult] = useState(null);
+  const [readDiagnosticState, setReadDiagnosticState] = useState('idle');
+  const [readDiagnosticError, setReadDiagnosticError] = useState('');
+  const [readDiagnosticResult, setReadDiagnosticResult] = useState(null);
 
   const resetView = () =>
     resetAdminView({
@@ -184,6 +190,9 @@ export default function AdminPanel() {
       setDiagnosticState,
       setDiagnosticError,
       setDiagnosticResult,
+      setReadDiagnosticState,
+      setReadDiagnosticError,
+      setReadDiagnosticResult,
       setAuthState,
       setAuthError
     });
@@ -333,6 +342,9 @@ export default function AdminPanel() {
     setDiagnosticState('idle');
     setDiagnosticError('');
     setDiagnosticResult(null);
+    setReadDiagnosticState('idle');
+    setReadDiagnosticError('');
+    setReadDiagnosticResult(null);
     setAuthState('idle');
     setAuthError('');
   };
@@ -453,6 +465,43 @@ export default function AdminPanel() {
     }
   };
 
+  const handleFirestoreReadDiagnostic = async () => {
+    setReadDiagnosticState('loading');
+    setReadDiagnosticError('');
+    setReadDiagnosticResult(null);
+
+    try {
+      const response = await fetch(buildApiUrl('/api/firestore-read-diagnostics'), {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${sessionToken}`
+        }
+      });
+
+      const payload = await readJson(response);
+      if (!response.ok) {
+        throw new Error(payload?.error || `HTTP ${response.status}`);
+      }
+
+      setReadDiagnosticResult(payload);
+      setReadDiagnosticState('success');
+    } catch (error) {
+      const message = error?.message || 'Falha ao diagnosticar a leitura do Firestore.';
+      if (
+        message.includes('Sessao administrativa invalida') ||
+        message.includes('Token administrativo') ||
+        message.includes('expirada')
+      ) {
+        resetView();
+        return;
+      }
+
+      setReadDiagnosticState('error');
+      setReadDiagnosticError(message);
+    }
+  };
+
   if (!sessionToken) {
     return (
       <main className="admin-shell">
@@ -522,6 +571,9 @@ export default function AdminPanel() {
             </button>
             <button type="button" className="secondary-btn" onClick={handleFirebaseDiagnostic}>
               Testar Firebase
+            </button>
+            <button type="button" className="secondary-btn" onClick={handleFirestoreReadDiagnostic}>
+              Testar leitura
             </button>
             <button type="button" className="secondary-btn" onClick={handleLogout}>
               Sair
@@ -643,7 +695,22 @@ export default function AdminPanel() {
         {diagnosticState === 'success' && diagnosticResult ? (
           <div className="admin-banner success">
             Firebase ok: projeto {diagnosticResult.projectId || diagnosticResult.configuredProjectId || 'desconhecido'}.
-            {diagnosticResult.fingerprint ? ` Fingerprint ${diagnosticResult.fingerprint}.` : null}
+          </div>
+        ) : null}
+
+        {readDiagnosticState === 'loading' ? <div className="admin-banner neutral">Testando leitura do Firestore...</div> : null}
+        {readDiagnosticState === 'error' ? <div className="admin-banner error">{readDiagnosticError}</div> : null}
+        {readDiagnosticState === 'success' && readDiagnosticResult ? (
+          <div className="admin-banner success">
+            Firestore leu {readDiagnosticResult.totalDocs || 0} registro(s) em{' '}
+            {readDiagnosticResult.collection || 'access_registry'}.
+            {Array.isArray(readDiagnosticResult.sampleEntries) && readDiagnosticResult.sampleEntries.length
+              ? ` Exemplo: ${readDiagnosticResult.sampleEntries
+                  .slice(0, 3)
+                  .map(entry => entry.accessId || entry.id)
+                  .filter(Boolean)
+                  .join(', ')}.`
+              : null}
           </div>
         ) : null}
 

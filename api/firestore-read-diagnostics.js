@@ -1,9 +1,4 @@
-import {
-  getAuth,
-  getFirestore,
-  getFirebaseAdmin,
-  getFirebaseConfig
-} from '../lib/firebase-admin.js';
+import { getAuth, getFirestore, getFirebaseConfig, getFirebaseAdmin } from '../lib/firebase-admin.js';
 
 function applyCors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -14,6 +9,10 @@ function applyCors(res) {
 function sendJson(res, statusCode, payload) {
   applyCors(res);
   res.status(statusCode).json(payload);
+}
+
+function extractBearerToken(req) {
+  return String(req.headers?.authorization || req.headers?.Authorization || '').replace(/^Bearer\s+/i, '');
 }
 
 export default async function handler(req, res) {
@@ -29,11 +28,7 @@ export default async function handler(req, res) {
     return;
   }
 
-  const token = String(req.headers?.authorization || req.headers?.Authorization || '').replace(
-    /^Bearer\s+/i,
-    ''
-  );
-
+  const token = extractBearerToken(req);
   if (!token) {
     sendJson(res, 401, { error: 'Token administrativo ausente.' });
     return;
@@ -57,30 +52,34 @@ export default async function handler(req, res) {
       firebaseConfig?.projectId ||
       null;
 
-    const ref = firestore.collection('firebase_diagnostics').doc(`probe_${Date.now()}`);
-    const payload = {
-      ownerUid: decoded.uid,
-      ownerEmail: decoded.email || null,
-      createdAt: new Date().toISOString()
-    };
-
-    await ref.set(payload);
-    const snapshot = await ref.get();
-    const stored = snapshot.data() || null;
-    await ref.delete();
+    const snapshot = await firestore.collection('access_registry').limit(5).get();
+    const entries = snapshot.docs.map(doc => {
+      const data = doc.data() || {};
+      return {
+        id: doc.id,
+        accessId: data.accessId || doc.id,
+        name: data.name || 'Cliente',
+        planName: data.planName || 'Plano nao definido',
+        status: data.status || 'pending',
+        paymentLabel: data.paymentLabel || 'Aguardando confirmacao',
+        expiresAt: data.expiresAt || null
+      };
+    });
 
     sendJson(res, 200, {
       ok: true,
       projectId,
       configuredProjectId: firebaseConfig?.projectId || null,
-      writeOk: true,
-      readOk: Boolean(snapshot.exists),
-      deleteOk: true,
-      stored: stored ? { createdAt: stored.createdAt || null } : null
+      collection: 'access_registry',
+      readOk: true,
+      totalDocs: snapshot.size,
+      sampleEntries: entries,
+      ownerUid: decoded.uid,
+      ownerEmail: decoded.email || null
     });
   } catch (error) {
     sendJson(res, 500, {
-      error: error?.message || 'Falha ao diagnosticar o Firebase.'
+      error: error?.message || 'Falha ao diagnosticar a leitura do Firestore.'
     });
   }
 }
