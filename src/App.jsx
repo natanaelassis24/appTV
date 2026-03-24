@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import Hls from 'hls.js';
 import { CHANNELS } from './channels';
 import AdminPanel from './AdminPanel';
@@ -8,7 +8,6 @@ import { PUBLIC_PLANS } from '../lib/plans.js';
 const ACCESS_CACHE_KEY = 'app-tv-access-cache-v1';
 const ACTIVE_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 const INACTIVE_CACHE_TTL_MS = 15 * 60 * 1000;
-const TEMPORARY_ACCESS_ID = 'PROVISORIO';
 
 function getAccessCacheTtl(accessGranted) {
   return accessGranted ? ACTIVE_CACHE_TTL_MS : INACTIVE_CACHE_TTL_MS;
@@ -285,27 +284,6 @@ export default function App() {
     return payload;
   }
 
-  function enableTemporaryAccess() {
-    const temporaryAccess = {
-      accessId: TEMPORARY_ACCESS_ID,
-      name: 'Acesso provisório',
-      planId: 'manual',
-      planName: 'Acesso provisório',
-      accessGranted: true,
-      message: 'Acesso provisório liberado.',
-      paymentLabel: 'Liberado manualmente',
-      expiresAt: null,
-      expiresAtLabel: 'Temporário'
-    };
-
-    writeCachedAccess(temporaryAccess);
-    setAccessIdInput(TEMPORARY_ACCESS_ID);
-    setAccessLookupResult(temporaryAccess);
-    setAccessLookupError('');
-    setAccessLookupState('success');
-    setAccessBootState('ready');
-    setAuthorizedAccess(temporaryAccess);
-  }
 
   useEffect(() => {
     if (!filteredChannels.length) {
@@ -866,9 +844,6 @@ export default function App() {
                     {accessLookupState === 'loading' || accessBootState === 'booting'
                       ? 'Entrando...'
                       : 'Entrar'}
-                  </button>
-                  <button type="button" className="secondary-btn" onClick={enableTemporaryAccess}>
-                    Acesso provisório
                   </button>
                 </div>
               </form>

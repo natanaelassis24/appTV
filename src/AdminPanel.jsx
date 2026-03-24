@@ -18,6 +18,32 @@ const readJson = async response => {
   }
 };
 
+const toErrorMessage = value => {
+  if (!value) {
+    return '';
+  }
+
+  if (typeof value === 'string') {
+    return value.trim();
+  }
+
+  if (typeof value === 'object') {
+    const candidates = [value.message, value.error, value.details, value.statusText, value.status];
+    for (const candidate of candidates) {
+      const message = toErrorMessage(candidate);
+      if (message) {
+        return message;
+      }
+    }
+  }
+
+  try {
+    return String(value);
+  } catch {
+    return '';
+  }
+};
+
 const FIREBASE_AUTH_SESSION_KEY = 'app-tv-admin-firebase-session-v1';
 const loadRequestTracker = { current: 0 };
 const skipNextAutoLoad = { current: false };
@@ -88,7 +114,7 @@ async function firebaseAuthRequest(endpoint, payload) {
 
   const data = await readJson(response);
   if (!response.ok) {
-    throw new Error(data?.error?.message || data?.error || `HTTP ${response.status}`);
+    throw new Error(toErrorMessage(data?.error) || `HTTP ${response.status}`);
   }
 
   return data;
@@ -116,7 +142,7 @@ async function refreshFirebaseAuthSession(refreshToken) {
 
   const data = await readJson(response);
   if (!response.ok) {
-    throw new Error(data?.error?.message || data?.error || `HTTP ${response.status}`);
+    throw new Error(toErrorMessage(data?.error) || `HTTP ${response.status}`);
   }
 
   return {
@@ -258,7 +284,7 @@ export default function AdminPanel() {
 
         const payload = await readJson(response);
         if (!response.ok) {
-          throw new Error(payload?.error || `HTTP ${response.status}`);
+          throw new Error(toErrorMessage(payload?.error) || `HTTP ${response.status}`);
         }
 
         if (!payload || !Array.isArray(payload.entries)) {
@@ -277,7 +303,7 @@ export default function AdminPanel() {
           return;
         }
 
-        const message = error?.message || 'Falha ao carregar os IDs.';
+        const message = toErrorMessage(error?.message || error) || 'Falha ao carregar os IDs.';
         if (
           message.includes('Sessao administrativa invalida') ||
           message.includes('Token administrativo') ||
@@ -345,7 +371,7 @@ export default function AdminPanel() {
       clearAuthSession();
       setSessionToken('');
       setAuthState('error');
-      setAuthError(error?.message || 'Falha ao autenticar no painel.');
+      setAuthError(toErrorMessage(error?.message || error) || 'Falha ao autenticar no painel.');
     }
   };
 
@@ -397,7 +423,7 @@ export default function AdminPanel() {
 
       const responsePayload = await readJson(response);
       if (!response.ok) {
-        throw new Error(responsePayload?.error || `HTTP ${response.status}`);
+        throw new Error(toErrorMessage(responsePayload?.error) || `HTTP ${response.status}`);
       }
 
       if (!responsePayload || !responsePayload.accessId) {
@@ -422,7 +448,7 @@ export default function AdminPanel() {
 
       const refreshPayload = await readJson(refreshResponse);
       if (!refreshResponse.ok) {
-        throw new Error(refreshPayload?.error || `HTTP ${refreshResponse.status}`);
+        throw new Error(toErrorMessage(refreshPayload?.error) || `HTTP ${refreshResponse.status}`);
       }
 
       if (!refreshPayload || !Array.isArray(refreshPayload.entries)) {
@@ -436,7 +462,7 @@ export default function AdminPanel() {
         setLoadError('');
       }
     } catch (error) {
-      const message = error?.message || 'Falha ao gerar o ID.';
+      const message = toErrorMessage(error?.message || error) || 'Falha ao gerar o ID.';
       if (
         message.includes('Sessao administrativa invalida') ||
         message.includes('Token administrativo') ||
@@ -476,7 +502,7 @@ export default function AdminPanel() {
 
       const payload = await readJson(response);
       if (!response.ok) {
-        throw new Error(payload?.error || `HTTP ${response.status}`);
+        throw new Error(toErrorMessage(payload?.error) || `HTTP ${response.status}`);
       }
 
       if (generatedAccess?.accessId === normalizedAccessId) {
@@ -499,7 +525,7 @@ export default function AdminPanel() {
 
       const refreshPayload = await readJson(refreshResponse);
       if (!refreshResponse.ok) {
-        throw new Error(refreshPayload?.error || `HTTP ${refreshResponse.status}`);
+        throw new Error(toErrorMessage(refreshPayload?.error) || `HTTP ${refreshResponse.status}`);
       }
 
       if (!refreshPayload || !Array.isArray(refreshPayload.entries)) {
@@ -513,7 +539,7 @@ export default function AdminPanel() {
         setLoadError('');
       }
     } catch (error) {
-      const message = error?.message || 'Falha ao excluir o ID.';
+      const message = toErrorMessage(error?.message || error) || 'Falha ao excluir o ID.';
       if (
         message.includes('Sessao administrativa invalida') ||
         message.includes('Token administrativo') ||
