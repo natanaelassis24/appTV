@@ -31,20 +31,27 @@ function parseDate(value) {
 }
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    sendJson(res, 405, { error: 'Metodo nao permitido.' });
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Allow', 'POST, GET, OPTIONS');
+    sendJson(res, 204, null);
+    return;
+  }
+
+  if (!['POST', 'GET'].includes(req.method)) {
+    sendJson(res, 405, { error: `Metodo nao permitido: ${req.method || 'desconhecido'}.` });
     return;
   }
 
   const token = extractBearerToken(req);
 
-  const name = String(req.body?.name || 'Cliente').trim() || 'Cliente';
-  const planName = String(req.body?.planName || 'Plano manual').trim() || 'Plano manual';
-  const planId = String(req.body?.planId || 'manual').trim() || 'manual';
-  const status = normalizeStatus(req.body?.status);
-  const paymentLabel = String(req.body?.paymentLabel || 'Gerado manualmente').trim() || 'Gerado manualmente';
-  const expiresAtInput = parseDate(req.body?.expiresAt);
-  const expiresInMonths = parseMonths(req.body?.expiresInMonths);
+  const input = req.method === 'GET' ? req.query || {} : req.body || {};
+  const name = String(input?.name || 'Cliente').trim() || 'Cliente';
+  const planName = String(input?.planName || 'Plano manual').trim() || 'Plano manual';
+  const planId = String(input?.planId || 'manual').trim() || 'manual';
+  const status = normalizeStatus(input?.status);
+  const paymentLabel = String(input?.paymentLabel || 'Gerado manualmente').trim() || 'Gerado manualmente';
+  const expiresAtInput = parseDate(input?.expiresAt);
+  const expiresInMonths = parseMonths(input?.expiresInMonths);
 
   try {
     const firestore = getFirestore();

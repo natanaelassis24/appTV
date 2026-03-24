@@ -290,6 +290,15 @@ export default function AdminPanel() {
     setGenerateState('loading');
     setGenerateError('');
 
+    const requestBody = {
+      name: generatorName,
+      planName: generatorPlanName,
+      planId: generatorPlanId,
+      status: generatorStatus,
+      expiresInMonths: generatorExpiresAt ? '' : generatorExpiresInMonths,
+      expiresAt: generatorExpiresAt
+    };
+
     try {
       const response = await fetch('/api/admin-generate-access', {
         method: 'POST',
@@ -298,24 +307,41 @@ export default function AdminPanel() {
           Accept: 'application/json',
           Authorization: `Bearer ${sessionToken}`
         },
-        body: JSON.stringify({
-          name: generatorName,
-          planName: generatorPlanName,
-          planId: generatorPlanId,
-          status: generatorStatus,
-          expiresInMonths: generatorExpiresAt ? '' : generatorExpiresInMonths,
-          expiresAt: generatorExpiresAt
-        })
+        body: JSON.stringify(requestBody)
       });
 
-      const payload = await readJson(response);
+      const responsePayload = await readJson(response);
       if (!response.ok) {
-        throw new Error(payload?.error || `HTTP ${response.status}`);
+        if (response.status === 405) {
+          const fallbackResponse = await fetch('/api/admin-generate-access', {
+            method: 'GET',
+            headers: {
+              Accept: 'application/json',
+              Authorization: `Bearer ${sessionToken}`
+            }
+          });
+
+          const fallbackPayload = await readJson(fallbackResponse);
+          if (!fallbackResponse.ok) {
+            throw new Error(fallbackPayload?.error || `HTTP ${fallbackResponse.status}`);
+          }
+
+          setGeneratedAccess(fallbackPayload);
+          setGenerateState('success');
+          setSearchTerm(fallbackPayload?.accessId || '');
+          setStatusFilter('all');
+          setTimeout(() => {
+            window.location.reload();
+          }, 600);
+          return;
+        }
+
+        throw new Error(responsePayload?.error || `HTTP ${response.status}`);
       }
 
-      setGeneratedAccess(payload);
+      setGeneratedAccess(responsePayload);
       setGenerateState('success');
-      setSearchTerm(payload?.accessId || '');
+      setSearchTerm(responsePayload?.accessId || '');
       setStatusFilter('all');
       setTimeout(() => {
         window.location.reload();

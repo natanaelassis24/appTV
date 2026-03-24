@@ -36,8 +36,14 @@ function normalizeEntry(doc) {
 }
 
 export default async function handler(req, res) {
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Allow', 'GET, OPTIONS');
+    sendJson(res, 204, null);
+    return;
+  }
+
   if (req.method !== 'GET') {
-    sendJson(res, 405, { error: 'Metodo nao permitido.' });
+    sendJson(res, 405, { error: `Metodo nao permitido: ${req.method || 'desconhecido'}.` });
     return;
   }
 
