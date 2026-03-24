@@ -7,14 +7,10 @@ function sendJson(res, statusCode, payload) {
 
 function getStatusMessage(status) {
   if (status === 'active') {
-    return 'Este ID esta ativo. O acesso aos canais foi liberado.';
+    return 'Liberado';
   }
 
-  if (status === 'pending') {
-    return 'Este ID esta pendente. Regularize o pagamento para continuar acessando os canais.';
-  }
-
-  return 'Este ID esta bloqueado. O acesso aos canais foi suspenso.';
+  return 'Bloqueado';
 }
 
 export default async function handler(req, res) {
@@ -40,12 +36,13 @@ export default async function handler(req, res) {
 
     const data = doc.data() || {};
     const status = getAccessStatus(data);
+    const accessGranted = status === 'active';
     sendJson(res, 200, {
       accessId: data.accessId || doc.id,
       name: data.name || 'Cliente',
       planId: data.planId || 'manual',
       planName: data.planName || 'Plano nao definido',
-      status,
+      accessGranted,
       message: getStatusMessage(status),
       paymentLabel: data.paymentLabel || 'Aguardando confirmacao',
       expiresAt: data.expiresAt || null

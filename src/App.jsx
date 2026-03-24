@@ -8,14 +8,9 @@ import { PUBLIC_PLANS } from '../lib/plans.js';
 const ACCESS_CACHE_KEY = 'app-tv-access-cache-v1';
 const ACTIVE_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 const INACTIVE_CACHE_TTL_MS = 15 * 60 * 1000;
-const ACCESS_STATUS_LABELS = {
-  active: 'Acesso ativo',
-  pending: 'Pagamento pendente',
-  blocked: 'Acesso bloqueado'
-};
 
-function getAccessCacheTtl(status) {
-  return status === 'active' ? ACTIVE_CACHE_TTL_MS : INACTIVE_CACHE_TTL_MS;
+function getAccessCacheTtl(accessGranted) {
+  return accessGranted ? ACTIVE_CACHE_TTL_MS : INACTIVE_CACHE_TTL_MS;
 }
 
 function readCachedAccess() {
@@ -30,7 +25,7 @@ function readCachedAccess() {
     }
 
     const parsed = JSON.parse(raw);
-    if (!parsed?.accessId || !parsed?.status || !parsed?.checkedAt) {
+    if (!parsed?.accessId || typeof parsed?.accessGranted !== 'boolean' || !parsed?.checkedAt) {
       return null;
     }
 
@@ -186,7 +181,7 @@ export default function App() {
   const [accessLookupError, setAccessLookupError] = useState('');
   const [accessBootState, setAccessBootState] = useState(isAndroidTv ? 'booting' : 'idle');
   const [authorizedAccess, setAuthorizedAccess] = useState(null);
-  const isPlaybackEnabled = isAndroidTv && authorizedAccess?.status === 'active';
+  const isPlaybackEnabled = isAndroidTv && authorizedAccess?.accessGranted === true;
   const filteredChannels = useMemo(() => CHANNELS, []);
 
   const [guideDrawerOpen, setGuideDrawerOpen] = useState(false);
@@ -271,13 +266,21 @@ export default function App() {
       throw new Error(payload?.error || 'Nao foi possivel consultar o ID.');
     }
 
+    if (!payload || payload.error) {
+      throw new Error(payload?.error || 'ID invalido ou resposta invalida da API.');
+    }
+
+    if (typeof payload.accessGranted !== 'boolean') {
+      throw new Error('ID invalido ou resposta invalida da API.');
+    }
+
     if (persist) {
       writeCachedAccess(payload);
     }
 
     setAccessLookupResult(payload);
     setAccessLookupError('');
-    setAuthorizedAccess(payload.status === 'active' ? payload : null);
+    setAuthorizedAccess(payload.accessGranted ? payload : null);
     return payload;
   }
 
@@ -311,10 +314,10 @@ export default function App() {
     setAccessLookupResult(cachedAccess);
 
     const cacheAge = Date.now() - Number(cachedAccess.checkedAt || 0);
-    const cacheTtl = getAccessCacheTtl(cachedAccess.status);
+    const cacheTtl = getAccessCacheTtl(cachedAccess.accessGranted);
     const isCacheFresh = cacheAge <= cacheTtl;
 
-    if (cachedAccess.status === 'active' && isCacheFresh) {
+    if (cachedAccess.accessGranted && isCacheFresh) {
       setAuthorizedAccess(cachedAccess);
       setAccessLookupState('success');
       setAccessBootState('ready');
@@ -324,12 +327,12 @@ export default function App() {
     lookupAccessById(cachedAccess.accessId)
       .then(result => {
         setAccessLookupState('success');
-        if (result.status !== 'active') {
+        if (!result.accessGranted) {
           setAuthorizedAccess(null);
         }
       })
       .catch(error => {
-        if (cachedAccess.status === 'active' && isCacheFresh) {
+        if (cachedAccess.accessGranted && isCacheFresh) {
           setAuthorizedAccess(cachedAccess);
           setAccessLookupState('success');
         } else {
@@ -773,8 +776,8 @@ export default function App() {
                   ) : null}
 
                   {accessLookupState === 'success' && accessLookupResult ? (
-                    <div className={`access-result-card ${accessLookupResult.status}`}>
-                      <strong>{ACCESS_STATUS_LABELS[accessLookupResult.status] || 'Status desconhecido'}</strong>
+                    <div className={`access-result-card ${accessLookupResult.accessGranted ? 'active' : 'blocked'}`}>
+                      <strong>{accessLookupResult.accessGranted ? 'Liberado' : 'Bloqueado'}</strong>
                       <p>{accessLookupResult.message}</p>
                       <dl className="access-result-grid">
                         <div>
@@ -870,8 +873,8 @@ export default function App() {
               ) : null}
 
               {accessLookupState === 'success' && accessLookupResult ? (
-                <div className={`tv-access-result ${accessLookupResult.status}`}>
-                  <strong>{ACCESS_STATUS_LABELS[accessLookupResult.status] || 'Status desconhecido'}</strong>
+                <div className={`tv-access-result ${accessLookupResult.accessGranted ? 'active' : 'blocked'}`}>
+                  <strong>{accessLookupResult.accessGranted ? 'Liberado' : 'Bloqueado'}</strong>
                   <p>{accessLookupResult.message}</p>
                   <dl className="tv-access-meta">
                     <div>
