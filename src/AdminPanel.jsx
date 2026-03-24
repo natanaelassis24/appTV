@@ -295,51 +295,22 @@ export default function AdminPanel() {
     setGenerateState('loading');
     setGenerateError('');
 
-    const requestBody = {
-      name: generatorName,
-      planId: generatorPlanId
-    };
+    const requestUrl = `/api/admin-generate-access?name=${encodeURIComponent(generatorName)}&planId=${encodeURIComponent(generatorPlanId)}`;
 
     try {
-      const response = await fetch('/api/admin-generate-access', {
-        method: 'POST',
+      const response = await fetch(requestUrl, {
+        method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
           Accept: 'application/json',
           Authorization: `Bearer ${sessionToken}`
-        },
-        body: JSON.stringify(requestBody)
+        }
       });
 
       const responsePayload = await readJson(response);
       if (!response.ok) {
-        if (response.status === 405) {
-          const fallbackResponse = await fetch('/api/admin-generate-access', {
-            method: 'GET',
-            headers: {
-              Accept: 'application/json',
-              Authorization: `Bearer ${sessionToken}`
-            }
-          });
-
-          const fallbackPayload = await readJson(fallbackResponse);
-          if (!fallbackResponse.ok) {
-            throw new Error(fallbackPayload?.error || `HTTP ${fallbackResponse.status}`);
-          }
-
-          setGeneratedAccess(fallbackPayload);
-          setGenerateState('success');
-          setSearchTerm(fallbackPayload?.accessId || '');
-          setStatusFilter('all');
-          setTimeout(() => {
-            window.location.reload();
-          }, 600);
-          return;
-        }
-
         if (response.status === 405 || response.status === 500) {
           const diagnosticResponse = await fetch('/api/firebase-diagnostics', {
-            method: 'POST',
+            method: 'GET',
             headers: {
               Accept: 'application/json',
               Authorization: `Bearer ${sessionToken}`
@@ -376,7 +347,7 @@ export default function AdminPanel() {
 
     try {
       const response = await fetch('/api/firebase-diagnostics', {
-        method: 'POST',
+        method: 'GET',
         headers: {
           Accept: 'application/json',
           Authorization: `Bearer ${sessionToken}`

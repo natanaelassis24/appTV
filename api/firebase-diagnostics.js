@@ -5,6 +5,18 @@ function sendJson(res, statusCode, payload) {
 }
 
 export default async function handler(req, res) {
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Allow', 'GET, POST, OPTIONS');
+    sendJson(res, 204, null);
+    return;
+  }
+
+  if (req.method !== 'GET' && req.method !== 'POST') {
+    res.setHeader('Allow', 'GET, POST, OPTIONS');
+    sendJson(res, 405, { error: `Metodo nao permitido: ${req.method || 'desconhecido'}.` });
+    return;
+  }
+
   const token = String(req.headers?.authorization || req.headers?.Authorization || '').replace(
     /^Bearer\s+/i,
     ''
