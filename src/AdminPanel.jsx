@@ -20,6 +20,7 @@ const readJson = async response => {
 
 const FIREBASE_AUTH_SESSION_KEY = 'app-tv-admin-firebase-session-v1';
 const loadRequestTracker = { current: 0 };
+const skipNextAutoLoad = { current: false };
 
 const readAuthSession = () => {
   try {
@@ -233,6 +234,10 @@ export default function AdminPanel() {
 
   useEffect(() => {
     if (!sessionToken) return;
+    if (skipNextAutoLoad.current) {
+      skipNextAutoLoad.current = false;
+      return;
+    }
 
     const load = async () => {
       const requestId = ++loadRequestTracker.current;
@@ -415,6 +420,7 @@ export default function AdminPanel() {
       setGeneratedAccess(responsePayload);
       setGenerateState('success');
       setSearchTerm(responsePayload?.accessId || '');
+      skipNextAutoLoad.current = true;
       setStatusFilter('all');
 
       loadRequestTracker.current += 1;
@@ -545,6 +551,7 @@ export default function AdminPanel() {
       setProbeResult(payload);
       setProbeState('success');
       setSearchTerm(payload?.accessId || '');
+      skipNextAutoLoad.current = true;
       setStatusFilter('all');
 
       loadRequestTracker.current += 1;
