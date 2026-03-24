@@ -128,8 +128,6 @@ export default function AdminPanel() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [sessionToken, setSessionToken] = useState('');
-  const [setupRequired, setSetupRequired] = useState(true);
-  const [authMode, setAuthMode] = useState('register');
   const [authState, setAuthState] = useState('idle');
   const [authError, setAuthError] = useState('');
   const [statusFilter, setStatusFilter] = useState('active');
@@ -149,25 +147,6 @@ export default function AdminPanel() {
   const [generatedAccess, setGeneratedAccess] = useState(null);
 
   useEffect(() => {
-    const loadSetupState = async () => {
-      try {
-        const response = await fetch('/api/admin-status', {
-          headers: { Accept: 'application/json' }
-        });
-        const payload = await readJson(response);
-        if (response.ok) {
-          const nextSetupRequired = Boolean(payload?.setupRequired);
-          setSetupRequired(nextSetupRequired);
-          setAuthMode(nextSetupRequired ? 'register' : 'login');
-          return;
-        }
-      } catch (_) {
-        // keep default hidden button state if the check fails
-      }
-    };
-
-    loadSetupState();
-
     const session = readAuthSession();
     const restoreSession = async () => {
       if (!session?.refreshToken) return;
@@ -239,8 +218,7 @@ export default function AdminPanel() {
     });
   }, [rows, searchTerm]);
 
-  const handleAuth = async mode => {
-    const action = mode === 'register' ? 'register' : 'login';
+  const handleAuth = async () => {
     const normalizedEmail = String(email || '').trim().toLowerCase();
     const normalizedPassword = String(password || '').trim();
 
@@ -254,36 +232,11 @@ export default function AdminPanel() {
     setAuthError('');
 
     try {
-      let authResult;
-
-      if (action === 'register') {
-        try {
-          authResult = await firebaseAuthRequest('signUp', {
-            email: normalizedEmail,
-            password: normalizedPassword,
-            returnSecureToken: true
-          });
-        } catch (error) {
-          const message = String(error?.message || '');
-          const alreadyExists = /EMAIL_EXISTS|EMAIL_ALREADY_EXISTS/i.test(message);
-
-          if (!alreadyExists) {
-            throw error;
-          }
-
-          authResult = await firebaseAuthRequest('signInWithPassword', {
-            email: normalizedEmail,
-            password: normalizedPassword,
-            returnSecureToken: true
-          });
-        }
-      } else {
-        authResult = await firebaseAuthRequest('signInWithPassword', {
-          email: normalizedEmail,
-          password: normalizedPassword,
-          returnSecureToken: true
-        });
-      }
+      const authResult = await firebaseAuthRequest('signInWithPassword', {
+        email: normalizedEmail,
+        password: normalizedPassword,
+        returnSecureToken: true
+      });
 
       const session = {
         email: authResult.email || normalizedEmail,
@@ -292,19 +245,8 @@ export default function AdminPanel() {
         expiresAt: Date.now() + Number(authResult.expiresIn || 3600) * 1000
       };
 
-      if (action === 'register') {
-        await fetch('/api/admin-bootstrap', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${session.idToken}`,
-            Accept: 'application/json'
-          }
-        });
-      }
-
       saveAuthSession(session);
       setSessionToken(session.idToken);
-      setSetupRequired(false);
       setAuthState('success');
       setAuthError('');
     } catch (error) {
@@ -317,7 +259,7 @@ export default function AdminPanel() {
 
   const handleLogin = async event => {
     event.preventDefault();
-    handleAuth(authMode);
+    handleAuth();
   };
 
   const handleLogout = () => {
@@ -336,6 +278,11 @@ export default function AdminPanel() {
     setGeneratedAccess(null);
     setAuthState('idle');
     setAuthError('');
+  };
+
+  const handleClose = () => {
+    handleLogout();
+    window.location.href = '/';
   };
 
   const handleGenerateAccess = async event => {
@@ -380,35 +327,13 @@ export default function AdminPanel() {
   };
 
   if (!sessionToken) {
-    const isSetupMode = authMode === 'register';
-
     return (
       <main className="admin-shell">
         <section className="admin-card admin-login-card">
           <div className="admin-login-copy">
-            <span className="section-kicker">{isSetupMode ? 'Registro inicial' : 'Login administrativo'}</span>
-            <h1>{isSetupMode ? 'Criar primeira conta' : 'Entrar no admin'}</h1>
-            <p>
-              {isSetupMode
-                ? 'Cadastre o primeiro administrador com email e senha. Depois de salvar, a tela vira login.'
-                : 'Entre com o email e a senha do administrador criado no primeiro acesso.'}
-            </p>
-          </div>
-          <div className="admin-login-actions">
-            <button
-              type="button"
-              className={`admin-filter${isSetupMode ? ' active' : ''}`}
-              onClick={() => setAuthMode('register')}
-            >
-              Registrar primeiro admin
-            </button>
-            <button
-              type="button"
-              className={`admin-filter${!isSetupMode ? ' active' : ''}`}
-              onClick={() => setAuthMode('login')}
-            >
-              Já tenho conta
-            </button>
+            <span className="section-kicker">Login administrativo</span>
+            <h1>Entrar no admin</h1>
+            <p>Entre com o email e a senha do administrador cadastrado.</p>
           </div>
           <form className="admin-login-form" onSubmit={handleLogin}>
             <label className="admin-field">
@@ -417,11 +342,11 @@ export default function AdminPanel() {
                 type="email"
                 value={email}
                 onChange={event => {
-                  setEmail(event.target.value);
-                  if (authError) setAuthError('');
-                }}
-                placeholder="Digite o email do admin"
-                autoComplete="email"
+                setEmail(event.target.value);
+                if (authError) setAuthError('');
+              }}
+              placeholder="Digite o email do admin"
+              autoComplete="email"
               />
             </label>
             <label className="admin-field">
@@ -430,29 +355,20 @@ export default function AdminPanel() {
                 type="password"
                 value={password}
                 onChange={event => {
-                  setPassword(event.target.value);
-                  if (authError) setAuthError('');
-                }}
-                placeholder={isSetupMode ? 'Crie a senha inicial' : 'Digite sua senha'}
-                autoComplete={isSetupMode ? 'new-password' : 'current-password'}
+                setPassword(event.target.value);
+                if (authError) setAuthError('');
+              }}
+                placeholder="Digite sua senha"
+                autoComplete="current-password"
               />
             </label>
             {authError ? <div className="admin-banner error">{authError}</div> : null}
-            {isSetupMode ? (
-              <div className="admin-banner">
-                <strong>Primeiro acesso</strong>
-                <p>Enquanto nao existir o painel inicial, o sistema mostra somente o cadastro.</p>
-              </div>
-            ) : null}
             <div className="admin-login-actions">
+              <button type="button" className="secondary-btn" onClick={handleClose}>
+                Fechar
+              </button>
               <button type="submit" className="primary-btn" disabled={authState === 'loading'}>
-                {authState === 'loading'
-                  ? isSetupMode
-                    ? 'Criando conta...'
-                    : 'Entrando...'
-                  : isSetupMode
-                    ? 'Criar conta inicial'
-                    : 'Entrar com email e senha'}
+                {authState === 'loading' ? 'Entrando...' : 'Entrar com email e senha'}
               </button>
             </div>
           </form>
@@ -471,6 +387,9 @@ export default function AdminPanel() {
             <p>Veja os acessos ativos e a data de vencimento de cada cliente.</p>
           </div>
           <div className="admin-topbar-actions">
+            <button type="button" className="secondary-btn" onClick={handleClose}>
+              Fechar
+            </button>
             <button type="button" className="secondary-btn" onClick={() => window.location.reload()}>
               Atualizar
             </button>

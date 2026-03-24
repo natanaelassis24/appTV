@@ -27,10 +27,9 @@ O admin usa Firebase Auth com email e senha.
 
 Fluxo:
 
-1. Ao abrir `/admin`, o app consulta `/api/admin-status`.
-2. Se o painel ainda nao existir, aparece a tela de registro inicial com email e senha.
-3. Depois do primeiro cadastro, o registro some e fica apenas a tela de login.
-4. O acesso administrativo usa Firebase Auth e a sessao local no navegador.
+1. Ao abrir `/admin`, o app mostra apenas a tela de login.
+2. O acesso administrativo usa Firebase Auth e a sessao local no navegador.
+3. A conta do admin precisa existir antes no Firebase Authentication.
 
 Rotas de apoio:
 
@@ -41,16 +40,20 @@ Rotas de apoio:
 
 Configure estas variaveis:
 
+- `APP_BASE_URL`
 - `VITE_FIREBASE_WEB_API_KEY`
 - `FIREBASE_PROJECT_ID`
 - `FIREBASE_CLIENT_EMAIL`
 - `FIREBASE_PRIVATE_KEY`
 
+O valor de `VITE_FIREBASE_WEB_API_KEY` vem do app Web do Firebase, no campo `apiKey`.
+
+Use `.env.local` na raiz do projeto para os valores reais. O arquivo `.env.local.example` serve como modelo.
+
 Exemplo de acesso admin no Firebase:
 
-- primeira vez: crie o admin com email e senha
+- crie o admin diretamente no Firebase Authentication
 - depois: entre com o mesmo email e senha
-- o registro inicial desaparece quando o painel e criado
 
 ## Firebase
 
