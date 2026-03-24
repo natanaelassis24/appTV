@@ -33,6 +33,7 @@ Rotas de apoio:
 
 Configure estas variaveis:
 
+- `APP_API_BASE_URL`
 - `APP_FIREBASE_WEB_API_KEY`
 - `APP_FIREBASE_PROJECT_ID`
 - `APP_FIREBASE_CLIENT_EMAIL`
@@ -40,7 +41,7 @@ Configure estas variaveis:
 
 O valor de `APP_FIREBASE_WEB_API_KEY` vem do app Web do Firebase, no campo `apiKey`.
 
-Use as variaveis no painel da Vercel para producao. O arquivo `.env.local` na raiz do projeto serve apenas para o ambiente de desenvolvimento da sua maquina.
+Use `APP_API_BASE_URL` no painel da Vercel para apontar as chamadas da TV e do admin para a API publicada. O arquivo `.env.local` na raiz do projeto serve apenas para o ambiente de desenvolvimento da sua maquina.
 
 Exemplo de acesso admin no Firebase:
 
@@ -79,5 +80,5 @@ Configure as variaveis publicas:
 1. Aponte o projeto para a raiz do repositorio.
 2. Use build `npm run build`.
 3. Mantenha a pasta `api` para as functions.
-4. Garanta as variaveis `APP_FIREBASE_WEB_API_KEY`, `APP_FIREBASE_PROJECT_ID`, `APP_FIREBASE_CLIENT_EMAIL` e `APP_FIREBASE_PRIVATE_KEY` no projeto da Vercel.
+4. Garanta as variaveis `APP_API_BASE_URL`, `APP_FIREBASE_WEB_API_KEY`, `APP_FIREBASE_PROJECT_ID`, `APP_FIREBASE_CLIENT_EMAIL` e `APP_FIREBASE_PRIVATE_KEY` no projeto da Vercel.
 5. O `vercel.json` ja roteia `/api/*` para as funcoes Node.
