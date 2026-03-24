@@ -52,7 +52,7 @@ export default async function handler(req, res) {
       firebaseConfig?.projectId ||
       null;
 
-    const ref = firestore.collection('__diagnostics__').doc(`probe_${Date.now()}`);
+    const ref = firestore.collection('firebase_diagnostics').doc(`probe_${Date.now()}`);
     const payload = {
       ownerUid: decoded.uid,
       ownerEmail: decoded.email || null,

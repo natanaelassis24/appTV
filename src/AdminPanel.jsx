@@ -48,6 +48,27 @@ const clearAuthSession = () => {
   } catch {}
 };
 
+const resetAdminView = setters => {
+  clearAuthSession();
+  setters.setSessionToken('');
+  setters.setEmail('');
+  setters.setPassword('');
+  setters.setRows([]);
+  setters.setCounts({ all: 0, active: 0, pending: 0, blocked: 0 });
+  setters.setSearchTerm('');
+  setters.setStatusFilter('active');
+  setters.setLoadState('idle');
+  setters.setLoadError('');
+  setters.setGenerateState('idle');
+  setters.setGenerateError('');
+  setters.setGeneratedAccess(null);
+  setters.setDiagnosticState('idle');
+  setters.setDiagnosticError('');
+  setters.setDiagnosticResult(null);
+  setters.setAuthState('error');
+  setters.setAuthError('Sessao expirada. Entre novamente.');
+};
+
 async function firebaseAuthRequest(endpoint, payload) {
   const apiKey = PUBLIC_RUNTIME_CONFIG.firebaseWebApiKey;
   if (!apiKey) {
@@ -146,6 +167,27 @@ export default function AdminPanel() {
   const [diagnosticError, setDiagnosticError] = useState('');
   const [diagnosticResult, setDiagnosticResult] = useState(null);
 
+  const resetView = () =>
+    resetAdminView({
+      setSessionToken,
+      setEmail,
+      setPassword,
+      setRows,
+      setCounts,
+      setSearchTerm,
+      setStatusFilter,
+      setLoadState,
+      setLoadError,
+      setGenerateState,
+      setGenerateError,
+      setGeneratedAccess,
+      setDiagnosticState,
+      setDiagnosticError,
+      setDiagnosticResult,
+      setAuthState,
+      setAuthError
+    });
+
   useEffect(() => {
     const session = readAuthSession();
     const restoreSession = async () => {
@@ -197,8 +239,18 @@ export default function AdminPanel() {
         setCounts(payload?.counts || { all: 0, active: 0, pending: 0, blocked: 0 });
         setLoadState('success');
       } catch (error) {
+        const message = error?.message || 'Falha ao carregar os IDs.';
+        if (
+          message.includes('Sessao administrativa invalida') ||
+          message.includes('Token administrativo') ||
+          message.includes('expirada')
+        ) {
+          resetView();
+          return;
+        }
+
         setRows([]);
-        setLoadError(error?.message || 'Falha ao carregar os IDs.');
+        setLoadError(message);
         setLoadState('error');
       }
     };
@@ -349,8 +401,18 @@ export default function AdminPanel() {
         setLoadError('');
       }
     } catch (error) {
+      const message = error?.message || 'Falha ao gerar o ID.';
+      if (
+        message.includes('Sessao administrativa invalida') ||
+        message.includes('Token administrativo') ||
+        message.includes('expirada')
+      ) {
+        resetView();
+        return;
+      }
+
       setGenerateState('error');
-      setGenerateError(error?.message || 'Falha ao gerar o ID.');
+      setGenerateError(message);
     }
   };
 
@@ -376,8 +438,18 @@ export default function AdminPanel() {
       setDiagnosticResult(payload);
       setDiagnosticState('success');
     } catch (error) {
+      const message = error?.message || 'Falha ao diagnosticar o Firebase.';
+      if (
+        message.includes('Sessao administrativa invalida') ||
+        message.includes('Token administrativo') ||
+        message.includes('expirada')
+      ) {
+        resetView();
+        return;
+      }
+
       setDiagnosticState('error');
-      setDiagnosticError(error?.message || 'Falha ao diagnosticar o Firebase.');
+      setDiagnosticError(message);
     }
   };
 
