@@ -135,40 +135,6 @@ const formatDate = value => {
   }
 };
 
-  const normalize = (entry, id) => ({
-    accessId: entry.accessId || id,
-    name: entry.name || 'Cliente',
-    planName: entry.planName || 'Plano nao definido',
-    status: entry.status || 'pending',
-    paymentLabel: entry.paymentLabel || 'Aguardando confirmacao',
-    expiresAt: entry.expiresAt || null,
-    expiresAtLabel: formatDate(entry.expiresAt)
-  });
-
-  const upsertGeneratedRow = entry => {
-    const normalized = normalize(entry, entry?.accessId);
-    setRows(prevRows => {
-      const filtered = prevRows.filter(row => row.accessId !== normalized.accessId);
-      return [normalized, ...filtered];
-    });
-    setCounts(prevCounts => {
-      const previousStatus = rows.find(row => row.accessId === normalized.accessId)?.status;
-      const nextCounts = { ...prevCounts };
-      nextCounts.all = Math.max(0, Number(nextCounts.all || 0));
-      if (previousStatus && previousStatus in nextCounts) {
-        nextCounts[previousStatus] = Math.max(0, Number(nextCounts[previousStatus] || 0) - 1);
-      } else {
-        nextCounts.all += 1;
-      }
-      if (normalized.status in nextCounts) {
-        nextCounts[normalized.status] = Number(nextCounts[normalized.status] || 0) + 1;
-      }
-      return nextCounts;
-    });
-    setLoadState('success');
-    setLoadError('');
-  };
-
 export default function AdminPanel() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -186,6 +152,44 @@ export default function AdminPanel() {
   const [generateState, setGenerateState] = useState('idle');
   const [generateError, setGenerateError] = useState('');
   const [generatedAccess, setGeneratedAccess] = useState(null);
+
+  const normalizeEntry = entry => ({
+    accessId: entry.accessId || '',
+    name: entry.name || 'Cliente',
+    planName: entry.planName || 'Plano nao definido',
+    status: entry.status || 'pending',
+    paymentLabel: entry.paymentLabel || 'Aguardando confirmacao',
+    expiresAt: entry.expiresAt || null,
+    expiresAtLabel: formatDate(entry.expiresAt)
+  });
+
+  const upsertGeneratedRow = entry => {
+    const normalized = normalizeEntry(entry);
+    if (!normalized.accessId) return;
+
+    setRows(prevRows => {
+      const filtered = prevRows.filter(row => row.accessId !== normalized.accessId);
+      return [normalized, ...filtered];
+    });
+
+    setCounts(prevCounts => {
+      const previousStatus = rows.find(row => row.accessId === normalized.accessId)?.status;
+      const nextCounts = { ...prevCounts };
+      nextCounts.all = Math.max(0, Number(nextCounts.all || 0));
+      if (previousStatus && previousStatus in nextCounts) {
+        nextCounts[previousStatus] = Math.max(0, Number(nextCounts[previousStatus] || 0) - 1);
+      } else {
+        nextCounts.all += 1;
+      }
+      if (normalized.status in nextCounts) {
+        nextCounts[normalized.status] = Number(nextCounts[normalized.status] || 0) + 1;
+      }
+      return nextCounts;
+    });
+
+    setLoadState('success');
+    setLoadError('');
+  };
 
   const resetView = () =>
     resetAdminView({
