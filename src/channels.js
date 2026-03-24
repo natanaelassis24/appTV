@@ -102,7 +102,7 @@ export const CHANNELS = [
 },
 {
   name: 'CNN Brasil',
-  url: 'https://streamverde.s27-usa-cloudfront-net.online/fontes/streamverde/cnnbrasil.m3u8',
+  url: 'http://nczcdn.vulcanzz.click/live/292330036/5179425/472.m3u8?sjwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzQzOTY3OTksImlhdCI6MTc3NDMxMDQwMCwibmJmIjoxNzc0MzEwNDAwLCJ1c2VyIjoiMjkyMzMwMDM2IiwidXNlckFnZW50IjoiTW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzE0Ni4wLjAuMCBTYWZhcmkvNTM3LjM2IiwidXNlcklwIjoiMTg1LjIzNi4xODMuMTA3OjQyMTcyIn0.pfcgr77VrM2huPUDZfxoPElIEnt2uY-FXx_VHYB-mcE&id=472&p=m3u8&aid=1774367118',
   number: '10',
   category: 'Canais',
   logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/CNN_International_logo.svg/3840px-CNN_International_logo.svg.png',
