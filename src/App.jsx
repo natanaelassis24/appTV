@@ -8,6 +8,7 @@ import { PUBLIC_PLANS } from '../lib/plans.js';
 const ACCESS_CACHE_KEY = 'app-tv-access-cache-v2';
 const ACTIVE_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 const INACTIVE_CACHE_TTL_MS = 15 * 60 * 1000;
+const EXPIRY_WARNING_WINDOW_DAYS = 3;
 
 function getAccessCacheTtl(accessGranted) {
   return accessGranted ? ACTIVE_CACHE_TTL_MS : INACTIVE_CACHE_TTL_MS;
@@ -59,6 +60,45 @@ function clearCachedAccess() {
   }
 
   window.localStorage.removeItem(ACCESS_CACHE_KEY);
+}
+
+function parseLocalDate(value) {
+  const raw = String(value || '').trim();
+  if (!raw) {
+    return null;
+  }
+
+  const parsed = new Date(`${raw}T00:00:00`);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function getExpiryRefreshDelay(expiresAt) {
+  const date = parseLocalDate(expiresAt);
+  if (!date) {
+    return null;
+  }
+
+  const refreshAt = new Date(date);
+  refreshAt.setDate(refreshAt.getDate() + 1);
+  refreshAt.setHours(0, 0, 5, 0);
+
+  return Math.max(refreshAt.getTime() - Date.now(), 60 * 1000);
+}
+
+function formatDaysRemaining(daysRemaining) {
+  if (!Number.isFinite(daysRemaining)) {
+    return '';
+  }
+
+  if (daysRemaining <= 0) {
+    return 'vence hoje';
+  }
+
+  if (daysRemaining === 1) {
+    return 'vence em 1 dia';
+  }
+
+  return `vence em ${daysRemaining} dias`;
 }
 
 function buildEmbedUrl(channel) {
@@ -201,6 +241,7 @@ export default function App() {
   const guideStageRef = useRef(null);
   const channelListRef = useRef(null);
   const hlsRef = useRef(null);
+  const expiryRefreshTimerRef = useRef(null);
   const recoveryRef = useRef({ network: 0, media: 0, fallbackTried: false });
 
   const selectedChannel = useMemo(() => {
@@ -350,6 +391,53 @@ export default function App() {
         setAccessBootState('ready');
       });
   }, [isAndroidTv]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    if (expiryRefreshTimerRef.current) {
+      window.clearTimeout(expiryRefreshTimerRef.current);
+      expiryRefreshTimerRef.current = null;
+    }
+
+    if (!isPlaybackEnabled || !authorizedAccess?.expiresAt) {
+      return undefined;
+    }
+
+    const refreshDelay = getExpiryRefreshDelay(authorizedAccess.expiresAt);
+    if (!Number.isFinite(refreshDelay) || refreshDelay <= 0) {
+      return undefined;
+    }
+
+    expiryRefreshTimerRef.current = window.setTimeout(() => {
+      lookupAccessById(authorizedAccess.accessId, { persist: true })
+        .then(result => {
+          if (!result.accessGranted) {
+            clearCachedAccess();
+            setAccessLookupState('error');
+            setAccessLookupResult(null);
+            setAccessLookupError(result.warningMessage || 'Seu acesso expirou.');
+            setAuthorizedAccess(null);
+          }
+        })
+        .catch(error => {
+          clearCachedAccess();
+          setAccessLookupState('error');
+          setAccessLookupResult(null);
+          setAccessLookupError(error.message || 'Falha ao revalidar o ID.');
+          setAuthorizedAccess(null);
+        });
+    }, refreshDelay);
+
+    return () => {
+      if (expiryRefreshTimerRef.current) {
+        window.clearTimeout(expiryRefreshTimerRef.current);
+        expiryRefreshTimerRef.current = null;
+      }
+    };
+  }, [authorizedAccess, isPlaybackEnabled]);
 
   useEffect(() => {
     if (isPlaybackEnabled || filteredChannels.length <= 1) {
@@ -781,9 +869,9 @@ export default function App() {
                   ) : null}
 
                   {accessLookupState === 'success' && accessLookupResult ? (
-                    <div className={`access-result-card ${accessLookupResult.accessGranted ? 'active' : 'blocked'}`}>
-                      <strong>{accessLookupResult.accessGranted ? 'Liberado' : 'Bloqueado'}</strong>
-                      <p>{accessLookupResult.message}</p>
+                    <div className={`access-result-card ${accessLookupResult.warning ? 'pending' : accessLookupResult.accessGranted ? 'active' : 'blocked'}`}>
+                      <strong>{accessLookupResult.warning ? 'Vencimento proximo' : accessLookupResult.accessGranted ? 'Liberado' : 'Bloqueado'}</strong>
+                      <p>{accessLookupResult.warning ? accessLookupResult.warningMessage : accessLookupResult.message}</p>
                       <dl className="access-result-grid">
                         <div>
                           <dt>ID</dt>
@@ -878,9 +966,9 @@ export default function App() {
               ) : null}
 
               {accessLookupState === 'success' && accessLookupResult ? (
-                <div className={`tv-access-result ${accessLookupResult.accessGranted ? 'active' : 'blocked'}`}>
-                  <strong>{accessLookupResult.accessGranted ? 'Liberado' : 'Bloqueado'}</strong>
-                  <p>{accessLookupResult.message}</p>
+                <div className={`tv-access-result ${accessLookupResult.warning ? 'pending' : accessLookupResult.accessGranted ? 'active' : 'blocked'}`}>
+                  <strong>{accessLookupResult.warning ? 'Vencimento proximo' : accessLookupResult.accessGranted ? 'Liberado' : 'Bloqueado'}</strong>
+                  <p>{accessLookupResult.warning ? accessLookupResult.warningMessage : accessLookupResult.message}</p>
                   <dl className="tv-access-meta">
                     <div>
                       <dt>ID</dt>
@@ -997,9 +1085,12 @@ export default function App() {
 
                 {authorizedAccess ? (
                   <div className="guide-access-summary">
-                    <div className="guide-access-copy">
+                <div className="guide-access-copy">
                       <strong>{authorizedAccess.planName || 'Acesso ativo'}</strong>
                       <span>{authorizedAccess.expiresAtLabel ? `Validade: ${authorizedAccess.expiresAtLabel}` : 'Validade nao definida'}</span>
+                      {authorizedAccess.warning ? (
+                        <span className="guide-access-warning">{authorizedAccess.warningMessage}</span>
+                      ) : null}
                     </div>
                     <button
                       type="button"

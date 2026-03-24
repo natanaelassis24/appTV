@@ -1,6 +1,6 @@
 import { extractBearerToken } from '../lib/admin-auth.js';
 import { addMonthsToDate, generateAccessId } from '../lib/access-ids.js';
-import { getAccessStatus } from '../lib/access-status.js';
+import { getAccessStatusDetails } from '../lib/access-status.js';
 import { getPlanById } from '../lib/plans.js';
 import { getAuth, getFirestore } from '../lib/firebase-admin.js';
 
@@ -96,14 +96,14 @@ export default async function handler(req, res) {
         expiresAtInput ||
         (expiresInMonths ? addMonthsToDate(new Date(), expiresInMonths) : null) ||
         (planDurationMonths ? addMonthsToDate(new Date(), planDurationMonths) : null);
-      const status = getAccessStatus({ expiresAt });
+      const details = getAccessStatusDetails({ expiresAt });
 
       await accessRef.set({
         accessId,
         name,
         planId,
         planName,
-        status,
+        status: details.status,
         paymentLabel,
         expiresAt,
         paymentStatus: 'paid',
@@ -115,9 +115,11 @@ export default async function handler(req, res) {
         name,
         planId,
         planName,
-        status,
+        status: details.status,
         paymentLabel,
-        expiresAt
+        expiresAt,
+        warning: details.warning,
+        warningMessage: details.warningMessage
       };
 
       break;

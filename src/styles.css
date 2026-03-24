@@ -451,6 +451,12 @@ label {
   font-size: 0.8rem;
 }
 
+.guide-access-warning {
+  color: #ffcc66;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
 .guide-access-reset {
   min-height: 36px;
   padding: 0 12px;

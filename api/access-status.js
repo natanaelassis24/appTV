@@ -1,5 +1,5 @@
 import { getFirestore } from '../lib/firebase-admin.js';
-import { getAccessStatus } from '../lib/access-status.js';
+import { getAccessStatusDetails } from '../lib/access-status.js';
 
 function applyCors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -10,14 +10,6 @@ function applyCors(res) {
 function sendJson(res, statusCode, payload) {
   applyCors(res);
   res.status(statusCode).json(payload);
-}
-
-function getStatusMessage(status) {
-  if (status === 'active') {
-    return 'Liberado';
-  }
-
-  return 'Bloqueado';
 }
 
 export default async function handler(req, res) {
@@ -42,17 +34,21 @@ export default async function handler(req, res) {
     }
 
     const data = doc.data() || {};
-    const status = getAccessStatus(data);
-    const accessGranted = status === 'active';
+    const details = getAccessStatusDetails(data);
     sendJson(res, 200, {
       accessId: data.accessId || doc.id,
       name: data.name || 'Cliente',
       planId: data.planId || 'manual',
       planName: data.planName || 'Plano nao definido',
-      accessGranted,
-      message: getStatusMessage(status),
+      status: details.status,
+      accessGranted: details.accessGranted,
+      warning: details.warning,
+      warningMessage: details.warningMessage,
+      daysRemaining: details.daysRemaining,
+      message: details.warning ? details.warningMessage : details.accessGranted ? 'Liberado' : 'Bloqueado',
       paymentLabel: data.paymentLabel || 'Aguardando confirmacao',
-      expiresAt: data.expiresAt || null
+      expiresAt: data.expiresAt || null,
+      expiresAtLabel: details.expiresAtLabel
     });
   } catch (error) {
     sendJson(res, 500, {
