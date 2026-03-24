@@ -6,12 +6,33 @@ import { PUBLIC_RUNTIME_CONFIG, buildApiUrl } from './runtime-config';
 import { PUBLIC_PLANS } from '../lib/plans.js';
 
 const ACCESS_CACHE_KEY = 'app-tv-access-cache-v2';
-const ACTIVE_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
+const ACTIVE_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const INACTIVE_CACHE_TTL_MS = 15 * 60 * 1000;
 const EXPIRY_WARNING_WINDOW_DAYS = 3;
 
 function getAccessCacheTtl(accessGranted) {
   return accessGranted ? ACTIVE_CACHE_TTL_MS : INACTIVE_CACHE_TTL_MS;
+}
+
+function getCachedAccessTtl(payload) {
+  if (!payload?.accessGranted) {
+    return getAccessCacheTtl(false);
+  }
+
+  const expiresAt = parseLocalDate(payload.expiresAt);
+  if (!expiresAt) {
+    return getAccessCacheTtl(true);
+  }
+
+  const now = Date.now();
+  const expiresAtMs = expiresAt.getTime();
+  const daysUntilExpiry = Math.ceil((expiresAtMs - now) / (24 * 60 * 60 * 1000));
+
+  if (daysUntilExpiry <= EXPIRY_WARNING_WINDOW_DAYS) {
+    return Math.min(2 * 60 * 1000, Math.max(expiresAtMs - now, 30 * 1000));
+  }
+
+  return Math.min(ACTIVE_CACHE_TTL_MS, Math.max(expiresAtMs - now, 60 * 60 * 1000));
 }
 
 function readCachedAccess() {
@@ -394,7 +415,7 @@ export default function App() {
     }
 
     const cacheAge = Date.now() - Number(cachedAccess.checkedAt || 0);
-    const cacheTtl = getAccessCacheTtl(cachedAccess.accessGranted);
+    const cacheTtl = getCachedAccessTtl(cachedAccess);
     const isCacheFresh = cacheAge <= cacheTtl;
 
     if (cachedAccess.accessGranted) {
