@@ -27,6 +27,16 @@ function getBrowserOrigin() {
   }
 }
 
+function isLocalOrigin(origin) {
+  const value = String(origin || '').trim().toLowerCase();
+  return (
+    value.startsWith('http://localhost') ||
+    value.startsWith('http://127.0.0.1') ||
+    value.startsWith('https://localhost') ||
+    value.startsWith('https://127.0.0.1')
+  );
+}
+
 export function buildApiUrl(path) {
   const normalizedPath = String(path || '').startsWith('/') ? String(path || '') : `/${String(path || '')}`;
   const configuredBase = PUBLIC_RUNTIME_CONFIG.apiBaseUrl || '';
@@ -41,8 +51,9 @@ export function buildApiUrl(path) {
 export const PUBLIC_RUNTIME_CONFIG = {
   apiBaseUrl:
     normalizeValue(env.APP_API_BASE_URL) ||
-    getBrowserOrigin() ||
-    normalizeValue(env.APP_BASE_URL),
+    (isLocalOrigin(getBrowserOrigin()) ? getBrowserOrigin() : '') ||
+    normalizeValue(env.APP_BASE_URL) ||
+    getBrowserOrigin(),
   firebaseWebApiKey: normalizeValue(env.APP_FIREBASE_WEB_API_KEY),
   telegramUrl: normalizeValue(env.APP_TELEGRAM_URL),
   apkDownloadUrl: normalizeValue(env.APP_APK_DOWNLOAD_URL) || '/app-tv-android.apk'
