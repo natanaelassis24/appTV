@@ -704,6 +704,9 @@ export default function AdminPanel() {
           <div className="admin-banner success">
             Firestore leu {readDiagnosticResult.totalDocs || 0} registro(s) em{' '}
             {readDiagnosticResult.collection || 'access_registry'}.
+            {Array.isArray(readDiagnosticResult.collectionNames) && readDiagnosticResult.collectionNames.length
+              ? ` Colecoes: ${readDiagnosticResult.collectionNames.join(', ')}.`
+              : null}
             {Array.isArray(readDiagnosticResult.sampleEntries) && readDiagnosticResult.sampleEntries.length
               ? ` Exemplo: ${readDiagnosticResult.sampleEntries
                   .slice(0, 3)

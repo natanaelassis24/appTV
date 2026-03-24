@@ -52,6 +52,8 @@ export default async function handler(req, res) {
       firebaseConfig?.projectId ||
       null;
 
+    const collections = await firestore.listCollections();
+    const collectionNames = collections.map(collection => collection.id).sort();
     const snapshot = await firestore.collection('access_registry').limit(5).get();
     const entries = snapshot.docs.map(doc => {
       const data = doc.data() || {};
@@ -71,6 +73,7 @@ export default async function handler(req, res) {
       projectId,
       configuredProjectId: firebaseConfig?.projectId || null,
       collection: 'access_registry',
+      collectionNames,
       readOk: true,
       totalDocs: snapshot.size,
       sampleEntries: entries,
