@@ -589,5 +589,15 @@ export const CHANNELS = [
   logo: 'NC',
   sourceType: 'hls',
   description: 'Descricao curta do canal.'
+},
+{
+  name: 'Geekdot',
+  url: 'https://stream.ichibantv.com:3764/hybrid/play.m3u8',
+  number: '0',
+  category: 'Canais',
+  logoImage: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEisfDkOTiFl-j8cbHNA8lWMrspWTIrAbWHk9jkbTWNXRZNPYS2vJBsqcgmzubXHdNvnhKawKjOkTZUEghsRY3v94XY4K6s985gd8BxsNTcnyQficUrh3MTtLyLSf9idPtMAIzN5CzM48s1336MbWti5uIDTM5Z69UAPAYA0IAqifcyZyhIxS_FiazpGSPg/w1200-h630-p-k-no-nu/GEEKDOT.webp',
+  logo: 'NC',
+  sourceType: 'hls',
+  description: 'Descricao curta do canal.'
 }
 ];
