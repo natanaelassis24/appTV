@@ -1082,37 +1082,6 @@ export default function App() {
                   />
                 )}
                 <div className="guide-overlay" />
-
-                {authorizedAccess ? (
-                  <div className="guide-access-summary">
-                <div className="guide-access-copy">
-                      <strong>{authorizedAccess.planName || 'Acesso ativo'}</strong>
-                      <span>{authorizedAccess.expiresAtLabel ? `Validade: ${authorizedAccess.expiresAtLabel}` : 'Validade nao definida'}</span>
-                      {authorizedAccess.warning ? (
-                        <span className="guide-access-warning">{authorizedAccess.warningMessage}</span>
-                      ) : null}
-                    </div>
-                    <button
-                      type="button"
-                      className="guide-access-reset"
-                      onClick={() => {
-                        clearCachedAccess();
-                        setGuideDrawerOpen(false);
-                        setSelectedChannelUrl(CHANNELS[0]?.url || '');
-                        setDrawerChannelUrl(CHANNELS[0]?.url || '');
-                        setAuthorizedAccess(null);
-                        setAccessLookupState('idle');
-                        setAccessLookupResult(null);
-                        setAccessLookupError('');
-                        setAccessIdInput('');
-                        setStatus('aguardando');
-                        setStatusError(false);
-                      }}
-                    >
-                      Trocar ID
-                    </button>
-                  </div>
-                ) : null}
               </div>
             </div>
           </div>
