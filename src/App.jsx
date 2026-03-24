@@ -820,7 +820,7 @@ export default function App() {
               <span className="section-kicker">Ativacao do app</span>
               <h1>Informe seu ID de assinatura</h1>
               <p>
-                O acesso aos canais e liberado somente para IDs ativos. Depois da validacao, o app salva o status localmente e evita consultas repetidas ao Firebase.
+                Digite seu ID para consultar a validade. Se ele estiver ativo, o app libera os canais automaticamente. Se nao estiver, mostramos a mensagem de bloqueio.
               </p>
 
               <form className="tv-access-form" onSubmit={handleAccessLookup}>
@@ -830,7 +830,7 @@ export default function App() {
                     type="text"
                     value={accessIdInput}
                     onChange={event => setAccessIdInput(event.target.value.toUpperCase())}
-                    placeholder="ATV-0001"
+                    placeholder="ATA-0001"
                     autoComplete="off"
                   />
                 </label>
@@ -838,28 +838,14 @@ export default function App() {
                 <div className="tv-access-actions">
                   <button type="submit" className="primary-btn">
                     {accessLookupState === 'loading' || accessBootState === 'booting'
-                      ? 'Validando...'
-                      : 'Validar acesso'}
-                  </button>
-                  <button
-                    type="button"
-                    className="secondary-btn"
-                    onClick={() => {
-                      clearCachedAccess();
-                      setAccessIdInput('');
-                      setAccessLookupState('idle');
-                      setAccessLookupResult(null);
-                      setAccessLookupError('');
-                      setAuthorizedAccess(null);
-                    }}
-                  >
-                    Limpar ID
+                      ? 'Consultando...'
+                      : 'Consultar ID'}
                   </button>
                 </div>
               </form>
 
               <div className="tv-access-hint">
-                <span>Sem ID ativo?</span>
+                <span>Sem ID?</span>
                 <a
                   href={telegramUrl}
                   target={telegramUrl.startsWith('http') ? '_blank' : undefined}
@@ -872,7 +858,7 @@ export default function App() {
               {accessBootState === 'booting' ? (
                 <div className="tv-access-result neutral">
                   <strong>Sincronizando acesso salvo</strong>
-                  <p>O app esta validando o ultimo ID armazenado antes de liberar os canais.</p>
+                  <p>O app esta conferindo o ultimo ID armazenado antes de liberar os canais.</p>
                 </div>
               ) : null}
 

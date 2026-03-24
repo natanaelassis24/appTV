@@ -5,6 +5,18 @@ function sendJson(res, statusCode, payload) {
   res.status(statusCode).json(payload);
 }
 
+function getStatusMessage(status) {
+  if (status === 'active') {
+    return 'Este ID esta ativo. O acesso aos canais foi liberado.';
+  }
+
+  if (status === 'pending') {
+    return 'Este ID esta pendente. Regularize o pagamento para continuar acessando os canais.';
+  }
+
+  return 'Este ID esta bloqueado. O acesso aos canais foi suspenso.';
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     sendJson(res, 405, { error: 'Metodo nao permitido.' });
@@ -34,6 +46,7 @@ export default async function handler(req, res) {
       planId: data.planId || 'manual',
       planName: data.planName || 'Plano nao definido',
       status,
+      message: getStatusMessage(status),
       paymentLabel: data.paymentLabel || 'Aguardando confirmacao',
       expiresAt: data.expiresAt || null
     });
