@@ -64,12 +64,6 @@ const resetAdminView = setters => {
   setters.setGenerateState('idle');
   setters.setGenerateError('');
   setters.setGeneratedAccess(null);
-  setters.setDiagnosticState('idle');
-  setters.setDiagnosticError('');
-  setters.setDiagnosticResult(null);
-  setters.setReadDiagnosticState('idle');
-  setters.setReadDiagnosticError('');
-  setters.setReadDiagnosticResult(null);
   setters.setAuthState('error');
   setters.setAuthError('Sessao expirada. Entre novamente.');
 };
@@ -192,15 +186,6 @@ export default function AdminPanel() {
   const [generateState, setGenerateState] = useState('idle');
   const [generateError, setGenerateError] = useState('');
   const [generatedAccess, setGeneratedAccess] = useState(null);
-  const [diagnosticState, setDiagnosticState] = useState('idle');
-  const [diagnosticError, setDiagnosticError] = useState('');
-  const [diagnosticResult, setDiagnosticResult] = useState(null);
-  const [readDiagnosticState, setReadDiagnosticState] = useState('idle');
-  const [readDiagnosticError, setReadDiagnosticError] = useState('');
-  const [readDiagnosticResult, setReadDiagnosticResult] = useState(null);
-  const [probeState, setProbeState] = useState('idle');
-  const [probeError, setProbeError] = useState('');
-  const [probeResult, setProbeResult] = useState(null);
 
   const resetView = () =>
     resetAdminView({
@@ -216,15 +201,6 @@ export default function AdminPanel() {
       setGenerateState,
       setGenerateError,
       setGeneratedAccess,
-      setDiagnosticState,
-      setDiagnosticError,
-      setDiagnosticResult,
-      setReadDiagnosticState,
-      setReadDiagnosticError,
-      setReadDiagnosticResult,
-      setProbeState,
-      setProbeError,
-      setProbeResult,
       setAuthState,
       setAuthError
     });
@@ -384,15 +360,6 @@ export default function AdminPanel() {
     setGenerateState('idle');
     setGenerateError('');
     setGeneratedAccess(null);
-    setDiagnosticState('idle');
-    setDiagnosticError('');
-    setDiagnosticResult(null);
-    setReadDiagnosticState('idle');
-    setReadDiagnosticError('');
-    setReadDiagnosticResult(null);
-    setProbeState('idle');
-    setProbeError('');
-    setProbeResult(null);
     setAuthState('idle');
     setAuthError('');
   };
@@ -422,22 +389,6 @@ export default function AdminPanel() {
 
       const responsePayload = await readJson(response);
       if (!response.ok) {
-        if (response.status === 405 || response.status === 500) {
-          const diagnosticResponse = await fetch(buildApiUrl('/api/firebase-diagnostics'), {
-            method: 'GET',
-            headers: {
-              Accept: 'application/json',
-              Authorization: `Bearer ${sessionToken}`
-            }
-          });
-
-          const diagnosticPayload = await readJson(diagnosticResponse);
-          if (diagnosticResponse.ok) {
-            setDiagnosticResult(diagnosticPayload);
-            setDiagnosticState('success');
-          }
-        }
-
         throw new Error(responsePayload?.error || `HTTP ${response.status}`);
       }
 
@@ -480,106 +431,43 @@ export default function AdminPanel() {
     }
   };
 
-  const handleFirebaseDiagnostic = async () => {
-    setDiagnosticState('loading');
-    setDiagnosticError('');
-    setDiagnosticResult(null);
+  const handleDeleteAccess = async accessId => {
+    const normalizedAccessId = String(accessId || '').trim();
+    if (!normalizedAccessId) return;
+
+    const confirmed = window.confirm(`Excluir o ID ${normalizedAccessId}?`);
+    if (!confirmed) return;
+
+    setGenerateState('idle');
+    setGenerateError('');
+    setLoadError('');
 
     try {
-      const response = await fetch(buildApiUrl('/api/firebase-diagnostics'), {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-          Authorization: `Bearer ${sessionToken}`
+      const response = await fetch(
+        buildApiUrl(`/api/admin-delete-access?accessId=${encodeURIComponent(normalizedAccessId)}`),
+        {
+          method: 'DELETE',
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${sessionToken}`
+          }
         }
-      });
+      );
 
       const payload = await readJson(response);
       if (!response.ok) {
         throw new Error(payload?.error || `HTTP ${response.status}`);
       }
 
-      setDiagnosticResult(payload);
-      setDiagnosticState('success');
-    } catch (error) {
-      const message = error?.message || 'Falha ao diagnosticar o Firebase.';
-      if (
-        message.includes('Sessao administrativa invalida') ||
-        message.includes('Token administrativo') ||
-        message.includes('expirada')
-      ) {
-        resetView();
-        return;
+      if (generatedAccess?.accessId === normalizedAccessId) {
+        setGeneratedAccess(null);
       }
 
-      setDiagnosticState('error');
-      setDiagnosticError(message);
-    }
-  };
-
-  const handleFirestoreReadDiagnostic = async () => {
-    setReadDiagnosticState('loading');
-    setReadDiagnosticError('');
-    setReadDiagnosticResult(null);
-
-    try {
-      const response = await fetch(buildApiUrl('/api/firestore-read-diagnostics'), {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-          Authorization: `Bearer ${sessionToken}`
-        }
-      });
-
-      const payload = await readJson(response);
-      if (!response.ok) {
-        throw new Error(payload?.error || `HTTP ${response.status}`);
+      if (searchTerm.trim() === normalizedAccessId) {
+        setSearchTerm('');
       }
 
-      setReadDiagnosticResult(payload);
-      setReadDiagnosticState('success');
-    } catch (error) {
-      const message = error?.message || 'Falha ao diagnosticar a leitura do Firestore.';
-      if (
-        message.includes('Sessao administrativa invalida') ||
-        message.includes('Token administrativo') ||
-        message.includes('expirada')
-      ) {
-        resetView();
-        return;
-      }
-
-      setReadDiagnosticState('error');
-      setReadDiagnosticError(message);
-    }
-  };
-
-  const handleFirestoreProbe = async () => {
-    setProbeState('loading');
-    setProbeError('');
-    setProbeResult(null);
-
-    try {
-      const response = await fetch(buildApiUrl('/api/firestore-probe-access'), {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-          Authorization: `Bearer ${sessionToken}`
-        }
-      });
-
-      const payload = await readJson(response);
-      if (!response.ok) {
-        throw new Error(payload?.error || `HTTP ${response.status}`);
-      }
-
-      setProbeResult(payload);
-      setProbeState('success');
-      setSearchTerm(payload?.accessId || '');
-      upsertGeneratedRow(payload);
       skipNextAutoLoad.current = true;
-      setStatusFilter('all');
-
       loadRequestTracker.current += 1;
       const refreshRequestId = loadRequestTracker.current;
       const refreshResponse = await fetch(buildApiUrl('/api/admin-accesses?status=all'), {
@@ -597,7 +485,7 @@ export default function AdminPanel() {
         setLoadError('');
       }
     } catch (error) {
-      const message = error?.message || 'Falha ao criar a prova no Firestore.';
+      const message = error?.message || 'Falha ao excluir o ID.';
       if (
         message.includes('Sessao administrativa invalida') ||
         message.includes('Token administrativo') ||
@@ -607,8 +495,8 @@ export default function AdminPanel() {
         return;
       }
 
-      setProbeState('error');
-      setProbeError(message);
+      setLoadError(message);
+      setLoadState('error');
     }
   };
 
@@ -678,15 +566,6 @@ export default function AdminPanel() {
             </button>
             <button type="button" className="secondary-btn" onClick={() => window.location.reload()}>
               Atualizar
-            </button>
-            <button type="button" className="secondary-btn" onClick={handleFirebaseDiagnostic}>
-              Testar Firebase
-            </button>
-            <button type="button" className="secondary-btn" onClick={handleFirestoreReadDiagnostic}>
-              Testar leitura
-            </button>
-            <button type="button" className="secondary-btn" onClick={handleFirestoreProbe}>
-              Criar prova
             </button>
             <button type="button" className="secondary-btn" onClick={handleLogout}>
               Sair
@@ -803,41 +682,6 @@ export default function AdminPanel() {
 
         {loadError ? <div className="admin-banner error">{loadError}</div> : null}
 
-        {diagnosticState === 'loading' ? <div className="admin-banner neutral">Testando Firebase...</div> : null}
-        {diagnosticState === 'error' ? <div className="admin-banner error">{diagnosticError}</div> : null}
-        {diagnosticState === 'success' && diagnosticResult ? (
-          <div className="admin-banner success">
-            Firebase ok: projeto {diagnosticResult.projectId || diagnosticResult.configuredProjectId || 'desconhecido'}.
-          </div>
-        ) : null}
-
-        {readDiagnosticState === 'loading' ? <div className="admin-banner neutral">Testando leitura do Firestore...</div> : null}
-        {readDiagnosticState === 'error' ? <div className="admin-banner error">{readDiagnosticError}</div> : null}
-        {readDiagnosticState === 'success' && readDiagnosticResult ? (
-          <div className="admin-banner success">
-            Firestore leu {readDiagnosticResult.totalDocs || 0} registro(s) em{' '}
-            {readDiagnosticResult.collection || 'access_registry'}.
-            {Array.isArray(readDiagnosticResult.collectionNames) && readDiagnosticResult.collectionNames.length
-              ? ` Colecoes: ${readDiagnosticResult.collectionNames.join(', ')}.`
-              : null}
-            {Array.isArray(readDiagnosticResult.sampleEntries) && readDiagnosticResult.sampleEntries.length
-              ? ` Exemplo: ${readDiagnosticResult.sampleEntries
-                  .slice(0, 3)
-                  .map(entry => entry.accessId || entry.id)
-                  .filter(Boolean)
-                  .join(', ')}.`
-              : null}
-          </div>
-        ) : null}
-
-        {probeState === 'loading' ? <div className="admin-banner neutral">Criando prova no Firestore...</div> : null}
-        {probeState === 'error' ? <div className="admin-banner error">{probeError}</div> : null}
-        {probeState === 'success' && probeResult ? (
-          <div className="admin-banner success">
-            Prova criada: {probeResult.accessId || 'ATA-...'} em access_registry.
-          </div>
-        ) : null}
-
         <div className="admin-table-wrap">
           <table className="admin-table">
             <thead>
@@ -848,12 +692,13 @@ export default function AdminPanel() {
                 <th>Status</th>
                 <th>Pagamento</th>
                 <th>Vencimento</th>
+                <th>Ações</th>
               </tr>
             </thead>
             <tbody>
               {loadState === 'loading' ? (
                 <tr>
-                  <td colSpan="6" className="admin-empty-state">
+                  <td colSpan="7" className="admin-empty-state">
                     Carregando registros...
                   </td>
                 </tr>
@@ -861,7 +706,7 @@ export default function AdminPanel() {
 
               {loadState !== 'loading' && !visibleRows.length ? (
                 <tr>
-                  <td colSpan="6" className="admin-empty-state">
+                  <td colSpan="7" className="admin-empty-state">
                     Nenhum registro encontrado.
                   </td>
                 </tr>
@@ -875,6 +720,15 @@ export default function AdminPanel() {
                   <td>{ACCESS_STATUS_LABELS[entry.status] || entry.status}</td>
                   <td>{entry.paymentLabel}</td>
                   <td>{entry.expiresAtLabel}</td>
+                  <td>
+                    <button
+                      type="button"
+                      className="secondary-btn"
+                      onClick={() => handleDeleteAccess(entry.accessId)}
+                    >
+                      Excluir
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
