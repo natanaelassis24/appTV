@@ -569,6 +569,16 @@ export const CHANNELS = [
   logo: 'NC',
   sourceType: 'hls',
   description: 'Descricao curta do canal.'
+},
+{
+  name: 'Anime Tv HD',
+  url: 'https://stmv1.srvif.com/loadingtv/loadingtv/playlist.m3u8',
+  number: '0',
+  category: 'Canais',
+  logoImage: 'https://play-lh.googleusercontent.com/vpD-d5ZaBRTp38lfj99xqgBmaMUw7qBJvYifWUSyn-jUssDzzRgza9YXq8Eyq6zm-Duo',
+  logo: 'NC',
+  sourceType: 'hls',
+  description: 'Descricao curta do canal.'
 }
 
 ];
