@@ -563,7 +563,7 @@ export const CHANNELS = [
 {
   name: 'Globo SP',
   url: 'https://streamverde.s27-usa-cloudfront-net.online/fontes/streamverde/globosp.m3u8',
-  number: '0',
+  number: '56',
   category: 'Canais',
   logoImage: 'https://upload.wikimedia.org/wikipedia/commons/1/1f/TV_Globo_logo_%28April_2025%29.png',
   logo: 'NC',
@@ -573,7 +573,7 @@ export const CHANNELS = [
 {
   name: 'Anime Tv HD',
   url: 'https://stmv1.srvif.com/loadingtv/loadingtv/playlist.m3u8',
-  number: '0',
+  number: '57',
   category: 'Canais',
   logoImage: 'https://play-lh.googleusercontent.com/vpD-d5ZaBRTp38lfj99xqgBmaMUw7qBJvYifWUSyn-jUssDzzRgza9YXq8Eyq6zm-Duo',
   logo: 'NC',
@@ -583,7 +583,7 @@ export const CHANNELS = [
 {
   name: 'Nickelodeon',
   url: 'http://x1co.com.br:8080/hls/stream.m3u8',
-  number: '0',
+  number: '58',
   category: 'Canais',
   logoImage: 'https://upload.wikimedia.org/wikipedia/commons/e/e5/Nickelodeon_2023_logo_%28outline%29.svg',
   logo: 'NC',
@@ -593,7 +593,7 @@ export const CHANNELS = [
 {
   name: 'Geekdot',
   url: 'https://stream.ichibantv.com:3764/hybrid/play.m3u8',
-  number: '0',
+  number: '59',
   category: 'Canais',
   logoImage: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEisfDkOTiFl-j8cbHNA8lWMrspWTIrAbWHk9jkbTWNXRZNPYS2vJBsqcgmzubXHdNvnhKawKjOkTZUEghsRY3v94XY4K6s985gd8BxsNTcnyQficUrh3MTtLyLSf9idPtMAIzN5CzM48s1336MbWti5uIDTM5Z69UAPAYA0IAqifcyZyhIxS_FiazpGSPg/w1200-h630-p-k-no-nu/GEEKDOT.webp',
   logo: 'NC',
