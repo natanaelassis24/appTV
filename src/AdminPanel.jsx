@@ -19,6 +19,7 @@ const readJson = async response => {
 };
 
 const FIREBASE_AUTH_SESSION_KEY = 'app-tv-admin-firebase-session-v1';
+const loadRequestTracker = { current: 0 };
 
 const readAuthSession = () => {
   try {
@@ -234,6 +235,7 @@ export default function AdminPanel() {
     if (!sessionToken) return;
 
     const load = async () => {
+      const requestId = ++loadRequestTracker.current;
       setLoadState('loading');
       setLoadError('');
 
@@ -250,10 +252,18 @@ export default function AdminPanel() {
           throw new Error(payload?.error || `HTTP ${response.status}`);
         }
 
+        if (requestId !== loadRequestTracker.current) {
+          return;
+        }
+
         setRows(Array.isArray(payload?.entries) ? payload.entries : []);
         setCounts(payload?.counts || { all: 0, active: 0, pending: 0, blocked: 0 });
         setLoadState('success');
       } catch (error) {
+        if (requestId !== loadRequestTracker.current) {
+          return;
+        }
+
         const message = error?.message || 'Falha ao carregar os IDs.';
         if (
           message.includes('Sessao administrativa invalida') ||
@@ -407,6 +417,8 @@ export default function AdminPanel() {
       setSearchTerm(responsePayload?.accessId || '');
       setStatusFilter('all');
 
+      loadRequestTracker.current += 1;
+      const refreshRequestId = loadRequestTracker.current;
       const refreshResponse = await fetch(buildApiUrl('/api/admin-accesses?status=all'), {
         headers: {
           Accept: 'application/json',
@@ -415,7 +427,7 @@ export default function AdminPanel() {
       });
 
       const refreshPayload = await readJson(refreshResponse);
-      if (refreshResponse.ok) {
+      if (refreshResponse.ok && refreshRequestId === loadRequestTracker.current) {
         setRows(Array.isArray(refreshPayload?.entries) ? refreshPayload.entries : []);
         setCounts(refreshPayload?.counts || { all: 0, active: 0, pending: 0, blocked: 0 });
         setLoadState('success');
@@ -535,6 +547,8 @@ export default function AdminPanel() {
       setSearchTerm(payload?.accessId || '');
       setStatusFilter('all');
 
+      loadRequestTracker.current += 1;
+      const refreshRequestId = loadRequestTracker.current;
       const refreshResponse = await fetch(buildApiUrl('/api/admin-accesses?status=all'), {
         headers: {
           Accept: 'application/json',
@@ -543,7 +557,7 @@ export default function AdminPanel() {
       });
 
       const refreshPayload = await readJson(refreshResponse);
-      if (refreshResponse.ok) {
+      if (refreshResponse.ok && refreshRequestId === loadRequestTracker.current) {
         setRows(Array.isArray(refreshPayload?.entries) ? refreshPayload.entries : []);
         setCounts(refreshPayload?.counts || { all: 0, active: 0, pending: 0, blocked: 0 });
         setLoadState('success');
