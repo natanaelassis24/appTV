@@ -247,7 +247,25 @@ export default function App() {
       }
     });
 
-    const payload = await response.json();
+    const contentType = String(response.headers.get('content-type') || '').toLowerCase();
+    const rawBody = await response.text();
+    let payload = null;
+
+    if (rawBody) {
+      if (contentType.includes('application/json')) {
+        try {
+          payload = JSON.parse(rawBody);
+        } catch {
+          payload = { error: rawBody };
+        }
+      } else if (rawBody.trim().startsWith('<')) {
+        payload = {
+          error: 'A API respondeu com HTML em vez de JSON. Verifique se a rota /api/access-status esta publicada e respondendo corretamente.'
+        };
+      } else {
+        payload = { error: rawBody };
+      }
+    }
 
     if (!response.ok) {
       throw new Error(payload?.error || 'Nao foi possivel consultar o ID.');
