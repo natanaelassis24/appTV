@@ -1,4 +1,10 @@
-import { getAuth, getFirestore, getFirebaseAdmin, getFirebaseConfig } from '../lib/firebase-admin.js';
+import {
+  getAuth,
+  getFirestore,
+  getFirebaseAdmin,
+  getFirebaseConfig,
+  getFirebaseFingerprint
+} from '../lib/firebase-admin.js';
 
 function applyCors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -45,6 +51,7 @@ export default async function handler(req, res) {
 
     const adminApp = getFirebaseAdmin();
     const firebaseConfig = getFirebaseConfig();
+    const fingerprint = getFirebaseFingerprint();
     const firestore = getFirestore();
     const projectId =
       adminApp?.options?.projectId ||
@@ -68,6 +75,7 @@ export default async function handler(req, res) {
       ok: true,
       projectId,
       configuredProjectId: firebaseConfig?.projectId || null,
+      fingerprint,
       writeOk: true,
       readOk: Boolean(snapshot.exists),
       deleteOk: true,

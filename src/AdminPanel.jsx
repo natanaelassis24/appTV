@@ -643,6 +643,7 @@ export default function AdminPanel() {
         {diagnosticState === 'success' && diagnosticResult ? (
           <div className="admin-banner success">
             Firebase ok: projeto {diagnosticResult.projectId || diagnosticResult.configuredProjectId || 'desconhecido'}.
+            {diagnosticResult.fingerprint ? ` Fingerprint ${diagnosticResult.fingerprint}.` : null}
           </div>
         ) : null}
 
