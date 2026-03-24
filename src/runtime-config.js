@@ -1,13 +1,19 @@
-const normalizeUrl = value => {
+const normalizeValue = value => {
   if (!value) {
     return '';
   }
 
-  return String(value).trim();
+  let next = String(value).trim();
+
+  if ((next.startsWith('"') && next.endsWith('"')) || (next.startsWith("'") && next.endsWith("'"))) {
+    next = next.slice(1, -1);
+  }
+
+  return next;
 };
 
 export const PUBLIC_RUNTIME_CONFIG = {
-  firebaseWebApiKey: normalizeUrl(import.meta.env.VITE_FIREBASE_WEB_API_KEY),
-  telegramUrl: normalizeUrl(import.meta.env.VITE_TELEGRAM_URL),
-  apkDownloadUrl: normalizeUrl(import.meta.env.VITE_APK_DOWNLOAD_URL) || '/app-tv-android.apk'
+  firebaseWebApiKey: normalizeValue(import.meta.env.VITE_FIREBASE_WEB_API_KEY),
+  telegramUrl: normalizeValue(import.meta.env.VITE_TELEGRAM_URL),
+  apkDownloadUrl: normalizeValue(import.meta.env.VITE_APK_DOWNLOAD_URL) || '/app-tv-android.apk'
 };
