@@ -1,4 +1,5 @@
 import { extractBearerToken } from '../lib/admin-auth.js';
+import { getAccessStatus } from '../lib/access-status.js';
 import { getAuth, getFirestore } from '../lib/firebase-admin.js';
 
 function sendJson(res, statusCode, payload) {
@@ -24,11 +25,12 @@ function formatDateLabel(value) {
 
 function normalizeEntry(doc) {
   const data = doc.data();
+  const status = getAccessStatus(data);
   return {
     accessId: data?.accessId || doc.id,
     name: data?.name || 'Cliente',
     planName: data?.planName || 'Plano nao definido',
-    status: data?.status || 'pending',
+    status,
     paymentLabel: data?.paymentLabel || 'Aguardando confirmacao',
     expiresAt: data?.expiresAt || null,
     expiresAtLabel: formatDateLabel(data?.expiresAt)

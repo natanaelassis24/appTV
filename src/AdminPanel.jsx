@@ -1,4 +1,5 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
+import { getPlanById, PUBLIC_PLANS } from '../lib/plans.js';
 import { PUBLIC_RUNTIME_CONFIG } from './runtime-config';
 
 const ACCESS_STATUS_LABELS = {
@@ -137,11 +138,7 @@ export default function AdminPanel() {
   const [rows, setRows] = useState([]);
   const [counts, setCounts] = useState({ all: 0, active: 0, pending: 0, blocked: 0 });
   const [generatorName, setGeneratorName] = useState('Cliente');
-  const [generatorPlanName, setGeneratorPlanName] = useState('Plano manual');
-  const [generatorPlanId, setGeneratorPlanId] = useState('manual');
-  const [generatorStatus, setGeneratorStatus] = useState('pending');
-  const [generatorExpiresInMonths, setGeneratorExpiresInMonths] = useState('1');
-  const [generatorExpiresAt, setGeneratorExpiresAt] = useState('');
+  const [generatorPlanId, setGeneratorPlanId] = useState('mensal');
   const [generateState, setGenerateState] = useState('idle');
   const [generateError, setGenerateError] = useState('');
   const [generatedAccess, setGeneratedAccess] = useState(null);
@@ -218,6 +215,8 @@ export default function AdminPanel() {
     });
   }, [rows, searchTerm]);
 
+  const selectedPlan = useMemo(() => getPlanById(generatorPlanId) || PUBLIC_PLANS[0] || null, [generatorPlanId]);
+
   const handleAuth = async () => {
     const normalizedEmail = String(email || '').trim().toLowerCase();
     const normalizedPassword = String(password || '').trim();
@@ -292,11 +291,7 @@ export default function AdminPanel() {
 
     const requestBody = {
       name: generatorName,
-      planName: generatorPlanName,
-      planId: generatorPlanId,
-      status: generatorStatus,
-      expiresInMonths: generatorExpiresAt ? '' : generatorExpiresInMonths,
-      expiresAt: generatorExpiresAt
+      planId: generatorPlanId
     };
 
     try {
@@ -430,7 +425,7 @@ export default function AdminPanel() {
             <div>
               <span className="section-kicker">Gerador de ID</span>
               <h2>Novo acesso ATA</h2>
-              <p>Crie um ID no formato ATA-2547 para enviar manualmente ao cliente. O numero e aleatorio e varia a cada geracao.</p>
+              <p>Escolha o plano e o sistema gera o ID ATA-XXXX com a validade correta automaticamente.</p>
             </div>
             {generatedAccess ? (
               <div className="admin-generator-result">
@@ -447,36 +442,20 @@ export default function AdminPanel() {
             </label>
             <label className="admin-field">
               <span>Plano</span>
-              <input value={generatorPlanName} onChange={event => setGeneratorPlanName(event.target.value)} />
-            </label>
-            <label className="admin-field">
-              <span>CÃ³digo do plano</span>
-              <input value={generatorPlanId} onChange={event => setGeneratorPlanId(event.target.value)} />
-            </label>
-            <label className="admin-field">
-              <span>Status</span>
-              <select value={generatorStatus} onChange={event => setGeneratorStatus(event.target.value)}>
-                <option value="pending">Pendente</option>
-                <option value="active">Ativo</option>
-                <option value="blocked">Bloqueado</option>
+              <select value={generatorPlanId} onChange={event => setGeneratorPlanId(event.target.value)}>
+                {PUBLIC_PLANS.map(plan => (
+                  <option key={plan.id} value={plan.id}>
+                    {plan.name}
+                  </option>
+                ))}
               </select>
             </label>
             <label className="admin-field">
-              <span>Validade em meses</span>
+              <span>Validade do plano</span>
               <input
-                type="number"
-                min="1"
-                value={generatorExpiresInMonths}
-                onChange={event => setGeneratorExpiresInMonths(event.target.value)}
-                placeholder="1"
-              />
-            </label>
-            <label className="admin-field">
-              <span>Validade manual</span>
-              <input
-                type="date"
-                value={generatorExpiresAt}
-                onChange={event => setGeneratorExpiresAt(event.target.value)}
+                type="text"
+                value={selectedPlan ? `${selectedPlan.durationMonths} mês(es)` : ''}
+                readOnly
               />
             </label>
           </div>

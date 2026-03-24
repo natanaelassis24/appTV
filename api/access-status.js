@@ -1,4 +1,5 @@
 import { getFirestore } from '../lib/firebase-admin.js';
+import { getAccessStatus } from '../lib/access-status.js';
 
 function sendJson(res, statusCode, payload) {
   res.status(statusCode).json(payload);
@@ -26,12 +27,13 @@ export default async function handler(req, res) {
     }
 
     const data = doc.data() || {};
+    const status = getAccessStatus(data);
     sendJson(res, 200, {
       accessId: data.accessId || doc.id,
       name: data.name || 'Cliente',
       planId: data.planId || 'manual',
       planName: data.planName || 'Plano nao definido',
-      status: data.status || 'pending',
+      status,
       paymentLabel: data.paymentLabel || 'Aguardando confirmacao',
       expiresAt: data.expiresAt || null
     });

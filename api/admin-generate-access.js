@@ -1,14 +1,11 @@
 import { extractBearerToken } from '../lib/admin-auth.js';
 import { addMonthsToDate, generateAccessId } from '../lib/access-ids.js';
+import { getAccessStatus } from '../lib/access-status.js';
+import { getPlanById } from '../lib/plans.js';
 import { getAuth, getFirestore } from '../lib/firebase-admin.js';
 
 function sendJson(res, statusCode, payload) {
   res.status(statusCode).json(payload);
-}
-
-function normalizeStatus(value) {
-  const status = String(value || 'pending').trim().toLowerCase();
-  return ['active', 'pending', 'blocked'].includes(status) ? status : 'pending';
 }
 
 function parseMonths(value) {
@@ -20,6 +17,24 @@ function parseDate(value) {
   const raw = String(value || '').trim();
   if (!raw) {
     return null;
+  }
+
+  const slashMatch = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (slashMatch) {
+    const [, day, month, year] = slashMatch;
+    const normalized = `${year}-${month}-${day}`;
+    const date = new Date(`${normalized}T00:00:00`);
+    if (!Number.isNaN(date.getTime())) {
+      return normalized;
+    }
+  }
+
+  const isoMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (isoMatch) {
+    const date = new Date(`${raw}T00:00:00`);
+    if (!Number.isNaN(date.getTime())) {
+      return raw;
+    }
   }
 
   const date = new Date(`${raw}T00:00:00`);
@@ -46,9 +61,9 @@ export default async function handler(req, res) {
 
   const input = req.method === 'GET' ? req.query || {} : req.body || {};
   const name = String(input?.name || 'Cliente').trim() || 'Cliente';
-  const planName = String(input?.planName || 'Plano manual').trim() || 'Plano manual';
-  const planId = String(input?.planId || 'manual').trim() || 'manual';
-  const status = normalizeStatus(input?.status);
+  const planId = String(input?.planId || 'mensal').trim() || 'mensal';
+  const resolvedPlan = getPlanById(planId);
+  const planName = String(resolvedPlan?.name || input?.planName || 'Plano manual').trim() || 'Plano manual';
   const paymentLabel = String(input?.paymentLabel || 'Gerado manualmente').trim() || 'Gerado manualmente';
   const expiresAtInput = parseDate(input?.expiresAt);
   const expiresInMonths = parseMonths(input?.expiresInMonths);
@@ -74,8 +89,12 @@ export default async function handler(req, res) {
         continue;
       }
 
+      const planDurationMonths = Number(resolvedPlan?.durationMonths || 0) || null;
       const expiresAt =
-        expiresAtInput || (expiresInMonths ? addMonthsToDate(new Date(), expiresInMonths) : null);
+        expiresAtInput ||
+        (expiresInMonths ? addMonthsToDate(new Date(), expiresInMonths) : null) ||
+        (planDurationMonths ? addMonthsToDate(new Date(), planDurationMonths) : null);
+      const status = getAccessStatus({ expiresAt });
 
       await accessRef.set({
         accessId,
@@ -85,7 +104,7 @@ export default async function handler(req, res) {
         status,
         paymentLabel,
         expiresAt,
-        paymentStatus: status === 'active' ? 'paid' : 'manual',
+        paymentStatus: 'paid',
         createdAt: new Date().toISOString()
       });
 
