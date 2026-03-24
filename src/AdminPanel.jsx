@@ -129,6 +129,7 @@ export default function AdminPanel() {
   const [password, setPassword] = useState('');
   const [sessionToken, setSessionToken] = useState('');
   const [setupRequired, setSetupRequired] = useState(true);
+  const [authMode, setAuthMode] = useState('register');
   const [authState, setAuthState] = useState('idle');
   const [authError, setAuthError] = useState('');
   const [statusFilter, setStatusFilter] = useState('active');
@@ -155,7 +156,9 @@ export default function AdminPanel() {
         });
         const payload = await readJson(response);
         if (response.ok) {
-          setSetupRequired(Boolean(payload?.setupRequired));
+          const nextSetupRequired = Boolean(payload?.setupRequired);
+          setSetupRequired(nextSetupRequired);
+          setAuthMode(nextSetupRequired ? 'register' : 'login');
           return;
         }
       } catch (_) {
@@ -251,18 +254,36 @@ export default function AdminPanel() {
     setAuthError('');
 
     try {
-      const authResult =
-        action === 'register'
-          ? await firebaseAuthRequest('signUp', {
-              email: normalizedEmail,
-              password: normalizedPassword,
-              returnSecureToken: true
-            })
-          : await firebaseAuthRequest('signInWithPassword', {
-              email: normalizedEmail,
-              password: normalizedPassword,
-              returnSecureToken: true
-            });
+      let authResult;
+
+      if (action === 'register') {
+        try {
+          authResult = await firebaseAuthRequest('signUp', {
+            email: normalizedEmail,
+            password: normalizedPassword,
+            returnSecureToken: true
+          });
+        } catch (error) {
+          const message = String(error?.message || '');
+          const alreadyExists = /EMAIL_EXISTS|EMAIL_ALREADY_EXISTS/i.test(message);
+
+          if (!alreadyExists) {
+            throw error;
+          }
+
+          authResult = await firebaseAuthRequest('signInWithPassword', {
+            email: normalizedEmail,
+            password: normalizedPassword,
+            returnSecureToken: true
+          });
+        }
+      } else {
+        authResult = await firebaseAuthRequest('signInWithPassword', {
+          email: normalizedEmail,
+          password: normalizedPassword,
+          returnSecureToken: true
+        });
+      }
 
       const session = {
         email: authResult.email || normalizedEmail,
@@ -296,7 +317,7 @@ export default function AdminPanel() {
 
   const handleLogin = async event => {
     event.preventDefault();
-    handleAuth(setupRequired ? 'register' : 'login');
+    handleAuth(authMode);
   };
 
   const handleLogout = () => {
@@ -359,19 +380,35 @@ export default function AdminPanel() {
   };
 
   if (!sessionToken) {
-    const isSetupMode = setupRequired;
+    const isSetupMode = authMode === 'register';
 
     return (
       <main className="admin-shell">
         <section className="admin-card admin-login-card">
           <div className="admin-login-copy">
             <span className="section-kicker">{isSetupMode ? 'Registro inicial' : 'Login administrativo'}</span>
-            <h1>{isSetupMode ? 'Criar conta do admin' : 'Entrar no admin'}</h1>
+            <h1>{isSetupMode ? 'Criar primeira conta' : 'Entrar no admin'}</h1>
             <p>
               {isSetupMode
-                ? 'Na primeira vez, crie a conta do administrador com email e senha. Depois disso, o registro some e fica só o login.'
+                ? 'Cadastre o primeiro administrador com email e senha. Depois de salvar, a tela vira login.'
                 : 'Entre com o email e a senha do administrador criado no primeiro acesso.'}
             </p>
+          </div>
+          <div className="admin-login-actions">
+            <button
+              type="button"
+              className={`admin-filter${isSetupMode ? ' active' : ''}`}
+              onClick={() => setAuthMode('register')}
+            >
+              Registrar primeiro admin
+            </button>
+            <button
+              type="button"
+              className={`admin-filter${!isSetupMode ? ' active' : ''}`}
+              onClick={() => setAuthMode('login')}
+            >
+              Já tenho conta
+            </button>
           </div>
           <form className="admin-login-form" onSubmit={handleLogin}>
             <label className="admin-field">
@@ -404,7 +441,7 @@ export default function AdminPanel() {
             {isSetupMode ? (
               <div className="admin-banner">
                 <strong>Primeiro acesso</strong>
-                <p>Depois de criar esta conta, o painel muda para login e o cadastro some.</p>
+                <p>Enquanto nao existir o painel inicial, o sistema mostra somente o cadastro.</p>
               </div>
             ) : null}
             <div className="admin-login-actions">
@@ -414,7 +451,7 @@ export default function AdminPanel() {
                     ? 'Criando conta...'
                     : 'Entrando...'
                   : isSetupMode
-                    ? 'Criar conta do admin'
+                    ? 'Criar conta inicial'
                     : 'Entrar com email e senha'}
               </button>
             </div>
