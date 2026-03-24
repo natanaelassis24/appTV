@@ -172,6 +172,9 @@ export default function AdminPanel() {
   const [readDiagnosticState, setReadDiagnosticState] = useState('idle');
   const [readDiagnosticError, setReadDiagnosticError] = useState('');
   const [readDiagnosticResult, setReadDiagnosticResult] = useState(null);
+  const [probeState, setProbeState] = useState('idle');
+  const [probeError, setProbeError] = useState('');
+  const [probeResult, setProbeResult] = useState(null);
 
   const resetView = () =>
     resetAdminView({
@@ -193,6 +196,9 @@ export default function AdminPanel() {
       setReadDiagnosticState,
       setReadDiagnosticError,
       setReadDiagnosticResult,
+      setProbeState,
+      setProbeError,
+      setProbeResult,
       setAuthState,
       setAuthError
     });
@@ -345,6 +351,9 @@ export default function AdminPanel() {
     setReadDiagnosticState('idle');
     setReadDiagnosticError('');
     setReadDiagnosticResult(null);
+    setProbeState('idle');
+    setProbeError('');
+    setProbeResult(null);
     setAuthState('idle');
     setAuthError('');
   };
@@ -502,6 +511,60 @@ export default function AdminPanel() {
     }
   };
 
+  const handleFirestoreProbe = async () => {
+    setProbeState('loading');
+    setProbeError('');
+    setProbeResult(null);
+
+    try {
+      const response = await fetch(buildApiUrl('/api/firestore-probe-access'), {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${sessionToken}`
+        }
+      });
+
+      const payload = await readJson(response);
+      if (!response.ok) {
+        throw new Error(payload?.error || `HTTP ${response.status}`);
+      }
+
+      setProbeResult(payload);
+      setProbeState('success');
+      setSearchTerm(payload?.accessId || '');
+      setStatusFilter('all');
+
+      const refreshResponse = await fetch(buildApiUrl('/api/admin-accesses?status=all'), {
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${sessionToken}`
+        }
+      });
+
+      const refreshPayload = await readJson(refreshResponse);
+      if (refreshResponse.ok) {
+        setRows(Array.isArray(refreshPayload?.entries) ? refreshPayload.entries : []);
+        setCounts(refreshPayload?.counts || { all: 0, active: 0, pending: 0, blocked: 0 });
+        setLoadState('success');
+        setLoadError('');
+      }
+    } catch (error) {
+      const message = error?.message || 'Falha ao criar a prova no Firestore.';
+      if (
+        message.includes('Sessao administrativa invalida') ||
+        message.includes('Token administrativo') ||
+        message.includes('expirada')
+      ) {
+        resetView();
+        return;
+      }
+
+      setProbeState('error');
+      setProbeError(message);
+    }
+  };
+
   if (!sessionToken) {
     return (
       <main className="admin-shell">
@@ -574,6 +637,9 @@ export default function AdminPanel() {
             </button>
             <button type="button" className="secondary-btn" onClick={handleFirestoreReadDiagnostic}>
               Testar leitura
+            </button>
+            <button type="button" className="secondary-btn" onClick={handleFirestoreProbe}>
+              Criar prova
             </button>
             <button type="button" className="secondary-btn" onClick={handleLogout}>
               Sair
@@ -714,6 +780,14 @@ export default function AdminPanel() {
                   .filter(Boolean)
                   .join(', ')}.`
               : null}
+          </div>
+        ) : null}
+
+        {probeState === 'loading' ? <div className="admin-banner neutral">Criando prova no Firestore...</div> : null}
+        {probeState === 'error' ? <div className="admin-banner error">{probeError}</div> : null}
+        {probeState === 'success' && probeResult ? (
+          <div className="admin-banner success">
+            Prova criada: {probeResult.accessId || 'ATA-...'} em access_registry.
           </div>
         ) : null}
 
