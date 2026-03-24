@@ -100,6 +100,11 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const serverEnvKeys = [
     'APP_BASE_URL',
+    'APP_TELEGRAM_URL',
+    'APP_APK_DOWNLOAD_URL',
+    'APP_FIREBASE_PROJECT_ID',
+    'APP_FIREBASE_CLIENT_EMAIL',
+    'APP_FIREBASE_PRIVATE_KEY',
     'URL_BASE_DO_APLICATIVO',
     'FIREBASE_PROJECT_ID',
     'ID_DO_PROJETO_FIREBASE',
@@ -116,7 +121,7 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
-    envPrefix: ['VITE_'],
+    envPrefix: ['APP_'],
     plugins: [react(), localApiPlugin()]
   };
 });

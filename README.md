@@ -41,12 +41,12 @@ Rotas de apoio:
 Configure estas variaveis:
 
 - `APP_BASE_URL`
-- `VITE_FIREBASE_WEB_API_KEY`
-- `FIREBASE_PROJECT_ID`
-- `FIREBASE_CLIENT_EMAIL`
-- `FIREBASE_PRIVATE_KEY`
+- `APP_FIREBASE_WEB_API_KEY`
+- `APP_FIREBASE_PROJECT_ID`
+- `APP_FIREBASE_CLIENT_EMAIL`
+- `APP_FIREBASE_PRIVATE_KEY`
 
-O valor de `VITE_FIREBASE_WEB_API_KEY` vem do app Web do Firebase, no campo `apiKey`.
+O valor de `APP_FIREBASE_WEB_API_KEY` vem do app Web do Firebase, no campo `apiKey`.
 
 Use `.env.local` na raiz do projeto para os valores reais. O arquivo `.env.local.example` serve como modelo.
 
@@ -79,8 +79,8 @@ Exemplo de documento:
 
 Configure as variaveis publicas:
 
-- `VITE_TELEGRAM_URL`
-- `VITE_APK_DOWNLOAD_URL`
+- `APP_TELEGRAM_URL`
+- `APP_APK_DOWNLOAD_URL`
 
 ## Vercel
 

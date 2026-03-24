@@ -13,7 +13,7 @@ const normalizeValue = value => {
 };
 
 export const PUBLIC_RUNTIME_CONFIG = {
-  firebaseWebApiKey: normalizeValue(import.meta.env.VITE_FIREBASE_WEB_API_KEY),
-  telegramUrl: normalizeValue(import.meta.env.VITE_TELEGRAM_URL),
-  apkDownloadUrl: normalizeValue(import.meta.env.VITE_APK_DOWNLOAD_URL) || '/app-tv-android.apk'
+  firebaseWebApiKey: normalizeValue(import.meta.env.APP_FIREBASE_WEB_API_KEY),
+  telegramUrl: normalizeValue(import.meta.env.APP_TELEGRAM_URL),
+  apkDownloadUrl: normalizeValue(import.meta.env.APP_APK_DOWNLOAD_URL) || '/app-tv-android.apk'
 };

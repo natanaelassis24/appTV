@@ -51,7 +51,7 @@ const clearAuthSession = () => {
 async function firebaseAuthRequest(endpoint, payload) {
   const apiKey = PUBLIC_RUNTIME_CONFIG.firebaseWebApiKey;
   if (!apiKey) {
-    throw new Error('Defina VITE_FIREBASE_WEB_API_KEY nas variaveis do projeto.');
+    throw new Error('Defina APP_FIREBASE_WEB_API_KEY nas variaveis do projeto.');
   }
 
   const response = await fetch(
@@ -142,6 +142,9 @@ export default function AdminPanel() {
   const [generateState, setGenerateState] = useState('idle');
   const [generateError, setGenerateError] = useState('');
   const [generatedAccess, setGeneratedAccess] = useState(null);
+  const [diagnosticState, setDiagnosticState] = useState('idle');
+  const [diagnosticError, setDiagnosticError] = useState('');
+  const [diagnosticResult, setDiagnosticResult] = useState(null);
 
   useEffect(() => {
     const session = readAuthSession();
@@ -275,6 +278,9 @@ export default function AdminPanel() {
     setGenerateState('idle');
     setGenerateError('');
     setGeneratedAccess(null);
+    setDiagnosticState('idle');
+    setDiagnosticError('');
+    setDiagnosticResult(null);
     setAuthState('idle');
     setAuthError('');
   };
@@ -347,6 +353,33 @@ export default function AdminPanel() {
     }
   };
 
+  const handleFirebaseDiagnostic = async () => {
+    setDiagnosticState('loading');
+    setDiagnosticError('');
+    setDiagnosticResult(null);
+
+    try {
+      const response = await fetch('/api/firebase-diagnostics', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${sessionToken}`
+        }
+      });
+
+      const payload = await readJson(response);
+      if (!response.ok) {
+        throw new Error(payload?.error || `HTTP ${response.status}`);
+      }
+
+      setDiagnosticResult(payload);
+      setDiagnosticState('success');
+    } catch (error) {
+      setDiagnosticState('error');
+      setDiagnosticError(error?.message || 'Falha ao diagnosticar o Firebase.');
+    }
+  };
+
   if (!sessionToken) {
     return (
       <main className="admin-shell">
@@ -413,6 +446,9 @@ export default function AdminPanel() {
             </button>
             <button type="button" className="secondary-btn" onClick={() => window.location.reload()}>
               Atualizar
+            </button>
+            <button type="button" className="secondary-btn" onClick={handleFirebaseDiagnostic}>
+              Testar Firebase
             </button>
             <button type="button" className="secondary-btn" onClick={handleLogout}>
               Sair
@@ -528,6 +564,14 @@ export default function AdminPanel() {
         </div>
 
         {loadError ? <div className="admin-banner error">{loadError}</div> : null}
+
+        {diagnosticState === 'loading' ? <div className="admin-banner neutral">Testando Firebase...</div> : null}
+        {diagnosticState === 'error' ? <div className="admin-banner error">{diagnosticError}</div> : null}
+        {diagnosticState === 'success' && diagnosticResult ? (
+          <div className="admin-banner success">
+            Firebase ok: projeto {diagnosticResult.projectId || 'desconhecido'}.
+          </div>
+        ) : null}
 
         <div className="admin-table-wrap">
           <table className="admin-table">
