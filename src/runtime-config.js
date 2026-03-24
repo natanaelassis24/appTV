@@ -16,17 +16,7 @@ const env = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.
 
 export function buildApiUrl(path) {
   const normalizedPath = String(path || '').startsWith('/') ? String(path || '') : `/${String(path || '')}`;
-  if (env.DEV) {
-    return normalizedPath;
-  }
-
-  const configuredBase = normalizeValue(env.APP_API_BASE_URL) || normalizeValue(env.APP_BASE_URL) || '';
-
-  if (!configuredBase) {
-    return normalizedPath;
-  }
-
-  return `${configuredBase.replace(/\/$/, '')}${normalizedPath}`;
+  return normalizedPath;
 }
 
 export const PUBLIC_RUNTIME_CONFIG = {
