@@ -337,6 +337,22 @@ export default function AdminPanel() {
           return;
         }
 
+        if (response.status === 405 || response.status === 500) {
+          const diagnosticResponse = await fetch('/api/firebase-diagnostics', {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+              Authorization: `Bearer ${sessionToken}`
+            }
+          });
+
+          const diagnosticPayload = await readJson(diagnosticResponse);
+          if (diagnosticResponse.ok) {
+            setDiagnosticResult(diagnosticPayload);
+            setDiagnosticState('success');
+          }
+        }
+
         throw new Error(responsePayload?.error || `HTTP ${response.status}`);
       }
 

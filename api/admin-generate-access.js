@@ -52,14 +52,9 @@ export default async function handler(req, res) {
     return;
   }
 
-  if (!['POST', 'GET'].includes(req.method)) {
-    sendJson(res, 405, { error: `Metodo nao permitido: ${req.method || 'desconhecido'}.` });
-    return;
-  }
-
   const token = extractBearerToken(req);
 
-  const input = req.method === 'GET' ? req.query || {} : req.body || {};
+  const input = req.body && Object.keys(req.body).length ? req.body : req.query || {};
   const name = String(input?.name || 'Cliente').trim() || 'Cliente';
   const planId = String(input?.planId || 'mensal').trim() || 'mensal';
   const resolvedPlan = getPlanById(planId);

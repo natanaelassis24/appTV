@@ -44,11 +44,6 @@ export default async function handler(req, res) {
     return;
   }
 
-  if (req.method !== 'GET') {
-    sendJson(res, 405, { error: `Metodo nao permitido: ${req.method || 'desconhecido'}.` });
-    return;
-  }
-
   const token = extractBearerToken(req);
 
   try {

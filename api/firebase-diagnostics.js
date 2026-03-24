@@ -5,11 +5,6 @@ function sendJson(res, statusCode, payload) {
 }
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    sendJson(res, 405, { error: 'Metodo nao permitido.' });
-    return;
-  }
-
   const token = String(req.headers?.authorization || req.headers?.Authorization || '').replace(
     /^Bearer\s+/i,
     ''
