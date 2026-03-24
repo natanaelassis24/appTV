@@ -5,7 +5,7 @@ import AdminPanel from './AdminPanel';
 import { PUBLIC_RUNTIME_CONFIG, buildApiUrl } from './runtime-config';
 import { PUBLIC_PLANS } from '../lib/plans.js';
 
-const ACCESS_CACHE_KEY = 'app-tv-access-cache-v1';
+const ACCESS_CACHE_KEY = 'app-tv-access-cache-v2';
 const ACTIVE_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 const INACTIVE_CACHE_TTL_MS = 15 * 60 * 1000;
 
@@ -26,6 +26,10 @@ function readCachedAccess() {
 
     const parsed = JSON.parse(raw);
     if (!parsed?.accessId || typeof parsed?.accessGranted !== 'boolean' || !parsed?.checkedAt) {
+      return null;
+    }
+
+    if (String(parsed.accessId || '').trim().toUpperCase() === 'PROVISORIO') {
       return null;
     }
 
