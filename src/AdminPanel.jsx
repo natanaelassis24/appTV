@@ -1,6 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
 import { getPlanById, PUBLIC_PLANS } from '../lib/plans.js';
-import { PUBLIC_RUNTIME_CONFIG } from './runtime-config';
+import { PUBLIC_RUNTIME_CONFIG, buildApiUrl } from './runtime-config';
 
 const ACCESS_STATUS_LABELS = {
   active: 'Acesso ativo',
@@ -181,7 +181,7 @@ export default function AdminPanel() {
       setLoadError('');
 
       try {
-        const response = await fetch(`/api/admin-accesses?status=${encodeURIComponent(statusFilter)}`, {
+        const response = await fetch(buildApiUrl(`/api/admin-accesses?status=${encodeURIComponent(statusFilter)}`), {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${sessionToken}`
@@ -295,7 +295,9 @@ export default function AdminPanel() {
     setGenerateState('loading');
     setGenerateError('');
 
-    const requestUrl = `/api/admin-generate-access?name=${encodeURIComponent(generatorName)}&planId=${encodeURIComponent(generatorPlanId)}`;
+    const requestUrl = buildApiUrl(
+      `/api/admin-generate-access?name=${encodeURIComponent(generatorName)}&planId=${encodeURIComponent(generatorPlanId)}`
+    );
 
     try {
       const response = await fetch(requestUrl, {
@@ -309,7 +311,7 @@ export default function AdminPanel() {
       const responsePayload = await readJson(response);
       if (!response.ok) {
         if (response.status === 405 || response.status === 500) {
-          const diagnosticResponse = await fetch('/api/firebase-diagnostics', {
+          const diagnosticResponse = await fetch(buildApiUrl('/api/firebase-diagnostics'), {
             method: 'GET',
             headers: {
               Accept: 'application/json',
@@ -331,9 +333,21 @@ export default function AdminPanel() {
       setGenerateState('success');
       setSearchTerm(responsePayload?.accessId || '');
       setStatusFilter('all');
-      setTimeout(() => {
-        window.location.reload();
-      }, 600);
+
+      const refreshResponse = await fetch(buildApiUrl('/api/admin-accesses?status=all'), {
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${sessionToken}`
+        }
+      });
+
+      const refreshPayload = await readJson(refreshResponse);
+      if (refreshResponse.ok) {
+        setRows(Array.isArray(refreshPayload?.entries) ? refreshPayload.entries : []);
+        setCounts(refreshPayload?.counts || { all: 0, active: 0, pending: 0, blocked: 0 });
+        setLoadState('success');
+        setLoadError('');
+      }
     } catch (error) {
       setGenerateState('error');
       setGenerateError(error?.message || 'Falha ao gerar o ID.');
@@ -346,7 +360,7 @@ export default function AdminPanel() {
     setDiagnosticResult(null);
 
     try {
-      const response = await fetch('/api/firebase-diagnostics', {
+      const response = await fetch(buildApiUrl('/api/firebase-diagnostics'), {
         method: 'GET',
         headers: {
           Accept: 'application/json',

@@ -12,8 +12,38 @@ const normalizeValue = value => {
   return next;
 };
 
+const env = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env : {};
+
+function getBrowserOrigin() {
+  if (typeof window === 'undefined') {
+    return '';
+  }
+
+  try {
+    const origin = String(window.location.origin || '').trim();
+    return origin && origin !== 'null' ? origin.replace(/\/$/, '') : '';
+  } catch {
+    return '';
+  }
+}
+
+export function buildApiUrl(path) {
+  const normalizedPath = String(path || '').startsWith('/') ? String(path || '') : `/${String(path || '')}`;
+  const configuredBase = PUBLIC_RUNTIME_CONFIG.apiBaseUrl || '';
+
+  if (!configuredBase) {
+    return normalizedPath;
+  }
+
+  return `${configuredBase.replace(/\/$/, '')}${normalizedPath}`;
+}
+
 export const PUBLIC_RUNTIME_CONFIG = {
-  firebaseWebApiKey: normalizeValue(import.meta.env.APP_FIREBASE_WEB_API_KEY),
-  telegramUrl: normalizeValue(import.meta.env.APP_TELEGRAM_URL),
-  apkDownloadUrl: normalizeValue(import.meta.env.APP_APK_DOWNLOAD_URL) || '/app-tv-android.apk'
+  apiBaseUrl:
+    normalizeValue(env.APP_API_BASE_URL) ||
+    getBrowserOrigin() ||
+    normalizeValue(env.APP_BASE_URL),
+  firebaseWebApiKey: normalizeValue(env.APP_FIREBASE_WEB_API_KEY),
+  telegramUrl: normalizeValue(env.APP_TELEGRAM_URL),
+  apkDownloadUrl: normalizeValue(env.APP_APK_DOWNLOAD_URL) || '/app-tv-android.apk'
 };

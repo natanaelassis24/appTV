@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Hls from 'hls.js';
 import { CHANNELS } from './channels';
 import AdminPanel from './AdminPanel';
-import { PUBLIC_RUNTIME_CONFIG } from './runtime-config';
+import { PUBLIC_RUNTIME_CONFIG, buildApiUrl } from './runtime-config';
 import { PUBLIC_PLANS } from '../lib/plans.js';
 
 const ACCESS_CACHE_KEY = 'app-tv-access-cache-v1';
@@ -235,7 +235,7 @@ export default function App() {
       throw new Error('Informe um ID de acesso valido.');
     }
 
-    const response = await fetch(`/api/access-status?id=${encodeURIComponent(normalizedId)}`, {
+    const response = await fetch(buildApiUrl(`/api/access-status?id=${encodeURIComponent(normalizedId)}`), {
       method: 'GET',
       headers: {
         Accept: 'application/json'
