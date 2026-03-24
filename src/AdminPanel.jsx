@@ -261,11 +261,15 @@ export default function AdminPanel() {
           throw new Error(payload?.error || `HTTP ${response.status}`);
         }
 
+        if (!payload || !Array.isArray(payload.entries)) {
+          throw new Error('A API de listagem nao devolveu dados validos.');
+        }
+
         if (requestId !== loadRequestTracker.current) {
           return;
         }
 
-        setRows(Array.isArray(payload?.entries) ? payload.entries : []);
+        setRows(payload.entries);
         setCounts(payload?.counts || { all: 0, active: 0, pending: 0, blocked: 0 });
         setLoadState('success');
       } catch (error) {
@@ -396,6 +400,10 @@ export default function AdminPanel() {
         throw new Error(responsePayload?.error || `HTTP ${response.status}`);
       }
 
+      if (!responsePayload || !responsePayload.accessId) {
+        throw new Error('A API de geracao nao devolveu um ID valido.');
+      }
+
       setGeneratedAccess(responsePayload);
       setGenerateState('success');
       setSearchTerm(responsePayload?.accessId || '');
@@ -413,8 +421,16 @@ export default function AdminPanel() {
       });
 
       const refreshPayload = await readJson(refreshResponse);
-      if (refreshResponse.ok && refreshRequestId === loadRequestTracker.current) {
-        setRows(Array.isArray(refreshPayload?.entries) ? refreshPayload.entries : []);
+      if (!refreshResponse.ok) {
+        throw new Error(refreshPayload?.error || `HTTP ${refreshResponse.status}`);
+      }
+
+      if (!refreshPayload || !Array.isArray(refreshPayload.entries)) {
+        throw new Error('A API de listagem nao devolveu dados validos.');
+      }
+
+      if (refreshRequestId === loadRequestTracker.current) {
+        setRows(refreshPayload.entries);
         setCounts(refreshPayload?.counts || { all: 0, active: 0, pending: 0, blocked: 0 });
         setLoadState('success');
         setLoadError('');
@@ -482,8 +498,16 @@ export default function AdminPanel() {
       });
 
       const refreshPayload = await readJson(refreshResponse);
-      if (refreshResponse.ok && refreshRequestId === loadRequestTracker.current) {
-        setRows(Array.isArray(refreshPayload?.entries) ? refreshPayload.entries : []);
+      if (!refreshResponse.ok) {
+        throw new Error(refreshPayload?.error || `HTTP ${refreshResponse.status}`);
+      }
+
+      if (!refreshPayload || !Array.isArray(refreshPayload.entries)) {
+        throw new Error('A API de listagem nao devolveu dados validos.');
+      }
+
+      if (refreshRequestId === loadRequestTracker.current) {
+        setRows(refreshPayload.entries);
         setCounts(refreshPayload?.counts || { all: 0, active: 0, pending: 0, blocked: 0 });
         setLoadState('success');
         setLoadError('');
