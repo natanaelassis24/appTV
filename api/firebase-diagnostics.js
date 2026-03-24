@@ -73,6 +73,7 @@ export default async function handler(req, res) {
       ok: true,
       projectId,
       configuredProjectId: firebaseConfig?.projectId || null,
+      projectIdSource: firebaseConfig?.projectId ? 'env-or-inferred' : 'unknown',
       writeOk: true,
       readOk: Boolean(snapshot.exists),
       deleteOk: true,
