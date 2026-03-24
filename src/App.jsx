@@ -820,7 +820,7 @@ export default function App() {
               <span className="section-kicker">Ativacao do app</span>
               <h1>Informe seu ID de assinatura</h1>
               <p>
-                Digite seu ID para consultar a validade. Se ele estiver ativo, o app libera os canais automaticamente. Se nao estiver, mostramos a mensagem de bloqueio.
+                Digite seu ID e toque em Entrar. Se ele estiver ativo, o app libera os canais automaticamente. Se nao estiver, mostramos a mensagem de bloqueio.
               </p>
 
               <form className="tv-access-form" onSubmit={handleAccessLookup}>
@@ -838,8 +838,8 @@ export default function App() {
                 <div className="tv-access-actions">
                   <button type="submit" className="primary-btn">
                     {accessLookupState === 'loading' || accessBootState === 'booting'
-                      ? 'Consultando...'
-                      : 'Consultar ID'}
+                      ? 'Entrando...'
+                      : 'Entrar'}
                   </button>
                 </div>
               </form>
