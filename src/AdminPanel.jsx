@@ -141,15 +141,39 @@ const formatDate = value => {
   }
 };
 
-const normalize = (entry, id) => ({
-  accessId: entry.accessId || id,
-  name: entry.name || 'Cliente',
-  planName: entry.planName || 'Plano nao definido',
-  status: entry.status || 'pending',
-  paymentLabel: entry.paymentLabel || 'Aguardando confirmacao',
-  expiresAt: entry.expiresAt || null,
-  expiresAtLabel: formatDate(entry.expiresAt)
-});
+  const normalize = (entry, id) => ({
+    accessId: entry.accessId || id,
+    name: entry.name || 'Cliente',
+    planName: entry.planName || 'Plano nao definido',
+    status: entry.status || 'pending',
+    paymentLabel: entry.paymentLabel || 'Aguardando confirmacao',
+    expiresAt: entry.expiresAt || null,
+    expiresAtLabel: formatDate(entry.expiresAt)
+  });
+
+  const upsertGeneratedRow = entry => {
+    const normalized = normalize(entry, entry?.accessId);
+    setRows(prevRows => {
+      const filtered = prevRows.filter(row => row.accessId !== normalized.accessId);
+      return [normalized, ...filtered];
+    });
+    setCounts(prevCounts => {
+      const previousStatus = rows.find(row => row.accessId === normalized.accessId)?.status;
+      const nextCounts = { ...prevCounts };
+      nextCounts.all = Math.max(0, Number(nextCounts.all || 0));
+      if (previousStatus && previousStatus in nextCounts) {
+        nextCounts[previousStatus] = Math.max(0, Number(nextCounts[previousStatus] || 0) - 1);
+      } else {
+        nextCounts.all += 1;
+      }
+      if (normalized.status in nextCounts) {
+        nextCounts[normalized.status] = Number(nextCounts[normalized.status] || 0) + 1;
+      }
+      return nextCounts;
+    });
+    setLoadState('success');
+    setLoadError('');
+  };
 
 export default function AdminPanel() {
   const [email, setEmail] = useState('');
@@ -420,6 +444,7 @@ export default function AdminPanel() {
       setGeneratedAccess(responsePayload);
       setGenerateState('success');
       setSearchTerm(responsePayload?.accessId || '');
+      upsertGeneratedRow(responsePayload);
       skipNextAutoLoad.current = true;
       setStatusFilter('all');
 
@@ -551,6 +576,7 @@ export default function AdminPanel() {
       setProbeResult(payload);
       setProbeState('success');
       setSearchTerm(payload?.accessId || '');
+      upsertGeneratedRow(payload);
       skipNextAutoLoad.current = true;
       setStatusFilter('all');
 
