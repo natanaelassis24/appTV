@@ -938,6 +938,11 @@ export default function App() {
                         <button
                           type="button"
                           className={`guide-channel-item${isActive ? ' active' : ''}`}
+                          onFocus={() => {
+                            setDrawerChannelUrl(channel.url);
+                            setSelectedChannelUrl(channel.url);
+                            setPlaybackNonce(current => current + 1);
+                          }}
                           onClick={() => {
                             setDrawerChannelUrl(channel.url);
                             setSelectedChannelUrl(channel.url);
