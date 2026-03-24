@@ -1,4 +1,4 @@
-import { getAuth, getFirestore, getFirebaseAdmin } from '../lib/firebase-admin.js';
+import { getAuth, getFirestore, getFirebaseAdmin, getFirebaseConfig } from '../lib/firebase-admin.js';
 
 function sendJson(res, statusCode, payload) {
   res.status(statusCode).json(payload);
@@ -37,10 +37,12 @@ export default async function handler(req, res) {
     }
 
     const adminApp = getFirebaseAdmin();
+    const firebaseConfig = getFirebaseConfig();
     const firestore = getFirestore();
     const projectId =
       adminApp?.options?.projectId ||
       adminApp?.options?.credential?.projectId ||
+      firebaseConfig?.projectId ||
       null;
 
     const ref = firestore.collection('__diagnostics__').doc(`probe_${Date.now()}`);
@@ -58,6 +60,7 @@ export default async function handler(req, res) {
     sendJson(res, 200, {
       ok: true,
       projectId,
+      configuredProjectId: firebaseConfig?.projectId || null,
       writeOk: true,
       readOk: Boolean(snapshot.exists),
       deleteOk: true,

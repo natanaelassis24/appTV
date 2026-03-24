@@ -556,7 +556,7 @@ export default function AdminPanel() {
         {diagnosticState === 'error' ? <div className="admin-banner error">{diagnosticError}</div> : null}
         {diagnosticState === 'success' && diagnosticResult ? (
           <div className="admin-banner success">
-            Firebase ok: projeto {diagnosticResult.projectId || 'desconhecido'}.
+            Firebase ok: projeto {diagnosticResult.projectId || diagnosticResult.configuredProjectId || 'desconhecido'}.
           </div>
         ) : null}
 
