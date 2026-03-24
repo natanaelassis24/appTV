@@ -1,6 +1,13 @@
 import { getAuth } from '../lib/firebase-admin.js';
 
+function applyCors(res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+}
+
 function sendJson(res, statusCode, payload) {
+  applyCors(res);
   res.status(statusCode).json(payload);
 }
 

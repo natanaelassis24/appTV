@@ -2,13 +2,6 @@
 
 Projeto React com Vite para a landing publica, a tela de ativacao da Android TV e o painel administrativo.
 
-## Rodar localmente
-
-```bash
-npm install
-npm run dev
-```
-
 ## Build
 
 ```bash
@@ -40,7 +33,6 @@ Rotas de apoio:
 
 Configure estas variaveis:
 
-- `APP_BASE_URL`
 - `APP_FIREBASE_WEB_API_KEY`
 - `APP_FIREBASE_PROJECT_ID`
 - `APP_FIREBASE_CLIENT_EMAIL`
@@ -48,7 +40,7 @@ Configure estas variaveis:
 
 O valor de `APP_FIREBASE_WEB_API_KEY` vem do app Web do Firebase, no campo `apiKey`.
 
-Use `.env.local` na raiz do projeto para os valores reais. O arquivo `.env.local.example` serve como modelo.
+Use as variaveis no painel da Vercel para producao. O arquivo `.env.local` na raiz do projeto serve apenas para o ambiente de desenvolvimento da sua maquina.
 
 Exemplo de acesso admin no Firebase:
 
@@ -87,4 +79,5 @@ Configure as variaveis publicas:
 1. Aponte o projeto para a raiz do repositorio.
 2. Use build `npm run build`.
 3. Mantenha a pasta `api` para as functions.
-4. O `vercel.json` ja roteia `/api/*` para as funcoes Node.
+4. Garanta as variaveis `APP_FIREBASE_WEB_API_KEY`, `APP_FIREBASE_PROJECT_ID`, `APP_FIREBASE_CLIENT_EMAIL` e `APP_FIREBASE_PRIVATE_KEY` no projeto da Vercel.
+5. O `vercel.json` ja roteia `/api/*` para as funcoes Node.
