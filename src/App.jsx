@@ -400,6 +400,14 @@ export default function App() {
     return mode === 'browser' || mode === 'page';
   }, [selectedChannel]);
 
+  const embedAllow = useMemo(() => {
+    if (isBrowserChannel) {
+      return 'autoplay; encrypted-media; picture-in-picture';
+    }
+
+    return 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+  }, [isBrowserChannel]);
+
   const publicChannelLoop = useMemo(() => {
     return [...filteredChannels, ...filteredChannels];
   }, [filteredChannels]);
@@ -431,12 +439,6 @@ export default function App() {
     setSelectedChannelUrl(normalizedUrl);
     setDrawerChannelUrl(normalizedUrl);
     setGuideDrawerOpen(false);
-
-    const selected = filteredChannels.find(channel => normalizeChannelUrl(channel.url) === normalizedUrl) || null;
-    const playbackMode = getChannelPlaybackMode(selected);
-    if (playbackMode === 'browser' || playbackMode === 'page') {
-      window.open(normalizedUrl, '_blank', 'noopener,noreferrer');
-    }
 
     setPlaybackNonce(current => current + 1);
   }
@@ -1298,8 +1300,8 @@ export default function App() {
                     id="tvEmbed"
                     title="Player incorporado"
                     src={embedUrl}
-                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                    allowFullScreen
+                    allow={embedAllow}
+                    allowFullScreen={!isBrowserChannel}
                     referrerPolicy="strict-origin-when-cross-origin"
                     tabIndex={-1}
                   />

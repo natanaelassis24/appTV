@@ -423,6 +423,7 @@ label {
 .tv-mode .guide-player-shell.browser-mode {
   left: 84px;
   width: calc(100vw - 84px);
+  z-index: 1;
 }
 
 .tv-mode .guide-player-shell.browser-mode #tvEmbed,
