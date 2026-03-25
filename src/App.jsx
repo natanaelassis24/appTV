@@ -84,7 +84,7 @@ function clearCachedAccess() {
   window.localStorage.removeItem(ACCESS_CACHE_KEY);
 }
 
-function readCachedChannelUrl(channelCatalog = CHANNELS) {
+function readCachedChannelUrl() {
   if (typeof window === 'undefined') {
     return null;
   }
@@ -100,19 +100,19 @@ function readCachedChannelUrl(channelCatalog = CHANNELS) {
       return null;
     }
 
-    return channelCatalog.some(channel => normalizeChannelUrl(channel.url) === cachedUrl) ? cachedUrl : null;
+    return CHANNELS.some(channel => normalizeChannelUrl(channel.url) === cachedUrl) ? cachedUrl : null;
   } catch {
     return null;
   }
 }
 
-function writeCachedChannelUrl(url, channelCatalog = CHANNELS) {
+function writeCachedChannelUrl(url) {
   if (typeof window === 'undefined') {
     return;
   }
 
   const normalized = normalizeChannelUrl(url);
-  if (!normalized || !channelCatalog.some(channel => normalizeChannelUrl(channel.url) === normalized)) {
+  if (!normalized || !CHANNELS.some(channel => normalizeChannelUrl(channel.url) === normalized)) {
     return;
   }
 
@@ -305,19 +305,18 @@ export default function App() {
   const [accessBootState, setAccessBootState] = useState(isAndroidTv ? 'booting' : 'idle');
   const [authorizedAccess, setAuthorizedAccess] = useState(null);
   const isPlaybackEnabled = isAndroidTv && authorizedAccess?.accessGranted === true;
-  const [channelCatalog, setChannelCatalog] = useState(CHANNELS);
   const filteredChannels = useMemo(() => {
     const collator = new Intl.Collator('pt-BR', {
       sensitivity: 'base',
       numeric: true,
     });
 
-    return [...channelCatalog].sort((left, right) => collator.compare(left.name || '', right.name || ''));
-  }, [channelCatalog]);
+    return [...CHANNELS].sort((left, right) => collator.compare(left.name || '', right.name || ''));
+  }, []);
   const initialChannelUrl = useMemo(() => {
-    const cachedChannelUrl = readCachedChannelUrl(channelCatalog);
+    const cachedChannelUrl = readCachedChannelUrl();
     return cachedChannelUrl || filteredChannels[0]?.url || '';
-  }, [channelCatalog, filteredChannels]);
+  }, [filteredChannels]);
 
   const [guideDrawerOpen, setGuideDrawerOpen] = useState(false);
   const [selectedChannelUrl, setSelectedChannelUrl] = useState(initialChannelUrl);
@@ -379,43 +378,6 @@ export default function App() {
     setGuideDrawerOpen(false);
     setPlaybackNonce(current => current + 1);
   }
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadChannels() {
-      try {
-        const response = await fetch(buildApiUrl('/api/channels'), {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json'
-          },
-          cache: 'no-store'
-        });
-
-        if (!response.ok) {
-          return;
-        }
-
-        const payload = await readJsonResponse(response, 'Falha ao carregar canais.');
-        const nextChannels = Array.isArray(payload?.channels) ? payload.channels : null;
-
-        if (!nextChannels || !nextChannels.length || cancelled) {
-          return;
-        }
-
-        setChannelCatalog(nextChannels);
-      } catch {
-        return;
-      }
-    }
-
-    loadChannels();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   async function lookupAccessById(accessId, { persist = true } = {}) {
     const normalizedId = String(accessId || '')
@@ -497,9 +459,9 @@ export default function App() {
 
     const activeChannelUrl = selectedChannel?.url || selectedChannelUrl;
     if (activeChannelUrl) {
-      writeCachedChannelUrl(activeChannelUrl, filteredChannels);
+      writeCachedChannelUrl(activeChannelUrl);
     }
-  }, [filteredChannels, isPlaybackEnabled, selectedChannel?.url, selectedChannelUrl]);
+  }, [isPlaybackEnabled, selectedChannel?.url, selectedChannelUrl]);
 
   useEffect(() => {
     if (!isAndroidTv) {
