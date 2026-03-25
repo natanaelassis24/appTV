@@ -246,13 +246,12 @@ function buildStreamProxyUrl(streamUrl) {
 
 function shouldUseStreamProxy(channel) {
   const transport = String(channel?.playbackTransport || '').trim().toLowerCase();
-  const url = String(channel?.url || '').trim().toLowerCase();
 
   if (transport === 'proxy') {
     return true;
   }
 
-  return url.startsWith('http://');
+  return false;
 }
 
 function buildPlaybackUrl(channel) {
