@@ -232,7 +232,6 @@ function buildHtmlPlayerDoc(channel) {
     video {
       width: 100%;
       height: 100%;
-      object-fit: cover;
       background: #000;
     }
   </style>
@@ -247,7 +246,7 @@ function buildHtmlPlayerDoc(channel) {
     if (Hls.isSupported()) {
       const hls = new Hls({
         debug: true,
-        xhrSetup: function(xhr) {
+        xhrSetup: function(xhr, url) {
           xhr.withCredentials = false;
           try {
             xhr.setRequestHeader('User-Agent', 'Mozilla/5.0');
