@@ -358,6 +358,19 @@ export default function App() {
 
     setDrawerChannelUrl(filteredChannels[nextIndex].url);
   }
+
+  function confirmDrawerChannel(channelUrl) {
+    const normalizedUrl = String(channelUrl || '').trim();
+    if (!normalizedUrl) {
+      return;
+    }
+
+    setSelectedChannelUrl(normalizedUrl);
+    setDrawerChannelUrl(normalizedUrl);
+    setGuideDrawerOpen(false);
+    setPlaybackNonce(current => current + 1);
+  }
+
   async function lookupAccessById(accessId, { persist = true } = {}) {
     const normalizedId = String(accessId || '')
       .trim()
@@ -611,9 +624,7 @@ export default function App() {
           moveDrawerChannel(-1);
         } else if (event.key === 'Enter') {
           event.preventDefault();
-          setSelectedChannelUrl(drawerChannelUrl);
-          setGuideDrawerOpen(false);
-          setPlaybackNonce(current => current + 1);
+          confirmDrawerChannel(drawerChannelUrl);
         } else if (event.key === 'ArrowLeft' || event.key === 'Escape' || event.key === 'Backspace') {
           event.preventDefault();
           setDrawerChannelUrl(selectedChannelUrl);
@@ -1145,14 +1156,9 @@ export default function App() {
                           className={`guide-channel-item${isActive ? ' active' : ''}`}
                           onFocus={() => {
                             setDrawerChannelUrl(channel.url);
-                            setSelectedChannelUrl(channel.url);
-                            setPlaybackNonce(current => current + 1);
                           }}
                           onClick={() => {
-                            setDrawerChannelUrl(channel.url);
-                            setSelectedChannelUrl(channel.url);
-                            setGuideDrawerOpen(false);
-                            setPlaybackNonce(current => current + 1);
+                            confirmDrawerChannel(channel.url);
                           }}
                           aria-label={channel.name}
                           title={channel.name}
