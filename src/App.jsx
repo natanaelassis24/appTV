@@ -212,7 +212,11 @@ function getChannelPlaybackMode(channel) {
   const url = String(channel?.url || '').trim().toLowerCase();
   const explicitTransport = String(channel?.playbackTransport || '').trim().toLowerCase();
 
-  if (explicitTransport === 'page' || explicitTransport === 'browser') {
+  if (explicitTransport === 'browser') {
+    return 'browser';
+  }
+
+  if (explicitTransport === 'page') {
     return 'page';
   }
 
@@ -782,9 +786,9 @@ export default function App() {
     return;
   }
 
-  if (playbackMode === 'page') {
+  if (playbackMode === 'browser' || playbackMode === 'page') {
     setEmbedUrl(String(selectedChannel.url || '').trim());
-    setPlayerStatus('Pagina carregada.');
+    setPlayerStatus('Browser carregado.');
     return;
   }
 
