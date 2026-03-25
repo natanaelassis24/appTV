@@ -587,7 +587,7 @@ export const CHANNELS = [
   category: 'Canais',
   logoImage: 'https://upload.wikimedia.org/wikipedia/commons/e/e5/Nickelodeon_2023_logo_%28outline%29.svg',
   logo: 'NC',
-  sourceType: 'hls',
+  sourceType: 'embed',
   description: 'Descricao curta do canal.'
 },
 {

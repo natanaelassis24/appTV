@@ -179,10 +179,6 @@ function formatDaysRemaining(daysRemaining) {
 function buildEmbedUrl(channel) {
   const url = channel?.url || '';
 
-  if (channel?.sourceType !== 'embed') {
-    return url;
-  }
-
   try {
     const parsed = new URL(url);
 
@@ -206,6 +202,11 @@ function buildEmbedUrl(channel) {
   }
 
   return url;
+}
+
+function isYouTubeSource(channel) {
+  const url = String(channel?.url || '').trim().toLowerCase();
+  return url.includes('youtu.be') || url.includes('youtube.com');
 }
 
 function isDirectMediaSource(channel) {
@@ -706,7 +707,7 @@ export default function App() {
       return;
     }
 
-    if (selectedChannel.sourceType === 'embed') {
+    if (selectedChannel.sourceType === 'embed' || isYouTubeSource(selectedChannel)) {
       setEmbedUrl(buildEmbedUrl(selectedChannel));
       setPlayerStatus('Embed carregado.');
       return;
