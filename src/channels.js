@@ -582,7 +582,7 @@ export const CHANNELS = [
 },
 {
   name: 'Nickelodeon',
-  url: 'http://x1co.com.br:8080/hls/stream.m3u8',
+  url: 'https://youtu.be/H5e6PssMMcE',
   number: '58',
   category: 'Canais',
   logoImage: 'https://upload.wikimedia.org/wikipedia/commons/e/e5/Nickelodeon_2023_logo_%28outline%29.svg',

@@ -300,7 +300,6 @@ export default function App() {
     const [accessLookupError, setAccessLookupError] = useState('');
     const [accessBootState, setAccessBootState] = useState(isAndroidTv ? 'booting' : 'idle');
     const [authorizedAccess, setAuthorizedAccess] = useState(null);
-    const [forceLoginScreen, setForceLoginScreen] = useState(false);
     const isPlaybackEnabled = isAndroidTv && authorizedAccess?.accessGranted === true;
   const filteredChannels = useMemo(() => CHANNELS, []);
   const initialChannelUrl = useMemo(() => {
@@ -407,7 +406,6 @@ export default function App() {
       setAccessLookupResult(payload);
       setAccessLookupError('');
       setAuthorizedAccess(payload.accessGranted ? payload : null);
-      setForceLoginScreen(false);
       return payload;
     }
 
@@ -438,7 +436,7 @@ export default function App() {
   }, [isPlaybackEnabled, selectedChannel?.url, selectedChannelUrl]);
 
   useEffect(() => {
-    if (!isAndroidTv || forceLoginScreen) {
+    if (!isAndroidTv) {
       return;
     }
 
@@ -488,16 +486,8 @@ export default function App() {
 
       const delayMs = cachedAccess.accessGranted ? 2 * 60 * 1000 : 5 * 60 * 1000;
       cacheRevalidateTimerRef.current = window.setTimeout(() => {
-        if (forceLoginScreen) {
-          return;
-        }
-
         lookupAccessById(cachedAccess.accessId)
           .then(result => {
-            if (forceLoginScreen) {
-              return;
-            }
-
             if (!result.accessGranted) {
               clearCachedAccess();
               setAuthorizedAccess(null);
@@ -519,7 +509,7 @@ export default function App() {
           cacheRevalidateTimerRef.current = null;
         }
       };
-    }, [forceLoginScreen, isAndroidTv]);
+  }, [isAndroidTv]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -566,7 +556,7 @@ export default function App() {
         expiryRefreshTimerRef.current = null;
       }
     };
-    }, [authorizedAccess, forceLoginScreen, isPlaybackEnabled]);
+  }, [authorizedAccess, isPlaybackEnabled]);
 
   useEffect(() => {
     if (isPlaybackEnabled || filteredChannels.length <= 1) {
@@ -836,36 +826,9 @@ export default function App() {
     }
   }
 
-    const handleExitAccess = () => {
-    if (expiryRefreshTimerRef.current) {
-      window.clearTimeout(expiryRefreshTimerRef.current);
-      expiryRefreshTimerRef.current = null;
-    }
-
-    if (cacheRevalidateTimerRef.current) {
-      window.clearTimeout(cacheRevalidateTimerRef.current);
-      cacheRevalidateTimerRef.current = null;
-    }
-
-    setAccessIdInput('');
-    setAccessLookupState('idle');
-    setAccessLookupResult(null);
-    setAccessLookupError('');
-    setAuthorizedAccess(null);
-    setForceLoginScreen(true);
-    setAccessBootState('ready');
-    setGuideDrawerOpen(false);
-    setDrawerChannelUrl(initialChannelUrl);
-    setSelectedChannelUrl(initialChannelUrl);
-    setPlaybackNonce(current => current + 1);
-    setStatusError(false);
-    setStatus('Disponivel apenas no app Android TV.');
-    setEmbedUrl('');
-  };
-
-  return (
-    <div className={`app-shell${isAndroidTv ? ' tv-mode' : ''}${!isPlaybackEnabled || forceLoginScreen ? ' promo-mode' : ''}`}>
-      {!isPlaybackEnabled || forceLoginScreen ? (
+    return (
+    <div className={`app-shell${isAndroidTv ? ' tv-mode' : ''}${!isPlaybackEnabled ? ' promo-mode' : ''}`}>
+      {!isPlaybackEnabled ? (
         !isAndroidTv ? (
         <>
           <header className="promo-landing">
@@ -1148,21 +1111,12 @@ export default function App() {
             </section>
           </main>
         )
-      ) : (
-        <header className="guide-hero guide-hero-fullscreen">
-          <div className="guide-stage" ref={guideStageRef}>
-            <button
-              type="button"
-              className="guide-exit-btn"
-              onClick={handleExitAccess}
-              aria-label="Sair do ID"
-              title="Sair do ID"
-            >
-              Sair
-            </button>
-            <button
-              type="button"
-              className={`guide-handle${guideDrawerOpen ? ' open' : ''}`}
+        ) : (
+          <header className="guide-hero guide-hero-fullscreen">
+            <div className="guide-stage" ref={guideStageRef}>
+              <button
+                type="button"
+                className={`guide-handle${guideDrawerOpen ? ' open' : ''}`}
               style={guideDrawerOpen && drawerHandleTop !== null ? { top: `${drawerHandleTop}px` } : undefined}
               onClick={() => {
                 if (guideDrawerOpen) {

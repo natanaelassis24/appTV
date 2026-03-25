@@ -415,34 +415,6 @@ label {
   left: calc(12px + var(--channel-rail-width) + 4px);
 }
 
-.guide-exit-btn {
-  position: absolute;
-  bottom: 14px;
-  right: 14px;
-  z-index: 5;
-  min-height: 28px;
-  padding: 0 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(12, 12, 12, 0.32);
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 0.64rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  cursor: pointer;
-  backdrop-filter: blur(8px);
-  opacity: 0.85;
-  transition: opacity 0.16s ease, background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
-}
-
-.guide-exit-btn:hover,
-.guide-exit-btn:focus-visible {
-  opacity: 1;
-  background: rgba(225, 29, 46, 0.18);
-  border-color: rgba(225, 29, 46, 0.3);
-  color: #fff;
-}
-
 .tv-mode .guide-sidebar.open {
   transform: translate(0, -50%);
 }
