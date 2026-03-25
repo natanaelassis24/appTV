@@ -438,7 +438,7 @@ export default function App() {
   }, [isPlaybackEnabled, selectedChannel?.url, selectedChannelUrl]);
 
   useEffect(() => {
-    if (!isAndroidTv) {
+    if (!isAndroidTv || forceLoginScreen) {
       return;
     }
 
@@ -486,10 +486,18 @@ export default function App() {
       return;
     }
 
-    const delayMs = cachedAccess.accessGranted ? 2 * 60 * 1000 : 5 * 60 * 1000;
-    cacheRevalidateTimerRef.current = window.setTimeout(() => {
-      lookupAccessById(cachedAccess.accessId)
-        .then(result => {
+      const delayMs = cachedAccess.accessGranted ? 2 * 60 * 1000 : 5 * 60 * 1000;
+      cacheRevalidateTimerRef.current = window.setTimeout(() => {
+        if (forceLoginScreen) {
+          return;
+        }
+
+        lookupAccessById(cachedAccess.accessId)
+          .then(result => {
+            if (forceLoginScreen) {
+              return;
+            }
+
             if (!result.accessGranted) {
               clearCachedAccess();
               setAuthorizedAccess(null);
@@ -505,13 +513,13 @@ export default function App() {
         });
     }, delayMs);
 
-    return () => {
-      if (cacheRevalidateTimerRef.current) {
-        window.clearTimeout(cacheRevalidateTimerRef.current);
-        cacheRevalidateTimerRef.current = null;
-      }
-    };
-  }, [isAndroidTv]);
+      return () => {
+        if (cacheRevalidateTimerRef.current) {
+          window.clearTimeout(cacheRevalidateTimerRef.current);
+          cacheRevalidateTimerRef.current = null;
+        }
+      };
+    }, [forceLoginScreen, isAndroidTv]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -558,7 +566,7 @@ export default function App() {
         expiryRefreshTimerRef.current = null;
       }
     };
-  }, [authorizedAccess, isPlaybackEnabled]);
+    }, [authorizedAccess, forceLoginScreen, isPlaybackEnabled]);
 
   useEffect(() => {
     if (isPlaybackEnabled || filteredChannels.length <= 1) {
