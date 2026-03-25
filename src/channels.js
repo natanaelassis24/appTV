@@ -652,12 +652,13 @@ export const CHANNELS = [
 },
 {
   name: 'Nickelodeon',
-  url: 'https://youtu.be/H5e6PssMMcE',
+  url: 'http://s.webdosdeuses.top/live/gub233/68nz2p/235072.m3u8',
   number: '58',
   category: 'Canais',
   logoImage: 'https://upload.wikimedia.org/wikipedia/commons/e/e5/Nickelodeon_2023_logo_%28outline%29.svg',
   logo: 'NC',
-  sourceType: 'embed',
+  sourceType: 'hls',
+  playbackTransport: 'browser',
   description: 'Descricao curta do canal.'
 },
 {

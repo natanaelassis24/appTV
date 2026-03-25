@@ -787,7 +787,8 @@ export default function App() {
   }
 
   if (playbackMode === 'browser' || playbackMode === 'page') {
-    playWithNativeSource('Abrindo stream no navegador interno...');
+    setEmbedUrl(String(selectedChannel.url || '').trim());
+    setPlayerStatus('Browser carregado.');
     return;
   }
 
