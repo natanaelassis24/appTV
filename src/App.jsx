@@ -792,7 +792,8 @@ export default function App() {
   }
 
   if (playbackMode === 'browser' || playbackMode === 'page') {
-    setEmbedUrl(buildEmbedUrl(selectedChannel));
+    setEmbedUrl('');
+    window.open(String(selectedChannel.url || '').trim(), '_blank', 'noopener,noreferrer');
     setPlayerStatus('Browser carregado.');
     return;
   }
