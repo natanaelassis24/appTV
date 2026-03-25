@@ -224,6 +224,10 @@ function getChannelPlaybackMode(channel) {
     return 'page';
   }
 
+  if (explicitTransport === 'html') {
+    return 'html';
+  }
+
   if (
     channel?.sourceType === 'file' ||
     /\.mp4($|\?)/i.test(url) ||
@@ -398,14 +402,6 @@ export default function App() {
     const mode = getChannelPlaybackMode(selectedChannel);
     return mode === 'browser' || mode === 'page';
   }, [selectedChannel]);
-
-  const embedAllow = useMemo(() => {
-    if (isBrowserChannel) {
-      return 'autoplay; encrypted-media; picture-in-picture';
-    }
-
-    return 'autoplay; encrypted-media; picture-in-picture; fullscreen';
-  }, [isBrowserChannel]);
 
   const publicChannelLoop = useMemo(() => {
     return [...filteredChannels, ...filteredChannels];
@@ -796,12 +792,6 @@ export default function App() {
   if (playbackMode === 'embed') {
     setEmbedUrl(buildEmbedUrl(selectedChannel));
     setPlayerStatus('Embed carregado.');
-    return;
-  }
-
-  if (playbackMode === 'browser' || playbackMode === 'page') {
-    setEmbedUrl(String(selectedChannel.url || '').trim());
-    setPlayerStatus('Browser carregado.');
     return;
   }
 
@@ -1299,8 +1289,8 @@ export default function App() {
                     id="tvEmbed"
                     title="Player incorporado"
                     src={embedUrl}
-                    allow={embedAllow}
-                    allowFullScreen={!isBrowserChannel}
+                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                    allowFullScreen
                     referrerPolicy="strict-origin-when-cross-origin"
                     tabIndex={-1}
                   />
