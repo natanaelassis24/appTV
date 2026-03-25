@@ -375,7 +375,6 @@ export default function App() {
   const expiryRefreshTimerRef = useRef(null);
   const cacheRevalidateTimerRef = useRef(null);
   const streamRefreshTimerRef = useRef(null);
-  const browserChannelPendingOpenRef = useRef('');
   const recoveryRef = useRef({ network: 0, media: 0, fallbackTried: false });
 
   const selectedChannel = useMemo(() => {
@@ -423,7 +422,6 @@ export default function App() {
     setSelectedChannelUrl(normalizedUrl);
     setDrawerChannelUrl(normalizedUrl);
     setGuideDrawerOpen(false);
-    browserChannelPendingOpenRef.current = normalizedUrl;
     setPlaybackNonce(current => current + 1);
   }
 
@@ -785,14 +783,8 @@ export default function App() {
   }
 
   if (playbackMode === 'page') {
-    if (browserChannelPendingOpenRef.current !== normalizeChannelUrl(selectedChannel?.url)) {
-      return;
-    }
-
-    browserChannelPendingOpenRef.current = '';
-    const targetUrl = String(selectedChannel.url || '').trim();
-    setPlayerStatus('Abrindo no navegador...');
-    window.location.assign(targetUrl);
+    setEmbedUrl(String(selectedChannel.url || '').trim());
+    setPlayerStatus('Pagina carregada.');
     return;
   }
 
@@ -1291,7 +1283,6 @@ export default function App() {
                     title="Player incorporado"
                     src={embedUrl}
                     allow="autoplay; encrypted-media; picture-in-picture"
-                    allowFullScreen
                     referrerPolicy="strict-origin-when-cross-origin"
                     tabIndex={-1}
                   />
