@@ -160,6 +160,7 @@ label {
 .tv-mode .app-shell {
   padding: 0;
   min-height: 100vh;
+  width: 100vw;
   background: #000;
   overflow: hidden;
 }
@@ -348,6 +349,7 @@ label {
   margin: 0;
   width: 100vw;
   height: 100vh;
+  overflow: hidden;
 }
 
 .guide-player-shell {
@@ -372,6 +374,7 @@ label {
 
 .tv-mode .guide-stage-frame {
   width: 100vw;
+  overflow: hidden;
 }
 
 .tv-mode .guide-player-shell {
@@ -382,10 +385,17 @@ label {
 }
 
 .tv-mode .guide-sidebar {
-  top: 0;
-  bottom: 0;
-  padding: 18px 0 88px;
+  top: 56%;
+  bottom: auto;
+  height: min(78vh, calc(100vh - 96px));
+  padding: 18px 0;
   border-radius: 0;
+  transition: none;
+  transform: translate(-72px, -56%);
+}
+
+.tv-mode .guide-channel-list {
+  align-content: center;
 }
 
 .tv-mode .guide-handle {
@@ -394,6 +404,10 @@ label {
 
 .tv-mode .guide-handle.open {
   left: calc(12px + var(--channel-rail-width) + 4px);
+}
+
+.tv-mode .guide-sidebar.open {
+  transform: translate(0, -56%);
 }
 
 .guide-player-shell #tvPlayer,
@@ -407,6 +421,11 @@ label {
   object-fit: cover;
   border: 0;
   background: #000;
+}
+
+.tv-mode .guide-player-shell #tvPlayer,
+.tv-mode .guide-player-shell #tvEmbed {
+  object-fit: cover;
 }
 
 .tv-mode .guide-player-shell #tvPlayer::-webkit-media-controls {
@@ -1363,6 +1382,17 @@ label {
 
 .admin-table tbody tr.status-blocked {
   background: rgba(225, 29, 46, 0.03);
+}
+
+.admin-row-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-row-actions .secondary-btn {
+  min-height: 40px;
+  padding: 0 14px;
 }
 
 .admin-empty-state {

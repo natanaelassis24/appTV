@@ -45,8 +45,11 @@ const toErrorMessage = value => {
 };
 
 const FIREBASE_AUTH_SESSION_KEY = 'app-tv-admin-firebase-session-v1';
+const ADMIN_ACCESS_CACHE_KEY = 'app-tv-admin-access-cache-v2';
+const ADMIN_ACCESS_CACHE_TTL_MS = 6 * 60 * 1000;
+const ADMIN_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
 const loadRequestTracker = { current: 0 };
-const skipNextAutoLoad = { current: false };
+const adminIdleTimerRef = { current: null };
 
 const readAuthSession = () => {
   try {
@@ -161,6 +164,62 @@ const formatDate = value => {
   }
 };
 
+const normalizeAccessList = entries =>
+  (Array.isArray(entries) ? entries : []).map(entry => ({
+    accessId: entry.accessId || '',
+    name: entry.name || 'Cliente',
+    planName: entry.planName || 'Plano nao definido',
+    status: entry.status || 'pending',
+    paymentLabel: entry.paymentLabel || 'Aguardando confirmacao',
+    expiresAt: entry.expiresAt || null,
+    expiresAtLabel: entry.expiresAtLabel || formatDate(entry.expiresAt)
+  }));
+
+const computeAccessCounts = entries => {
+  const nextCounts = { all: 0, active: 0, pending: 0, blocked: 0 };
+  for (const entry of normalizeAccessList(entries)) {
+    nextCounts.all += 1;
+    if (entry.status in nextCounts) {
+      nextCounts[entry.status] += 1;
+    }
+  }
+  return nextCounts;
+};
+
+function readAccessListCache() {
+  try {
+    if (typeof window === 'undefined') return null;
+    const raw = window.localStorage.getItem(ADMIN_ACCESS_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed?.entries) || !parsed?.fetchedAt) return null;
+    if (Date.now() - Number(parsed.fetchedAt || 0) > ADMIN_ACCESS_CACHE_TTL_MS) {
+      return null;
+    }
+    return {
+      entries: normalizeAccessList(parsed.entries),
+      counts: parsed.counts || computeAccessCounts(parsed.entries),
+      fetchedAt: Number(parsed.fetchedAt || Date.now())
+    };
+  } catch {
+    return null;
+  }
+}
+
+function writeAccessListCache(entries, counts) {
+  try {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(
+      ADMIN_ACCESS_CACHE_KEY,
+      JSON.stringify({
+        entries: normalizeAccessList(entries),
+        counts: counts || computeAccessCounts(entries),
+        fetchedAt: Date.now()
+      })
+    );
+  } catch {}
+}
+
 export default function AdminPanel() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -195,22 +254,11 @@ export default function AdminPanel() {
 
     setRows(prevRows => {
       const filtered = prevRows.filter(row => row.accessId !== normalized.accessId);
-      return [normalized, ...filtered];
-    });
-
-    setCounts(prevCounts => {
-      const previousStatus = rows.find(row => row.accessId === normalized.accessId)?.status;
-      const nextCounts = { ...prevCounts };
-      nextCounts.all = Math.max(0, Number(nextCounts.all || 0));
-      if (previousStatus && previousStatus in nextCounts) {
-        nextCounts[previousStatus] = Math.max(0, Number(nextCounts[previousStatus] || 0) - 1);
-      } else {
-        nextCounts.all += 1;
-      }
-      if (normalized.status in nextCounts) {
-        nextCounts[normalized.status] = Number(nextCounts[normalized.status] || 0) + 1;
-      }
-      return nextCounts;
+      const nextRows = [normalized, ...filtered];
+      const nextCounts = computeAccessCounts(nextRows);
+      setCounts(nextCounts);
+      writeAccessListCache(nextRows, nextCounts);
+      return nextRows;
     });
 
     setLoadState('success');
@@ -263,19 +311,60 @@ export default function AdminPanel() {
   }, []);
 
   useEffect(() => {
-    if (!sessionToken) return;
-    if (skipNextAutoLoad.current) {
-      skipNextAutoLoad.current = false;
-      return;
+    if (!sessionToken) {
+      if (adminIdleTimerRef.current) {
+        window.clearTimeout(adminIdleTimerRef.current);
+        adminIdleTimerRef.current = null;
+      }
+      return undefined;
     }
+
+    const lockAdmin = () => {
+      clearAuthSession();
+      window.location.href = '/';
+    };
+
+    const scheduleLock = () => {
+      if (adminIdleTimerRef.current) {
+        window.clearTimeout(adminIdleTimerRef.current);
+      }
+
+      adminIdleTimerRef.current = window.setTimeout(lockAdmin, ADMIN_IDLE_TIMEOUT_MS);
+    };
+
+    const activityEvents = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'pointerdown', 'scroll'];
+    activityEvents.forEach(eventName => window.addEventListener(eventName, scheduleLock, { passive: true }));
+    scheduleLock();
+
+    return () => {
+      if (adminIdleTimerRef.current) {
+        window.clearTimeout(adminIdleTimerRef.current);
+        adminIdleTimerRef.current = null;
+      }
+
+      activityEvents.forEach(eventName => window.removeEventListener(eventName, scheduleLock));
+    };
+  }, [sessionToken]);
+
+  useEffect(() => {
+    if (!sessionToken) return;
 
     const load = async () => {
       const requestId = ++loadRequestTracker.current;
+      const cached = readAccessListCache();
+      if (cached) {
+        setRows(cached.entries);
+        setCounts(cached.counts || computeAccessCounts(cached.entries));
+        setLoadState('success');
+        setLoadError('');
+        return;
+      }
+
       setLoadState('loading');
       setLoadError('');
 
       try {
-        const response = await fetch(buildApiUrl(`/api/admin-accesses?status=${encodeURIComponent(statusFilter)}`), {
+        const response = await fetch(buildApiUrl('/api/admin-accesses?status=all'), {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${sessionToken}`
@@ -295,8 +384,11 @@ export default function AdminPanel() {
           return;
         }
 
-        setRows(payload.entries);
-        setCounts(payload?.counts || { all: 0, active: 0, pending: 0, blocked: 0 });
+        const nextRows = normalizeAccessList(payload.entries);
+        const nextCounts = payload?.counts || computeAccessCounts(nextRows);
+        setRows(nextRows);
+        setCounts(nextCounts);
+        writeAccessListCache(nextRows, nextCounts);
         setLoadState('success');
       } catch (error) {
         if (requestId !== loadRequestTracker.current) {
@@ -320,7 +412,7 @@ export default function AdminPanel() {
     };
 
     load();
-  }, [sessionToken, statusFilter]);
+  }, [sessionToken]);
 
   const visibleRows = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -434,33 +526,7 @@ export default function AdminPanel() {
       setGenerateState('success');
       setSearchTerm(responsePayload?.accessId || '');
       upsertGeneratedRow(responsePayload);
-      skipNextAutoLoad.current = true;
       setStatusFilter('all');
-
-      loadRequestTracker.current += 1;
-      const refreshRequestId = loadRequestTracker.current;
-      const refreshResponse = await fetch(buildApiUrl('/api/admin-accesses?status=all'), {
-        headers: {
-          Accept: 'application/json',
-          Authorization: `Bearer ${sessionToken}`
-        }
-      });
-
-      const refreshPayload = await readJson(refreshResponse);
-      if (!refreshResponse.ok) {
-        throw new Error(toErrorMessage(refreshPayload?.error) || `HTTP ${refreshResponse.status}`);
-      }
-
-      if (!refreshPayload || !Array.isArray(refreshPayload.entries)) {
-        throw new Error('A API de listagem nao devolveu dados validos.');
-      }
-
-      if (refreshRequestId === loadRequestTracker.current) {
-        setRows(refreshPayload.entries);
-        setCounts(refreshPayload?.counts || { all: 0, active: 0, pending: 0, blocked: 0 });
-        setLoadState('success');
-        setLoadError('');
-      }
     } catch (error) {
       const message = toErrorMessage(error?.message || error) || 'Falha ao gerar o ID.';
       if (
@@ -513,33 +579,114 @@ export default function AdminPanel() {
         setSearchTerm('');
       }
 
-      skipNextAutoLoad.current = true;
-      loadRequestTracker.current += 1;
-      const refreshRequestId = loadRequestTracker.current;
-      const refreshResponse = await fetch(buildApiUrl('/api/admin-accesses?status=all'), {
+      setRows(prevRows => {
+        const nextRows = prevRows.filter(row => row.accessId !== normalizedAccessId);
+        const nextCounts = computeAccessCounts(nextRows);
+        setCounts(nextCounts);
+        writeAccessListCache(nextRows, nextCounts);
+        return nextRows;
+      });
+      setLoadState('success');
+      setLoadError('');
+    } catch (error) {
+      const message = toErrorMessage(error?.message || error) || 'Falha ao excluir o ID.';
+      if (
+        message.includes('Sessao administrativa invalida') ||
+        message.includes('Token administrativo') ||
+        message.includes('expirada')
+      ) {
+        resetView();
+        return;
+      }
+
+      setLoadError(message);
+      setLoadState('error');
+    }
+  };
+
+  const handleRenewAccess = async accessId => {
+    const normalizedAccessId = String(accessId || '').trim();
+    if (!normalizedAccessId) return;
+
+    const confirmed = window.confirm(`Renovar o plano do ID ${normalizedAccessId}?`);
+    if (!confirmed) return;
+
+    setGenerateState('idle');
+    setGenerateError('');
+    setLoadError('');
+
+    try {
+      const response = await fetch(buildApiUrl('/api/admin-renew-access'), {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${sessionToken}`
+        },
+        body: JSON.stringify({ accessId: normalizedAccessId })
+      });
+
+      const payload = await readJson(response);
+      if (!response.ok) {
+        throw new Error(toErrorMessage(payload?.error) || `HTTP ${response.status}`);
+      }
+
+      if (!payload || !payload.accessId) {
+        throw new Error('A API de renovacao nao devolveu um ID valido.');
+      }
+
+      setGeneratedAccess(prev => (prev?.accessId === normalizedAccessId ? payload : prev));
+      upsertGeneratedRow(payload);
+      setLoadState('success');
+      setLoadError('');
+    } catch (error) {
+      const message = toErrorMessage(error?.message || error) || 'Falha ao renovar o plano.';
+      if (
+        message.includes('Sessao administrativa invalida') ||
+        message.includes('Token administrativo') ||
+        message.includes('expirada')
+      ) {
+        resetView();
+        return;
+      }
+
+      setLoadError(message);
+      setLoadState('error');
+    }
+  };
+
+  const handleRefreshAccesses = async () => {
+    if (!sessionToken) return;
+
+    setLoadState('loading');
+    setLoadError('');
+
+    try {
+      const response = await fetch(buildApiUrl('/api/admin-accesses?status=all'), {
         headers: {
           Accept: 'application/json',
           Authorization: `Bearer ${sessionToken}`
         }
       });
 
-      const refreshPayload = await readJson(refreshResponse);
-      if (!refreshResponse.ok) {
-        throw new Error(toErrorMessage(refreshPayload?.error) || `HTTP ${refreshResponse.status}`);
+      const payload = await readJson(response);
+      if (!response.ok) {
+        throw new Error(toErrorMessage(payload?.error) || `HTTP ${response.status}`);
       }
 
-      if (!refreshPayload || !Array.isArray(refreshPayload.entries)) {
+      if (!payload || !Array.isArray(payload.entries)) {
         throw new Error('A API de listagem nao devolveu dados validos.');
       }
 
-      if (refreshRequestId === loadRequestTracker.current) {
-        setRows(refreshPayload.entries);
-        setCounts(refreshPayload?.counts || { all: 0, active: 0, pending: 0, blocked: 0 });
-        setLoadState('success');
-        setLoadError('');
-      }
+      const nextRows = normalizeAccessList(payload.entries);
+      const nextCounts = payload?.counts || computeAccessCounts(nextRows);
+      setRows(nextRows);
+      setCounts(nextCounts);
+      writeAccessListCache(nextRows, nextCounts);
+      setLoadState('success');
+      setLoadError('');
     } catch (error) {
-      const message = toErrorMessage(error?.message || error) || 'Falha ao excluir o ID.';
+      const message = toErrorMessage(error?.message || error) || 'Falha ao atualizar os IDs.';
       if (
         message.includes('Sessao administrativa invalida') ||
         message.includes('Token administrativo') ||
@@ -618,7 +765,7 @@ export default function AdminPanel() {
             <button type="button" className="secondary-btn" onClick={handleClose}>
               Fechar
             </button>
-            <button type="button" className="secondary-btn" onClick={() => window.location.reload()}>
+            <button type="button" className="secondary-btn" onClick={handleRefreshAccesses}>
               Atualizar
             </button>
             <button type="button" className="secondary-btn" onClick={handleLogout}>
@@ -775,13 +922,22 @@ export default function AdminPanel() {
                   <td>{entry.paymentLabel}</td>
                   <td>{entry.expiresAtLabel}</td>
                   <td>
-                    <button
-                      type="button"
-                      className="secondary-btn"
-                      onClick={() => handleDeleteAccess(entry.accessId)}
-                    >
-                      Excluir
-                    </button>
+                    <div className="admin-row-actions">
+                      <button
+                        type="button"
+                        className="secondary-btn"
+                        onClick={() => handleRenewAccess(entry.accessId)}
+                      >
+                        Renovar
+                      </button>
+                      <button
+                        type="button"
+                        className="secondary-btn"
+                        onClick={() => handleDeleteAccess(entry.accessId)}
+                      >
+                        Excluir
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

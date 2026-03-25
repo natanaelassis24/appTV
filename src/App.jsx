@@ -6,6 +6,7 @@ import { PUBLIC_RUNTIME_CONFIG, buildApiUrl } from './runtime-config';
 import { PUBLIC_PLANS } from '../lib/plans.js';
 
 const ACCESS_CACHE_KEY = 'app-tv-access-cache-v2';
+const LAST_CHANNEL_CACHE_KEY = 'app-tv-last-channel-v1';
 const ACTIVE_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const INACTIVE_CACHE_TTL_MS = 15 * 60 * 1000;
 const EXPIRY_WARNING_WINDOW_DAYS = 3;
@@ -81,6 +82,41 @@ function clearCachedAccess() {
   }
 
   window.localStorage.removeItem(ACCESS_CACHE_KEY);
+}
+
+function readCachedChannelUrl() {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(LAST_CHANNEL_CACHE_KEY);
+    if (!raw) {
+      return null;
+    }
+
+    const cachedUrl = String(raw || '').trim();
+    if (!cachedUrl) {
+      return null;
+    }
+
+    return CHANNELS.some(channel => channel.url === cachedUrl) ? cachedUrl : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedChannelUrl(url) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  const normalized = String(url || '').trim();
+  if (!normalized || !CHANNELS.some(channel => channel.url === normalized)) {
+    return;
+  }
+
+  window.localStorage.setItem(LAST_CHANNEL_CACHE_KEY, normalized);
 }
 
 function isCachedAccessExpired(access) {
@@ -266,10 +302,14 @@ export default function App() {
   const [authorizedAccess, setAuthorizedAccess] = useState(null);
   const isPlaybackEnabled = isAndroidTv && authorizedAccess?.accessGranted === true;
   const filteredChannels = useMemo(() => CHANNELS, []);
+  const initialChannelUrl = useMemo(() => {
+    const cachedChannelUrl = readCachedChannelUrl();
+    return cachedChannelUrl || CHANNELS[0]?.url || '';
+  }, []);
 
   const [guideDrawerOpen, setGuideDrawerOpen] = useState(false);
-  const [selectedChannelUrl, setSelectedChannelUrl] = useState(CHANNELS[0]?.url || '');
-  const [drawerChannelUrl, setDrawerChannelUrl] = useState(CHANNELS[0]?.url || '');
+  const [selectedChannelUrl, setSelectedChannelUrl] = useState(initialChannelUrl);
+  const [drawerChannelUrl, setDrawerChannelUrl] = useState(initialChannelUrl);
   const [drawerHandleTop, setDrawerHandleTop] = useState(null);
   const [status, setStatus] = useState('aguardando');
   const [statusError, setStatusError] = useState(false);
@@ -383,6 +423,17 @@ export default function App() {
       setDrawerChannelUrl(filteredChannels[0].url);
     }
   }, [drawerChannelUrl, filteredChannels, selectedChannelUrl]);
+
+  useEffect(() => {
+    if (!isPlaybackEnabled) {
+      return;
+    }
+
+    const activeChannelUrl = selectedChannel?.url || selectedChannelUrl;
+    if (activeChannelUrl) {
+      writeCachedChannelUrl(activeChannelUrl);
+    }
+  }, [isPlaybackEnabled, selectedChannel?.url, selectedChannelUrl]);
 
   useEffect(() => {
     if (!isAndroidTv) {
