@@ -421,9 +421,16 @@ label {
 }
 
 .tv-mode .guide-player-shell.browser-mode {
-  left: 84px;
-  width: calc(100vw - 84px);
+  top: 24px;
+  left: calc(var(--channel-rail-width) + 18px);
+  right: 24px;
+  bottom: 24px;
+  width: auto;
+  height: auto;
+  min-height: 0;
   z-index: 1;
+  border-radius: 22px;
+  overflow: hidden;
 }
 
 .tv-mode .guide-player-shell.browser-mode #tvEmbed,
