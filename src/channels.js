@@ -10,6 +10,24 @@ export const CHANNEL_TEMPLATE = {
   note: 'Use sourceType hls para streams .m3u8, embed para YouTube e outros embeds.'
 };
 
+function inferSourceType(url, sourceType) {
+  const explicitType = String(sourceType || '').trim();
+  if (explicitType) {
+    return explicitType;
+  }
+
+  const normalizedUrl = String(url || '').trim().toLowerCase();
+  if (normalizedUrl.includes('youtu.be') || normalizedUrl.includes('youtube.com')) {
+    return 'embed';
+  }
+
+  if (/\.(mp4|mp3)($|\?)/i.test(normalizedUrl)) {
+    return 'file';
+  }
+
+  return 'hls';
+}
+
 export function createChannel(overrides = {}) {
   const base = { ...CHANNEL_TEMPLATE, ...overrides };
 
@@ -20,17 +38,32 @@ export function createChannel(overrides = {}) {
     category: String(base.category || 'Canais').trim(),
     logoImage: String(base.logoImage || '').trim(),
     logo: String(base.logo || '').trim(),
-    sourceType: base.sourceType || 'hls',
+    sourceType: inferSourceType(base.url, base.sourceType),
     description: String(base.description || '').trim(),
     note: String(base.note || CHANNEL_TEMPLATE.note).trim()
   };
 }
 
+export function createHlsChannel(overrides = {}) {
+  return createChannel({
+    sourceType: 'hls',
+    ...overrides
+  });
+}
+
+export function createEmbedChannel(overrides = {}) {
+  return createChannel({
+    sourceType: 'embed',
+    ...overrides
+  });
+}
+
 // Para adicionar um canal novo:
 // 1. copie um item abaixo
 // 2. troque nome, link, numero e logo
-// 3. deixe sourceType como 'hls' para .m3u8 ou 'embed' para YouTube
-// 4. se quiser, use o mesmo bloco do Nick Jr. como modelo
+// 3. se o link for .m3u8, pode deixar sem sourceType
+// 4. se for YouTube, use sourceType 'embed'
+// 5. o helper abaixo padroniza tudo e evita quebrar o player
 export const CHANNELS = [
   {
     name: 'Caze TV',
@@ -632,4 +665,4 @@ export const CHANNELS = [
   sourceType: 'hls',
   description: 'Descricao curta do canal.'
 }
-];
+].map(createChannel);
