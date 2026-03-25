@@ -208,85 +208,6 @@ function buildEmbedUrl(channel) {
   return url;
 }
 
-function buildBrowserFrameUrl(channel) {
-  const url = String(channel?.url || '').trim();
-  if (!url) {
-    return '';
-  }
-
-  const html = `<!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-  <style>
-    html, body {
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #000;
-    }
-    body {
-      display: flex;
-      align-items: stretch;
-      justify-content: stretch;
-    }
-    video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      background: #000;
-    }
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-</head>
-<body>
-  <video id="browserPlayer" autoplay playsinline controls></video>
-  <script>
-    (function () {
-      const streamUrl = ${JSON.stringify(url)};
-      const video = document.getElementById('browserPlayer');
-
-      function startPlayback(sourceUrl) {
-        if (!sourceUrl) {
-          return;
-        }
-
-        if (video.canPlayType('application/vnd.apple.mpegurl') || video.canPlayType('application/x-mpegURL')) {
-          video.src = sourceUrl;
-          return;
-        }
-
-        if (window.Hls && window.Hls.isSupported()) {
-          const hls = new window.Hls({
-            enableWorker: true,
-            lowLatencyMode: false
-          });
-
-          hls.loadSource(sourceUrl);
-          hls.attachMedia(video);
-          hls.on(window.Hls.Events.ERROR, function (_, data) {
-            if (data && data.fatal) {
-              console.warn('HLS browser fallback error:', data);
-            }
-          });
-          return;
-        }
-
-        video.src = sourceUrl;
-      }
-
-      startPlayback(streamUrl);
-      video.play().catch(function () {});
-    })();
-  </script>
-</body>
-</html>`;
-
-  return `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
-}
-
 function getChannelPlaybackMode(channel) {
   const url = String(channel?.url || '').trim().toLowerCase();
   const explicitTransport = String(channel?.playbackTransport || '').trim().toLowerCase();
@@ -880,7 +801,7 @@ export default function App() {
   }
 
   if (playbackMode === 'browser' || playbackMode === 'page') {
-    setEmbedUrl(buildBrowserFrameUrl(selectedChannel));
+    setEmbedUrl(String(selectedChannel.url || '').trim());
     setPlayerStatus('Browser carregado.');
     return;
   }
