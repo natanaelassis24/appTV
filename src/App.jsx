@@ -779,7 +779,6 @@ export default function App() {
   }
 
   const playbackMode = getChannelPlaybackMode(selectedChannel);
-  const playbackModeForPlayer = playbackMode === 'browser' || playbackMode === 'page' ? 'hls' : playbackMode;
 
   if (playbackMode === 'embed') {
     setEmbedUrl(buildEmbedUrl(selectedChannel));
@@ -788,10 +787,12 @@ export default function App() {
   }
 
   if (playbackMode === 'browser' || playbackMode === 'page') {
-    setPlayerStatus('Canal de navegador carregado.');
+    setEmbedUrl(String(selectedChannel.url || '').trim());
+    setPlayerStatus('Browser carregado.');
+    return;
   }
 
-  if (playbackModeForPlayer === 'file') {
+  if (playbackMode === 'file') {
     playWithNativeSource('Abrindo midia direta...');
     return;
   }
@@ -801,7 +802,7 @@ export default function App() {
       (player.canPlayType('application/vnd.apple.mpegurl') ||
         player.canPlayType('application/x-mpegURL'));
 
-    if (playbackModeForPlayer === 'hls' && canPlayNativeHls) {
+    if (playbackMode === 'hls' && canPlayNativeHls) {
       playWithNativeSource('Abrindo stream diretamente...');
       return;
     }
