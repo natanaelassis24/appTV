@@ -297,10 +297,11 @@ export default function App() {
   const [accessIdInput, setAccessIdInput] = useState('');
   const [accessLookupState, setAccessLookupState] = useState('idle');
   const [accessLookupResult, setAccessLookupResult] = useState(null);
-  const [accessLookupError, setAccessLookupError] = useState('');
-  const [accessBootState, setAccessBootState] = useState(isAndroidTv ? 'booting' : 'idle');
-  const [authorizedAccess, setAuthorizedAccess] = useState(null);
-  const isPlaybackEnabled = isAndroidTv && authorizedAccess?.accessGranted === true;
+    const [accessLookupError, setAccessLookupError] = useState('');
+    const [accessBootState, setAccessBootState] = useState(isAndroidTv ? 'booting' : 'idle');
+    const [authorizedAccess, setAuthorizedAccess] = useState(null);
+    const [forceLoginScreen, setForceLoginScreen] = useState(false);
+    const isPlaybackEnabled = isAndroidTv && authorizedAccess?.accessGranted === true;
   const filteredChannels = useMemo(() => CHANNELS, []);
   const initialChannelUrl = useMemo(() => {
     const cachedChannelUrl = readCachedChannelUrl();
@@ -403,11 +404,12 @@ export default function App() {
       writeCachedAccess(payload);
     }
 
-    setAccessLookupResult(payload);
-    setAccessLookupError('');
-    setAuthorizedAccess(payload.accessGranted ? payload : null);
-    return payload;
-  }
+      setAccessLookupResult(payload);
+      setAccessLookupError('');
+      setAuthorizedAccess(payload.accessGranted ? payload : null);
+      setForceLoginScreen(false);
+      return payload;
+    }
 
 
   useEffect(() => {
@@ -469,13 +471,14 @@ export default function App() {
     const cacheTtl = getCachedAccessTtl(cachedAccess);
     const isCacheFresh = cacheAge <= cacheTtl;
 
-    if (cachedAccess.accessGranted) {
-      setAuthorizedAccess(cachedAccess);
-      setAccessLookupState('success');
-    } else {
-      setAuthorizedAccess(null);
-      setAccessLookupState('success');
-    }
+      if (cachedAccess.accessGranted) {
+        setAuthorizedAccess(cachedAccess);
+        setAccessLookupState('success');
+        setForceLoginScreen(false);
+      } else {
+        setAuthorizedAccess(null);
+        setAccessLookupState('success');
+      }
 
     setAccessBootState('ready');
 
@@ -487,11 +490,11 @@ export default function App() {
     cacheRevalidateTimerRef.current = window.setTimeout(() => {
       lookupAccessById(cachedAccess.accessId)
         .then(result => {
-          if (!result.accessGranted) {
-            clearCachedAccess();
-            setAuthorizedAccess(null);
-            setAccessLookupResult(result);
-            setAccessLookupState('success');
+            if (!result.accessGranted) {
+              clearCachedAccess();
+              setAuthorizedAccess(null);
+              setAccessLookupResult(result);
+              setAccessLookupState('success');
             setAccessLookupError('');
           }
         })
@@ -825,13 +828,23 @@ export default function App() {
     }
   }
 
-  const handleExitAccess = () => {
-    const cachedAccess = readCachedAccess();
-    setAccessIdInput(cachedAccess?.accessId || accessIdInput);
+    const handleExitAccess = () => {
+    if (expiryRefreshTimerRef.current) {
+      window.clearTimeout(expiryRefreshTimerRef.current);
+      expiryRefreshTimerRef.current = null;
+    }
+
+    if (cacheRevalidateTimerRef.current) {
+      window.clearTimeout(cacheRevalidateTimerRef.current);
+      cacheRevalidateTimerRef.current = null;
+    }
+
+    setAccessIdInput('');
     setAccessLookupState('idle');
     setAccessLookupResult(null);
     setAccessLookupError('');
     setAuthorizedAccess(null);
+    setForceLoginScreen(true);
     setAccessBootState('ready');
     setGuideDrawerOpen(false);
     setDrawerChannelUrl(initialChannelUrl);
@@ -843,8 +856,8 @@ export default function App() {
   };
 
   return (
-    <div className={`app-shell${isAndroidTv ? ' tv-mode' : ''}${!isPlaybackEnabled ? ' promo-mode' : ''}`}>
-      {!isPlaybackEnabled ? (
+    <div className={`app-shell${isAndroidTv ? ' tv-mode' : ''}${!isPlaybackEnabled || forceLoginScreen ? ' promo-mode' : ''}`}>
+      {!isPlaybackEnabled || forceLoginScreen ? (
         !isAndroidTv ? (
         <>
           <header className="promo-landing">
