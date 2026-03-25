@@ -327,6 +327,7 @@ export default function App() {
   const hlsRef = useRef(null);
   const expiryRefreshTimerRef = useRef(null);
   const cacheRevalidateTimerRef = useRef(null);
+  const streamRefreshTimerRef = useRef(null);
   const recoveryRef = useRef({ network: 0, media: 0, fallbackTried: false });
 
   const selectedChannel = useMemo(() => {
@@ -772,6 +773,33 @@ export default function App() {
       cleanupHls();
     };
   }, [isPlaybackEnabled, playbackNonce, selectedChannel]);
+
+  useEffect(() => {
+    if (streamRefreshTimerRef.current) {
+      window.clearInterval(streamRefreshTimerRef.current);
+      streamRefreshTimerRef.current = null;
+    }
+
+    if (!isPlaybackEnabled || !selectedChannel?.url) {
+      return undefined;
+    }
+
+    const refreshIntervalMs = 10 * 60 * 1000;
+    streamRefreshTimerRef.current = window.setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
+        return;
+      }
+
+      setPlaybackNonce(current => current + 1);
+    }, refreshIntervalMs);
+
+    return () => {
+      if (streamRefreshTimerRef.current) {
+        window.clearInterval(streamRefreshTimerRef.current);
+        streamRefreshTimerRef.current = null;
+      }
+    };
+  }, [isPlaybackEnabled, selectedChannel?.url]);
 
   async function handleAccessLookup(event) {
     event.preventDefault();
