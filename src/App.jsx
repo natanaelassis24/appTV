@@ -208,18 +208,31 @@ function buildEmbedUrl(channel) {
   return url;
 }
 
-function isYouTubeSource(channel) {
+function getChannelPlaybackMode(channel) {
   const url = String(channel?.url || '').trim().toLowerCase();
-  return url.includes('youtu.be') || url.includes('youtube.com');
-}
 
-function isDirectMediaSource(channel) {
-  if (channel?.sourceType === 'file') {
-    return true;
+  if (channel?.sourceType === 'embed' || url.includes('youtu.be') || url.includes('youtube.com')) {
+    return 'embed';
   }
 
-  const url = channel?.url || '';
-  return /\.mp4($|\?)/i.test(url) || /\.mp3($|\?)/i.test(url);
+  if (
+    channel?.sourceType === 'file' ||
+    /\.mp4($|\?)/i.test(url) ||
+    /\.mp3($|\?)/i.test(url)
+  ) {
+    return 'file';
+  }
+
+  return 'hls';
+}
+
+function buildStreamProxyUrl(streamUrl) {
+  const normalizedUrl = String(streamUrl || '').trim();
+  if (!normalizedUrl) {
+    return '';
+  }
+
+  return buildApiUrl(`/api/stream-proxy?url=${encodeURIComponent(normalizedUrl)}`);
 }
 
 function buildLogoThumb(channel, index) {
@@ -686,6 +699,8 @@ export default function App() {
       return;
     }
 
+    const playbackUrl = buildStreamProxyUrl(selectedChannel.url) || selectedChannel.url;
+
     const setPlayerStatus = (text, isError = false) => {
       setStatus(text);
       setStatusError(isError);
@@ -702,7 +717,7 @@ export default function App() {
       cleanupHls();
       recoveryRef.current.fallbackTried = true;
       player.pause();
-      player.src = selectedChannel.url;
+      player.src = playbackUrl;
       player.load();
       setPlayerStatus(message);
       player.play().catch(() => {
@@ -726,13 +741,15 @@ export default function App() {
       return;
     }
 
-    if (selectedChannel.sourceType === 'embed' || isYouTubeSource(selectedChannel)) {
+    const playbackMode = getChannelPlaybackMode(selectedChannel);
+
+    if (playbackMode === 'embed') {
       setEmbedUrl(buildEmbedUrl(selectedChannel));
       setPlayerStatus('Embed carregado.');
       return;
     }
 
-    if (isDirectMediaSource(selectedChannel)) {
+    if (playbackMode === 'file') {
       playWithNativeSource('Abrindo midia direta...');
       return;
     }
@@ -744,7 +761,7 @@ export default function App() {
       });
 
       hlsRef.current = hls;
-      hls.loadSource(selectedChannel.url);
+      hls.loadSource(playbackUrl);
       hls.attachMedia(player);
 
       hls.on(Hls.Events.MANIFEST_PARSED, () => {

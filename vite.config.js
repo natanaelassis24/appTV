@@ -13,6 +13,18 @@ function createJsonResponse(res) {
       res.setHeader(name, value);
       return this;
     },
+    end(payload = '') {
+      res.end(payload);
+      return this;
+    },
+    send(payload = '') {
+      if (!res.getHeader('Content-Type')) {
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      }
+
+      res.end(payload);
+      return this;
+    },
     json(payload) {
       if (!res.getHeader('Content-Type')) {
         res.setHeader('Content-Type', 'application/json; charset=utf-8');

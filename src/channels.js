@@ -7,7 +7,7 @@ export const CHANNEL_TEMPLATE = {
   logo: 'NC',
   sourceType: 'hls',
   description: 'Descricao curta do canal.',
-  note: 'Use sourceType hls para streams .m3u8, embed para YouTube e outros embeds.'
+  note: 'Para adicionar um canal novo, copie o bloco do Nick Jr. e troque nome, numero, logo e link. O app detecta m3u8 e YouTube automaticamente.'
 };
 
 function inferSourceType(url, sourceType) {
@@ -61,9 +61,8 @@ export function createEmbedChannel(overrides = {}) {
 // Para adicionar um canal novo:
 // 1. copie um item abaixo
 // 2. troque nome, link, numero e logo
-// 3. se o link for .m3u8, pode deixar sem sourceType
-// 4. se for YouTube, use sourceType 'embed'
-// 5. o helper abaixo pode ser usado para montar canais novos sem erro
+// 3. se for .m3u8 ou YouTube, o app detecta sozinho
+// 4. se quiser, deixe sourceType somente para casos especiais
 export const CHANNELS = [
   {
     name: 'Caze TV',
