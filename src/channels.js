@@ -31,8 +31,13 @@ function inferSourceType(url, sourceType) {
 
 function inferPlaybackTransport(playbackTransport) {
   const explicitTransport = String(playbackTransport || '').trim().toLowerCase();
-  if (explicitTransport === 'proxy') {
-    return 'proxy';
+  if (
+    explicitTransport === 'proxy' ||
+    explicitTransport === 'page' ||
+    explicitTransport === 'browser' ||
+    explicitTransport === 'direct'
+  ) {
+    return explicitTransport;
   }
 
   return 'direct';

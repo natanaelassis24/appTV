@@ -210,6 +210,11 @@ function buildEmbedUrl(channel) {
 
 function getChannelPlaybackMode(channel) {
   const url = String(channel?.url || '').trim().toLowerCase();
+  const explicitTransport = String(channel?.playbackTransport || '').trim().toLowerCase();
+
+  if (explicitTransport === 'page' || explicitTransport === 'browser') {
+    return 'page';
+  }
 
   if (channel?.sourceType === 'embed' || url.includes('youtu.be') || url.includes('youtube.com')) {
     return 'embed';
@@ -236,7 +241,14 @@ function buildStreamProxyUrl(streamUrl) {
 }
 
 function shouldUseStreamProxy(channel) {
-  return String(channel?.playbackTransport || '').trim().toLowerCase() === 'proxy';
+  const transport = String(channel?.playbackTransport || '').trim().toLowerCase();
+  const url = String(channel?.url || '').trim().toLowerCase();
+
+  if (transport === 'proxy') {
+    return true;
+  }
+
+  return url.startsWith('http://');
 }
 
 function buildPlaybackUrl(channel) {
@@ -757,21 +769,37 @@ export default function App() {
     player.load();
     setPlayerStatus('Conectando transmissao...');
 
-    if (selectedChannel.unavailable) {
-      setPlayerStatus('Canal indisponivel no momento.', true);
-      return;
-    }
+  if (selectedChannel.unavailable) {
+    setPlayerStatus('Canal indisponivel no momento.', true);
+    return;
+  }
 
-    const playbackMode = getChannelPlaybackMode(selectedChannel);
+  const playbackMode = getChannelPlaybackMode(selectedChannel);
 
-    if (playbackMode === 'embed') {
-      setEmbedUrl(buildEmbedUrl(selectedChannel));
-      setPlayerStatus('Embed carregado.');
-      return;
-    }
+  if (playbackMode === 'embed') {
+    setEmbedUrl(buildEmbedUrl(selectedChannel));
+    setPlayerStatus('Embed carregado.');
+    return;
+  }
 
-    if (playbackMode === 'file') {
-      playWithNativeSource('Abrindo midia direta...');
+  if (playbackMode === 'page') {
+    setEmbedUrl(String(selectedChannel.url || '').trim());
+    setPlayerStatus('Pagina do canal carregada.');
+    return;
+  }
+
+  if (playbackMode === 'file') {
+    playWithNativeSource('Abrindo midia direta...');
+    return;
+  }
+
+    const canPlayNativeHls =
+      typeof player.canPlayType === 'function' &&
+      (player.canPlayType('application/vnd.apple.mpegurl') ||
+        player.canPlayType('application/x-mpegURL'));
+
+    if (playbackMode === 'hls' && canPlayNativeHls) {
+      playWithNativeSource('Abrindo stream diretamente...');
       return;
     }
 
