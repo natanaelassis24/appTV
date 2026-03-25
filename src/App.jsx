@@ -310,7 +310,6 @@ export default function App() {
   const [guideDrawerOpen, setGuideDrawerOpen] = useState(false);
   const [selectedChannelUrl, setSelectedChannelUrl] = useState(initialChannelUrl);
   const [drawerChannelUrl, setDrawerChannelUrl] = useState(initialChannelUrl);
-  const [drawerHandleTop, setDrawerHandleTop] = useState(null);
   const [status, setStatus] = useState('aguardando');
   const [statusError, setStatusError] = useState(false);
   const [embedUrl, setEmbedUrl] = useState('');
@@ -574,47 +573,16 @@ export default function App() {
     return () => window.clearInterval(timer);
   }, [filteredChannels, isPlaybackEnabled]);
 
-  useEffect(() => {
-    if (!guideDrawerOpen || !channelListRef.current) {
-      return;
-    }
-
-    const activeItem = channelListRef.current.querySelector('.guide-channel-item.active');
-    if (activeItem) {
-      activeItem.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    }
-  }, [drawerChannelUrl, guideDrawerOpen]);
-
-  useEffect(() => {
-    if (!guideDrawerOpen || !guideStageRef.current || !channelListRef.current) {
-      setDrawerHandleTop(null);
-      return;
-    }
-
-    const updateDrawerHandlePosition = () => {
-      const stageRect = guideStageRef.current?.getBoundingClientRect();
-      const activeItem = channelListRef.current?.querySelector('.guide-channel-item.active');
-      const itemRect = activeItem?.getBoundingClientRect();
-
-      if (!stageRect || !itemRect) {
+    useEffect(() => {
+      if (!guideDrawerOpen || !channelListRef.current) {
         return;
       }
 
-      setDrawerHandleTop(itemRect.top + itemRect.height / 2 - stageRect.top);
-    };
-
-    const frame = requestAnimationFrame(updateDrawerHandlePosition);
-    const list = channelListRef.current;
-
-    list.addEventListener('scroll', updateDrawerHandlePosition, { passive: true });
-    window.addEventListener('resize', updateDrawerHandlePosition);
-
-    return () => {
-      cancelAnimationFrame(frame);
-      list.removeEventListener('scroll', updateDrawerHandlePosition);
-      window.removeEventListener('resize', updateDrawerHandlePosition);
-    };
-  }, [drawerChannelUrl, guideDrawerOpen]);
+      const activeItem = channelListRef.current.querySelector('.guide-channel-item.active');
+      if (activeItem) {
+        activeItem.scrollIntoView({ block: 'center', behavior: 'auto' });
+      }
+    }, [drawerChannelUrl, guideDrawerOpen]);
 
   useEffect(() => {
     const onKeyDown = event => {
@@ -1112,13 +1080,12 @@ export default function App() {
         )
         ) : (
           <header className="guide-hero guide-hero-fullscreen">
-            <div className="guide-stage" ref={guideStageRef}>
-              <button
-                type="button"
-                className={`guide-handle${guideDrawerOpen ? ' open' : ''}`}
-              style={guideDrawerOpen && drawerHandleTop !== null ? { top: `${drawerHandleTop}px` } : undefined}
-              onClick={() => {
-                if (guideDrawerOpen) {
+              <div className="guide-stage" ref={guideStageRef}>
+                <button
+                  type="button"
+                  className={`guide-handle${guideDrawerOpen ? ' open' : ''}`}
+                  onClick={() => {
+                    if (guideDrawerOpen) {
                   setDrawerChannelUrl(selectedChannelUrl);
                   setGuideDrawerOpen(false);
                   return;
