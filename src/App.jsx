@@ -750,11 +750,11 @@ export default function App() {
       }
     };
 
-    const playWithNativeSource = message => {
+    const playWithNativeSource = (message, sourceUrl = playbackUrl) => {
       cleanupHls();
       recoveryRef.current.fallbackTried = true;
       player.pause();
-      player.src = playbackUrl;
+      player.src = sourceUrl;
       player.load();
       setPlayerStatus(message);
       player.play().catch(() => {
@@ -787,8 +787,7 @@ export default function App() {
   }
 
   if (playbackMode === 'browser' || playbackMode === 'page') {
-    setEmbedUrl(String(selectedChannel.url || '').trim());
-    setPlayerStatus('Browser carregado.');
+    playWithNativeSource('Abrindo canal de navegador...', String(selectedChannel.url || '').trim());
     return;
   }
 
