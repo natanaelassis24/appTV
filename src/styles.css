@@ -87,6 +87,9 @@ label {
   display: inline-flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  max-width: min(100%, 280px);
 }
 
 .promo-brand {
@@ -107,6 +110,30 @@ label {
   min-height: 36px;
   padding: 0 14px;
   font-size: 0.84rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .promo-landing-topbar {
+    position: static;
+    top: auto;
+    right: auto;
+    left: auto;
+    max-width: none;
+    width: 100%;
+    margin-bottom: 12px;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .promo-brand {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .promo-admin-trigger {
+    flex: 0 0 auto;
+  }
 }
 
 .hero {
@@ -2374,6 +2401,15 @@ label {
 
   .promo-landing {
     padding: 22px;
+  }
+
+  .promo-copy-public h1 {
+    font-size: 2.45rem;
+    line-height: 0.96;
+  }
+
+  .promo-landing-topbar {
+    gap: 10px;
   }
 
   .promo-channel-badge {

@@ -269,8 +269,7 @@ export default function App() {
   }
 
   const telegramUrl = PUBLIC_RUNTIME_CONFIG.telegramUrl || 'https://t.me/natalinoprr';
-  const apkDownloadUrl = PUBLIC_RUNTIME_CONFIG.apkDownloadUrl;
-  const isAndroidTv = useMemo(() => {
+    const isAndroidTv = useMemo(() => {
     const search =
       typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
 
@@ -824,9 +823,6 @@ export default function App() {
               <div className="promo-cta-row">
                 <a className="primary-btn" href="#planos">
                   Ver planos
-                </a>
-                <a className="secondary-btn" href={apkDownloadUrl} download>
-                  Baixar app
                 </a>
                 <a className="secondary-btn" href="#como-funciona">Como funciona</a>
               </div>
