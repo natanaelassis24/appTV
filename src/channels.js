@@ -599,5 +599,15 @@ export const CHANNELS = [
   logo: 'NC',
   sourceType: 'hls',
   description: 'Descricao curta do canal.'
+},
+{
+  name: 'Geekdot',
+  url: 'http://s.webdosdeuses.top/live/gub233/68nz2p/235068.m3u8',
+  number: '60',
+  category: 'Canais',
+  logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Nick_Jr._logo_2009.svg/960px-Nick_Jr._logo_2009.svg.png',
+  logo: 'NC',
+  sourceType: 'hls',
+  description: 'Descricao curta do canal.'
 }
 ];
