@@ -301,11 +301,18 @@ export default function App() {
     const [accessBootState, setAccessBootState] = useState(isAndroidTv ? 'booting' : 'idle');
     const [authorizedAccess, setAuthorizedAccess] = useState(null);
     const isPlaybackEnabled = isAndroidTv && authorizedAccess?.accessGranted === true;
-  const filteredChannels = useMemo(() => CHANNELS, []);
+  const filteredChannels = useMemo(() => {
+    const collator = new Intl.Collator('pt-BR', {
+      sensitivity: 'base',
+      numeric: true,
+    });
+
+    return [...CHANNELS].sort((left, right) => collator.compare(left.name || '', right.name || ''));
+  }, []);
   const initialChannelUrl = useMemo(() => {
     const cachedChannelUrl = readCachedChannelUrl();
-    return cachedChannelUrl || CHANNELS[0]?.url || '';
-  }, []);
+    return cachedChannelUrl || filteredChannels[0]?.url || '';
+  }, [filteredChannels]);
 
   const [guideDrawerOpen, setGuideDrawerOpen] = useState(false);
   const [selectedChannelUrl, setSelectedChannelUrl] = useState(initialChannelUrl);
