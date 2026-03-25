@@ -663,5 +663,35 @@ export const CHANNELS = [
   logo: 'NC',
   sourceType: 'hls',
   description: 'Descricao curta do canal.'
+},
+{
+  name: 'cartoonetwork',
+  url: 'http://s.webdosdeuses.top/live/gub233/68nz2p/38.m3u8',
+  number: '61',
+  category: 'Canais',
+  logoImage: 'https://yt3.googleusercontent.com/hg8psymhj_seDg_iIJBHD9FQ4c0WShk7EsFQ2TeRErfn8UOqEXPmbdGmMgiq38nV8S-kplBnqw=s900-c-k-c0x00ffffff-no-rj',
+  logo: 'NC',
+  sourceType: 'hls',
+  description: 'Descricao curta do canal.'
+},
+{
+  name: 'Nickelodeon clássico',
+  url: 'http://s.webdosdeuses.top/live/gub233/68nz2p/235072.m3u8',
+  number: '62',
+  category: 'Canais',
+  logoImage: 'https://upload.wikimedia.org/wikipedia/commons/c/cb/Nickelodeon_2023_logo.png',
+  logo: 'NC',
+  sourceType: 'hls',
+  description: 'Descricao curta do canal.'
+},
+{
+  name: 'cartoonito',
+  url: 'http://s.webdosdeuses.top/live/gub233/68nz2p/234898.m3u8',
+  number: '63',
+  category: 'Canais',
+  logoImage: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_ZNNeTvpLDkX9D01bcUqP_6xiYDhqqUtJug&s',
+  logo: 'NC',
+  sourceType: 'hls',
+  description: 'Descricao curta do canal.'
 }
 ];

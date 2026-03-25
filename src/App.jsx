@@ -386,6 +386,10 @@ export default function App() {
       return;
     }
 
+    if (normalizeChannelUrl(selectedChannelUrl) === normalizedUrl && !guideDrawerOpen) {
+      return;
+    }
+
     setSelectedChannelUrl(normalizedUrl);
     setDrawerChannelUrl(normalizedUrl);
     setGuideDrawerOpen(false);
@@ -1184,6 +1188,12 @@ export default function App() {
                           onFocus={() => {
                             setDrawerChannelUrl(channel.url);
                           }}
+                          onKeyDown={event => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                              event.preventDefault();
+                              confirmDrawerChannel(channel.url);
+                            }
+                          }}
                           onClick={() => {
                             confirmDrawerChannel(channel.url);
                           }}
@@ -1210,6 +1220,7 @@ export default function App() {
               <div className="guide-player-shell">
                 {!embedUrl ? (
                   <video
+                    key={`video:${selectedChannel?.url || selectedChannelUrl}:${playbackNonce}`}
                     ref={playerRef}
                     id="tvPlayer"
                     autoPlay
@@ -1222,6 +1233,7 @@ export default function App() {
                   />
                 ) : (
                   <iframe
+                    key={`embed:${embedUrl}:${playbackNonce}`}
                     id="tvEmbed"
                     title="Player incorporado"
                     src={embedUrl}

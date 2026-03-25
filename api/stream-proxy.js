@@ -15,25 +15,7 @@ function proxiedUrl(url) {
   return `/api/stream-proxy?url=${encodeURIComponent(url)}`;
 }
 
-function getRequestOrigin(req) {
-  const origin = String(req.headers?.origin || '').trim();
-  if (origin) {
-    return origin;
-  }
-
-  const referer = String(req.headers?.referer || '').trim();
-  if (!referer) {
-    return '';
-  }
-
-  try {
-    return new URL(referer).origin;
-  } catch {
-    return '';
-  }
-}
-
-function buildUpstreamHeaders(req, targetUrl) {
+function buildUpstreamHeaders(req) {
   const headers = {
     Accept: '*/*',
     'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
@@ -41,14 +23,8 @@ function buildUpstreamHeaders(req, targetUrl) {
     Pragma: 'no-cache',
     'User-Agent':
       req.headers?.['user-agent'] ||
-      'Mozilla/5.0 (Linux; Android 11; Android TV) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-    Referer: getRequestOrigin(req) || targetUrl
+      'Mozilla/5.0 (Linux; Android 11; Android TV) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
   };
-
-  const origin = getRequestOrigin(req);
-  if (origin) {
-    headers.Origin = origin;
-  }
 
   const rangeHeader = req.headers?.range;
   if (rangeHeader) {
@@ -133,7 +109,7 @@ export default async function handler(req, res) {
 
   const upstreamResponse = await fetch(parsedTarget.toString(), {
     method: req.method,
-    headers: buildUpstreamHeaders(req, parsedTarget.toString())
+    headers: buildUpstreamHeaders(req)
   });
 
   const contentType = upstreamResponse.headers.get('content-type') || '';
