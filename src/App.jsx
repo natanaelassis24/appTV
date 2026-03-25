@@ -750,6 +750,12 @@ export default function App() {
       return;
     }
 
+    const playbackMode = getChannelPlaybackMode(selectedChannel);
+
+    if (playbackMode === 'browser' || playbackMode === 'page') {
+      return;
+    }
+
     const playbackUrl = buildPlaybackUrl(selectedChannel);
 
     const setPlayerStatus = (text, isError = false) => {
@@ -792,17 +798,9 @@ export default function App() {
     return;
   }
 
-  const playbackMode = getChannelPlaybackMode(selectedChannel);
-
   if (playbackMode === 'embed') {
     setEmbedUrl(buildEmbedUrl(selectedChannel));
     setPlayerStatus('Embed carregado.');
-    return;
-  }
-
-  if (playbackMode === 'browser' || playbackMode === 'page') {
-    setEmbedUrl(String(selectedChannel.url || '').trim());
-    setPlayerStatus('Browser carregado.');
     return;
   }
 
