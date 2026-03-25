@@ -826,8 +826,8 @@ export default function App() {
   }
 
   const handleExitAccess = () => {
-    clearCachedAccess();
-    setAccessIdInput('');
+    const cachedAccess = readCachedAccess();
+    setAccessIdInput(cachedAccess?.accessId || accessIdInput);
     setAccessLookupState('idle');
     setAccessLookupResult(null);
     setAccessLookupError('');
