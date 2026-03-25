@@ -678,7 +678,7 @@ export const CHANNELS = [
   logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Nick_Jr._logo_2023_%28outline%29.svg/960px-Nick_Jr._logo_2023_%28outline%29.svg.png',
   logo: 'MC',
   sourceType: 'hls',
-  playbackTransport: 'proxy',
+  playbackTransport: 'browser',
   description: 'Descricao curta'
 },
 {
@@ -689,7 +689,7 @@ export const CHANNELS = [
   logoImage: 'https://upload.wikimedia.org/wikipedia/commons/4/40/Cartoon_network_modified_logo.PNG',
   logo: 'MC',
   sourceType: 'hls',
-  playbackTransport: 'proxy',
+  playbackTransport: 'browser',
   description: 'Descricao curta'
 },
 {
@@ -700,7 +700,7 @@ export const CHANNELS = [
   logoImage: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_ZNNeTvpLDkX9D01bcUqP_6xiYDhqqUtJug&s',
   logo: 'MC',
   sourceType: 'hls',
-  playbackTransport: 'proxy',
+  playbackTransport: 'browser',
   description: 'Descricao curta'
 }
 

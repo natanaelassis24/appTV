@@ -375,6 +375,7 @@ export default function App() {
   const expiryRefreshTimerRef = useRef(null);
   const cacheRevalidateTimerRef = useRef(null);
   const streamRefreshTimerRef = useRef(null);
+  const browserChannelPendingOpenRef = useRef('');
   const recoveryRef = useRef({ network: 0, media: 0, fallbackTried: false });
 
   const selectedChannel = useMemo(() => {
@@ -422,6 +423,7 @@ export default function App() {
     setSelectedChannelUrl(normalizedUrl);
     setDrawerChannelUrl(normalizedUrl);
     setGuideDrawerOpen(false);
+    browserChannelPendingOpenRef.current = normalizedUrl;
     setPlaybackNonce(current => current + 1);
   }
 
@@ -783,8 +785,14 @@ export default function App() {
   }
 
   if (playbackMode === 'page') {
-    setEmbedUrl(String(selectedChannel.url || '').trim());
-    setPlayerStatus('Pagina do canal carregada.');
+    if (browserChannelPendingOpenRef.current !== normalizeChannelUrl(selectedChannel?.url)) {
+      return;
+    }
+
+    browserChannelPendingOpenRef.current = '';
+    const targetUrl = String(selectedChannel.url || '').trim();
+    setPlayerStatus('Abrindo no navegador...');
+    window.location.assign(targetUrl);
     return;
   }
 
