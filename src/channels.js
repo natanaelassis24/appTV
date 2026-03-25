@@ -63,7 +63,7 @@ export function createEmbedChannel(overrides = {}) {
 // 2. troque nome, link, numero e logo
 // 3. se o link for .m3u8, pode deixar sem sourceType
 // 4. se for YouTube, use sourceType 'embed'
-// 5. o helper abaixo padroniza tudo e evita quebrar o player
+// 5. o helper abaixo pode ser usado para montar canais novos sem erro
 export const CHANNELS = [
   {
     name: 'Caze TV',
@@ -665,4 +665,4 @@ export const CHANNELS = [
   sourceType: 'hls',
   description: 'Descricao curta do canal.'
 }
-].map(createChannel);
+];
