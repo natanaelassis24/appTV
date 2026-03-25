@@ -791,13 +791,6 @@ export default function App() {
     return;
   }
 
-  if (playbackMode === 'browser' || playbackMode === 'page') {
-    setEmbedUrl('');
-    window.open(String(selectedChannel.url || '').trim(), '_blank', 'noopener,noreferrer');
-    setPlayerStatus('Browser carregado.');
-    return;
-  }
-
   if (playbackMode === 'file') {
     playWithNativeSource('Abrindo midia direta...');
     return;
@@ -1272,7 +1265,7 @@ export default function App() {
                 </ul>
               </aside>
 
-              <div className={`guide-player-shell${isBrowserChannel ? ' browser-mode' : ''}`}>
+              <div className="guide-player-shell">
                 {!embedUrl ? (
                   <video
                     key={`video:${selectedChannel?.url || selectedChannelUrl}:${playbackNonce}`}
