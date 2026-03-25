@@ -208,6 +208,68 @@ function buildEmbedUrl(channel) {
   return url;
 }
 
+function buildHtmlPlayerDoc(channel) {
+  const streamUrl = String(channel?.url || '').trim();
+
+  return `<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: #000;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+</head>
+<body>
+  <video id="video" controls autoplay playsinline></video>
+  <script>
+    const video = document.getElementById('video');
+    const sourceUrl = ${JSON.stringify(streamUrl)};
+
+    if (Hls.isSupported()) {
+      const hls = new Hls({
+        debug: true,
+        xhrSetup: function(xhr) {
+          xhr.withCredentials = false;
+          try {
+            xhr.setRequestHeader('User-Agent', 'Mozilla/5.0');
+          } catch (error) {
+            console.warn('User-Agent nao suportado:', error);
+          }
+        }
+      });
+
+      hls.loadSource(sourceUrl);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.ERROR, function(event, data) {
+        console.log('HLS Error:', data);
+      });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = sourceUrl;
+    }
+  </script>
+</body>
+</html>`;
+}
+
 function getChannelPlaybackMode(channel) {
   const url = String(channel?.url || '').trim().toLowerCase();
   const explicitTransport = String(channel?.playbackTransport || '').trim().toLowerCase();
@@ -373,6 +435,7 @@ export default function App() {
   const [status, setStatus] = useState('aguardando');
   const [statusError, setStatusError] = useState(false);
   const [embedUrl, setEmbedUrl] = useState('');
+  const [embedDoc, setEmbedDoc] = useState('');
   const [playbackNonce, setPlaybackNonce] = useState(0);
 
   const playerRef = useRef(null);
@@ -400,7 +463,7 @@ export default function App() {
 
   const isBrowserChannel = useMemo(() => {
     const mode = getChannelPlaybackMode(selectedChannel);
-    return mode === 'browser' || mode === 'page';
+    return mode === 'browser' || mode === 'page' || mode === 'html';
   }, [selectedChannel]);
 
   const publicChannelLoop = useMemo(() => {
@@ -724,6 +787,7 @@ export default function App() {
 
     if (!isPlaybackEnabled) {
       setEmbedUrl('');
+      setEmbedDoc('');
       setStatusError(false);
       setStatus('Disponivel apenas no app Android TV.');
 
@@ -777,6 +841,7 @@ export default function App() {
     };
 
     setEmbedUrl('');
+    setEmbedDoc('');
     recoveryRef.current = { network: 0, media: 0, fallbackTried: false };
     cleanupHls();
     player.pause();
@@ -791,11 +856,27 @@ export default function App() {
 
   if (playbackMode === 'embed') {
     setEmbedUrl(buildEmbedUrl(selectedChannel));
+    setEmbedDoc('');
     setPlayerStatus('Embed carregado.');
     return;
   }
 
+  if (playbackMode === 'html') {
+    setEmbedUrl('');
+    setEmbedDoc(buildHtmlPlayerDoc(selectedChannel));
+    setPlayerStatus('HTML carregado.');
+    return;
+  }
+
+  if (playbackMode === 'browser' || playbackMode === 'page') {
+    setEmbedUrl(String(selectedChannel.url || '').trim());
+    setEmbedDoc('');
+    setPlayerStatus('Browser carregado.');
+    return;
+  }
+
   if (playbackMode === 'file') {
+    setEmbedDoc('');
     playWithNativeSource('Abrindo midia direta...');
     return;
   }
@@ -1270,7 +1351,17 @@ export default function App() {
               </aside>
 
               <div className={`guide-player-shell${isBrowserChannel ? ' browser-mode' : ''}`}>
-                {!embedUrl ? (
+                {embedDoc ? (
+                  <iframe
+                    key={`html:${selectedChannel?.url || selectedChannelUrl}:${playbackNonce}`}
+                    id="tvEmbed"
+                    title="Player HTML"
+                    srcDoc={embedDoc}
+                    allow="autoplay; encrypted-media; picture-in-picture"
+                    referrerPolicy="no-referrer"
+                    tabIndex={-1}
+                  />
+                ) : !embedUrl ? (
                   <video
                     key={`video:${selectedChannel?.url || selectedChannelUrl}:${playbackNonce}`}
                     ref={playerRef}
@@ -1289,8 +1380,8 @@ export default function App() {
                     id="tvEmbed"
                     title="Player incorporado"
                     src={embedUrl}
-                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                    allowFullScreen
+                    allow="autoplay; encrypted-media; picture-in-picture"
+                    allowFullScreen={false}
                     referrerPolicy="strict-origin-when-cross-origin"
                     tabIndex={-1}
                   />
