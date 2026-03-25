@@ -1292,12 +1292,8 @@ export default function App() {
                     id="tvEmbed"
                     title="Player incorporado"
                     src={embedUrl}
-                    allow={
-                      isBrowserChannel
-                        ? 'autoplay; encrypted-media; picture-in-picture'
-                        : 'autoplay; encrypted-media; picture-in-picture; fullscreen'
-                    }
-                    allowFullScreen={!isBrowserChannel}
+                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                    allowFullScreen
                     referrerPolicy="strict-origin-when-cross-origin"
                     tabIndex={-1}
                   />
