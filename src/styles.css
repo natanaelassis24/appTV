@@ -158,6 +158,8 @@ label {
 }
 
 .tv-mode .app-shell {
+  position: fixed;
+  inset: 0;
   padding: 0;
   min-height: 100vh;
   width: 100vw;
@@ -345,6 +347,8 @@ label {
 }
 
 .tv-mode .guide-stage {
+  position: fixed;
+  inset: 0;
   min-height: 100vh;
   margin: 0;
   width: 100vw;
@@ -373,11 +377,16 @@ label {
 }
 
 .tv-mode .guide-stage-frame {
+  position: absolute;
+  inset: 0;
   width: 100vw;
+  height: 100vh;
   overflow: hidden;
 }
 
 .tv-mode .guide-player-shell {
+  position: absolute;
+  inset: 0;
   border: 0;
   border-radius: 0;
   box-shadow: none;
@@ -385,17 +394,17 @@ label {
 }
 
 .tv-mode .guide-sidebar {
-  top: 56%;
+  top: 50%;
   bottom: auto;
-  height: min(78vh, calc(100vh - 96px));
+  height: min(74vh, calc(100vh - 88px));
   padding: 18px 0;
   border-radius: 0;
   transition: none;
-  transform: translate(-72px, -56%);
+  transform: translate(-72px, -50%);
 }
 
 .tv-mode .guide-channel-list {
-  align-content: center;
+  align-content: start;
 }
 
 .tv-mode .guide-handle {
@@ -407,7 +416,7 @@ label {
 }
 
 .tv-mode .guide-sidebar.open {
-  transform: translate(0, -56%);
+  transform: translate(0, -50%);
 }
 
 .guide-player-shell #tvPlayer,
