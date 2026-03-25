@@ -395,6 +395,11 @@ export default function App() {
     );
   }, [filteredChannels, selectedChannel]);
 
+  const isBrowserChannel = useMemo(() => {
+    const mode = getChannelPlaybackMode(selectedChannel);
+    return mode === 'browser' || mode === 'page';
+  }, [selectedChannel]);
+
   const publicChannelLoop = useMemo(() => {
     return [...filteredChannels, ...filteredChannels];
   }, [filteredChannels]);
@@ -794,7 +799,8 @@ export default function App() {
   }
 
   if (playbackMode === 'browser' || playbackMode === 'page') {
-    setPlayerStatus('Abrindo no navegador externo...');
+    setEmbedUrl(String(selectedChannel.url || '').trim());
+    setPlayerStatus('Browser carregado.');
     return;
   }
 
@@ -1272,7 +1278,7 @@ export default function App() {
                 </ul>
               </aside>
 
-              <div className="guide-player-shell">
+              <div className={`guide-player-shell${isBrowserChannel ? ' browser-mode' : ''}`}>
                 {!embedUrl ? (
                   <video
                     key={`video:${selectedChannel?.url || selectedChannelUrl}:${playbackNonce}`}
