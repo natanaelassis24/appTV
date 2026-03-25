@@ -472,7 +472,6 @@ export default function App() {
       if (cachedAccess.accessGranted) {
         setAuthorizedAccess(cachedAccess);
         setAccessLookupState('success');
-        setForceLoginScreen(false);
       } else {
         setAuthorizedAccess(null);
         setAccessLookupState('success');
