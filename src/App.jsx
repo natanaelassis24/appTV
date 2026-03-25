@@ -426,6 +426,13 @@ export default function App() {
     setSelectedChannelUrl(normalizedUrl);
     setDrawerChannelUrl(normalizedUrl);
     setGuideDrawerOpen(false);
+
+    const selected = filteredChannels.find(channel => normalizeChannelUrl(channel.url) === normalizedUrl) || null;
+    const playbackMode = getChannelPlaybackMode(selected);
+    if (playbackMode === 'browser' || playbackMode === 'page') {
+      window.open(normalizedUrl, '_blank', 'noopener,noreferrer');
+    }
+
     setPlaybackNonce(current => current + 1);
   }
 
@@ -787,7 +794,7 @@ export default function App() {
   }
 
   if (playbackMode === 'browser' || playbackMode === 'page') {
-    playWithNativeSource('Abrindo canal de navegador...', String(selectedChannel.url || '').trim());
+    setPlayerStatus('Abrindo no navegador externo...');
     return;
   }
 
