@@ -212,16 +212,16 @@ function getChannelPlaybackMode(channel) {
   const url = String(channel?.url || '').trim().toLowerCase();
   const explicitTransport = String(channel?.playbackTransport || '').trim().toLowerCase();
 
+  if (url.includes('youtu.be') || url.includes('youtube.com')) {
+    return 'embed';
+  }
+
   if (explicitTransport === 'browser') {
     return 'browser';
   }
 
   if (explicitTransport === 'page') {
     return 'page';
-  }
-
-  if (channel?.sourceType === 'embed' || url.includes('youtu.be') || url.includes('youtube.com')) {
-    return 'embed';
   }
 
   if (
