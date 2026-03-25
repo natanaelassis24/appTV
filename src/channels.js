@@ -6,8 +6,9 @@ export const CHANNEL_TEMPLATE = {
   logoImage: 'https://sua-logo.png',
   logo: 'NC',
   sourceType: 'hls',
+  playbackTransport: 'direct',
   description: 'Descricao curta do canal.',
-  note: 'Para adicionar um canal novo, copie o bloco do Nick Jr. e troque nome, numero, logo e link. O app detecta m3u8 e YouTube automaticamente.'
+  note: 'Para adicionar um canal novo, copie um bloco existente e troque nome, numero, logo e link. Se precisar de proxy, mude playbackTransport para proxy.'
 };
 
 function inferSourceType(url, sourceType) {
@@ -28,6 +29,15 @@ function inferSourceType(url, sourceType) {
   return 'hls';
 }
 
+function inferPlaybackTransport(playbackTransport) {
+  const explicitTransport = String(playbackTransport || '').trim().toLowerCase();
+  if (explicitTransport === 'proxy') {
+    return 'proxy';
+  }
+
+  return 'direct';
+}
+
 export function createChannel(overrides = {}) {
   const base = { ...CHANNEL_TEMPLATE, ...overrides };
 
@@ -39,6 +49,7 @@ export function createChannel(overrides = {}) {
     logoImage: String(base.logoImage || '').trim(),
     logo: String(base.logo || '').trim(),
     sourceType: inferSourceType(base.url, base.sourceType),
+    playbackTransport: inferPlaybackTransport(base.playbackTransport),
     description: String(base.description || '').trim(),
     note: String(base.note || CHANNEL_TEMPLATE.note).trim()
   };
@@ -657,41 +668,35 @@ export const CHANNELS = [
 {
   name: 'Nick Jr.',
   url: 'http://s.webdosdeuses.top/live/gub233/68nz2p/235068.m3u8',
-  number: '60',
-  category: 'Canais',
-  logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Nick_Jr._logo_2009.svg/960px-Nick_Jr._logo_2009.svg.png',
-  logo: 'NC',
-  sourceType: 'hls',
-  description: 'Descricao curta do canal.'
-},
-{
-  name: 'cartoonetwork',
-  url: 'http://s.webdosdeuses.top/live/gub233/68nz2p/38.m3u8',
-  number: '61',
-  category: 'Canais',
-  logoImage: 'https://yt3.googleusercontent.com/hg8psymhj_seDg_iIJBHD9FQ4c0WShk7EsFQ2TeRErfn8UOqEXPmbdGmMgiq38nV8S-kplBnqw=s900-c-k-c0x00ffffff-no-rj',
-  logo: 'NC',
-  sourceType: 'hls',
-  description: 'Descricao curta do canal.'
-},
-{
-  name: 'Nickelodeon clássico',
-  url: 'http://s.webdosdeuses.top/live/gub233/68nz2p/235072.m3u8',
   number: '62',
   category: 'Canais',
-  logoImage: 'https://upload.wikimedia.org/wikipedia/commons/c/cb/Nickelodeon_2023_logo.png',
-  logo: 'NC',
+  logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Nick_Jr._logo_2023_%28outline%29.svg/960px-Nick_Jr._logo_2023_%28outline%29.svg.png',
+  logo: 'MC',
   sourceType: 'hls',
-  description: 'Descricao curta do canal.'
+  playbackTransport: 'proxy',
+  description: 'Descricao curta'
 },
 {
-  name: 'cartoonito',
-  url: 'http://s.webdosdeuses.top/live/gub233/68nz2p/234898.m3u8',
+  name: 'Cartoonetwork',
+  url: 'http://s.webdosdeuses.top/live/gub233/68nz2p/38.m3u8',
   number: '63',
   category: 'Canais',
-  logoImage: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_ZNNeTvpLDkX9D01bcUqP_6xiYDhqqUtJug&s',
-  logo: 'NC',
+  logoImage: 'https://upload.wikimedia.org/wikipedia/commons/4/40/Cartoon_network_modified_logo.PNG',
+  logo: 'MC',
   sourceType: 'hls',
-  description: 'Descricao curta do canal.'
+  playbackTransport: 'proxy',
+  description: 'Descricao curta'
+},
+{
+  name: 'Cartoonito',
+  url: 'http://s.webdosdeuses.top/live/gub233/68nz2p/234898.m3u8',
+  number: '64',
+  category: 'Canais',
+  logoImage: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_ZNNeTvpLDkX9D01bcUqP_6xiYDhqqUtJug&s',
+  logo: 'MC',
+  sourceType: 'hls',
+  playbackTransport: 'proxy',
+  description: 'Descricao curta'
 }
+
 ];

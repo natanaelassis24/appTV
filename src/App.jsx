@@ -235,6 +235,23 @@ function buildStreamProxyUrl(streamUrl) {
   return buildApiUrl(`/api/stream-proxy?url=${encodeURIComponent(normalizedUrl)}`);
 }
 
+function shouldUseStreamProxy(channel) {
+  return String(channel?.playbackTransport || '').trim().toLowerCase() === 'proxy';
+}
+
+function buildPlaybackUrl(channel) {
+  const directUrl = String(channel?.url || '').trim();
+  if (!directUrl) {
+    return '';
+  }
+
+  if (!shouldUseStreamProxy(channel)) {
+    return directUrl;
+  }
+
+  return buildStreamProxyUrl(directUrl) || directUrl;
+}
+
 function buildLogoThumb(channel, index) {
   const itemName = channel?.name || `Canal ${index + 1}`;
 
@@ -703,7 +720,7 @@ export default function App() {
       return;
     }
 
-    const playbackUrl = buildStreamProxyUrl(selectedChannel.url) || selectedChannel.url;
+    const playbackUrl = buildPlaybackUrl(selectedChannel);
 
     const setPlayerStatus = (text, isError = false) => {
       setStatus(text);
