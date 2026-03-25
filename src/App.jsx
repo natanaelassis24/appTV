@@ -825,6 +825,23 @@ export default function App() {
     }
   }
 
+  const handleExitAccess = () => {
+    clearCachedAccess();
+    setAccessIdInput('');
+    setAccessLookupState('idle');
+    setAccessLookupResult(null);
+    setAccessLookupError('');
+    setAuthorizedAccess(null);
+    setAccessBootState('ready');
+    setGuideDrawerOpen(false);
+    setDrawerChannelUrl(initialChannelUrl);
+    setSelectedChannelUrl(initialChannelUrl);
+    setPlaybackNonce(current => current + 1);
+    setStatusError(false);
+    setStatus('Disponivel apenas no app Android TV.');
+    setEmbedUrl('');
+  };
+
   return (
     <div className={`app-shell${isAndroidTv ? ' tv-mode' : ''}${!isPlaybackEnabled ? ' promo-mode' : ''}`}>
       {!isPlaybackEnabled ? (
@@ -1113,6 +1130,15 @@ export default function App() {
       ) : (
         <header className="guide-hero guide-hero-fullscreen">
           <div className="guide-stage" ref={guideStageRef}>
+            <button
+              type="button"
+              className="guide-exit-btn"
+              onClick={handleExitAccess}
+              aria-label="Sair do ID"
+              title="Sair do ID"
+            >
+              Sair
+            </button>
             <button
               type="button"
               className={`guide-handle${guideDrawerOpen ? ' open' : ''}`}
