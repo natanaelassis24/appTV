@@ -21,3 +21,7 @@ A proposta e juntar o painel administrativo e a tela da TV no mesmo fluxo, para 
 
 O projeto foi feito para centralizar o gerenciamento de assinaturas e o acesso aos canais em uma unica aplicacao.
 
+## Direitos do sistema
+
+Este sistema e de uso restrito ao projeto e aos administradores autorizados.
+Todo o conteudo, estrutura e funcionamento pertencem ao proprio sistema e nao devem ser reutilizados sem autorizacao.
