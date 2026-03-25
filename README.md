@@ -1,83 +1,23 @@
-# App TV React
+# App TV
 
-Projeto React com Vite para a landing publica, a tela de ativacao da Android TV e o painel administrativo.
+Este projeto existe para organizar a administracao dos acessos e entregar os canais da TV de forma simples e controlada.
 
-## Build
+## Por que ele existe
 
-```bash
-npm run build
-```
+O objetivo e evitar liberacao manual fora do sistema, manter o controle dos acessos em um unico lugar e facilitar a operacao do dia a dia.
 
-## Rotas
+## O que o projeto faz
 
-- `/` landing publica
-- `/?tv=1` modo Android TV
-- `/admin` painel administrativo
+- permite cadastrar e acompanhar acessos
+- organiza os planos dos clientes
+- libera a TV somente para quem tiver acesso valido
+- mostra os canais em uma interface simples para uso na TV
 
-## Admin
+## Ideia principal
 
-O admin usa Firebase Auth com email e senha.
+A proposta e juntar o painel administrativo e a tela da TV no mesmo fluxo, para que o controle, a validade e a reproduçao dos canais fiquem ligados ao mesmo sistema.
 
-Fluxo:
+## Resumo
 
-1. Ao abrir `/admin`, o app mostra apenas a tela de login.
-2. O acesso administrativo usa Firebase Auth e a sessao local no navegador.
-3. A conta do admin precisa existir antes no Firebase Authentication.
+O projeto foi feito para centralizar o gerenciamento de assinaturas e o acesso aos canais em uma unica aplicacao.
 
-Rotas de apoio:
-
-- `api/admin-status.js`
-- `api/admin-bootstrap.js`
-- `api/admin-accesses.js`
-- `api/admin-generate-access.js`
-
-Configure estas variaveis:
-
-- `APP_FIREBASE_WEB_API_KEY`
-- `APP_FIREBASE_PROJECT_ID`
-- `APP_FIREBASE_CLIENT_EMAIL`
-- `APP_FIREBASE_PRIVATE_KEY`
-
-O valor de `APP_FIREBASE_WEB_API_KEY` vem do app Web do Firebase, no campo `apiKey`.
-
-O arquivo `.env.local` na raiz do projeto serve apenas para o ambiente de desenvolvimento da sua maquina.
-
-Exemplo de acesso admin no Firebase:
-
-- crie o admin diretamente no Firebase Authentication
-- depois: entre com o mesmo email e senha
-
-## Firebase
-
-A consulta de ID usa a colecao:
-
-- `access_registry`
-
-Exemplo de documento:
-
-```json
-{
-  "accessId": "ATA-2547",
-  "name": "Cliente Teste",
-  "planId": "mensal",
-  "planName": "Plano Mensal",
-  "status": "active",
-  "paymentLabel": "Pago",
-  "expiresAt": "2026-04-23"
-}
-```
-
-## Telegram e download
-
-Configure as variaveis publicas:
-
-- `APP_TELEGRAM_URL`
-- `APP_APK_DOWNLOAD_URL`
-
-## Vercel
-
-1. Aponte o projeto para a raiz do repositorio.
-2. Use build `npm run build`.
-3. Mantenha a pasta `api` para as functions.
-4. Garanta as variaveis `APP_FIREBASE_WEB_API_KEY`, `APP_FIREBASE_PROJECT_ID`, `APP_FIREBASE_CLIENT_EMAIL` e `APP_FIREBASE_PRIVATE_KEY` no projeto da Vercel.
-5. O `vercel.json` ja roteia `/api/*` para as funcoes Node.
