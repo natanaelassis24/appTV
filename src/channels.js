@@ -601,7 +601,7 @@ export const CHANNELS = [
   description: 'Descricao curta do canal.'
 },
 {
-  name: 'Geekdot',
+  name: 'Nick Jr.S',
   url: 'http://s.webdosdeuses.top/live/gub233/68nz2p/235068.m3u8',
   number: '60',
   category: 'Canais',
