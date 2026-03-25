@@ -792,8 +792,7 @@ export default function App() {
   }
 
   if (playbackMode === 'browser' || playbackMode === 'page') {
-    setEmbedUrl('');
-    window.open(String(selectedChannel.url || '').trim(), '_blank', 'noopener,noreferrer');
+    setEmbedUrl(buildEmbedUrl(selectedChannel));
     setPlayerStatus('Browser carregado.');
     return;
   }
@@ -1292,8 +1291,8 @@ export default function App() {
                     id="tvEmbed"
                     title="Player incorporado"
                     src={embedUrl}
-                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                    allowFullScreen
+                    allow="autoplay; encrypted-media; picture-in-picture"
+                    allowFullScreen={false}
                     referrerPolicy="strict-origin-when-cross-origin"
                     tabIndex={-1}
                   />
