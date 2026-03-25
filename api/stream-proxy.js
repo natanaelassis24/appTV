@@ -6,11 +6,56 @@ function applyCors(res) {
 
 function sendText(res, statusCode, payload, contentType = 'text/plain; charset=utf-8') {
   applyCors(res);
-  res.status(statusCode).setHeader('Content-Type', contentType).send(payload);
+  res.statusCode = statusCode;
+  res.setHeader('Content-Type', contentType);
+  res.end(payload);
 }
 
 function proxiedUrl(url) {
   return `/api/stream-proxy?url=${encodeURIComponent(url)}`;
+}
+
+function getRequestOrigin(req) {
+  const origin = String(req.headers?.origin || '').trim();
+  if (origin) {
+    return origin;
+  }
+
+  const referer = String(req.headers?.referer || '').trim();
+  if (!referer) {
+    return '';
+  }
+
+  try {
+    return new URL(referer).origin;
+  } catch {
+    return '';
+  }
+}
+
+function buildUpstreamHeaders(req, targetUrl) {
+  const headers = {
+    Accept: '*/*',
+    'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+    'Cache-Control': 'no-cache',
+    Pragma: 'no-cache',
+    'User-Agent':
+      req.headers?.['user-agent'] ||
+      'Mozilla/5.0 (Linux; Android 11; Android TV) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+    Referer: getRequestOrigin(req) || targetUrl
+  };
+
+  const origin = getRequestOrigin(req);
+  if (origin) {
+    headers.Origin = origin;
+  }
+
+  const rangeHeader = req.headers?.range;
+  if (rangeHeader) {
+    headers.Range = rangeHeader;
+  }
+
+  return headers;
 }
 
 function shouldRewriteAsPlaylist(responseUrl, contentType, requestedUrl) {
@@ -28,11 +73,22 @@ function rewritePlaylistBody(body, baseUrl) {
     .split(/\r?\n/)
     .map(line => {
       const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith('#')) {
+      if (!trimmed) {
         return line;
       }
 
       try {
+        if (trimmed.startsWith('#')) {
+          return line.replace(/URI="([^"]+)"/g, (_, uriValue) => {
+            try {
+              const resolved = new URL(uriValue, baseUrl).toString();
+              return `URI="${proxiedUrl(resolved)}"`;
+            } catch {
+              return `URI="${uriValue}"`;
+            }
+          });
+        }
+
         const resolved = new URL(trimmed, baseUrl).toString();
         return proxiedUrl(resolved);
       } catch {
@@ -44,7 +100,9 @@ function rewritePlaylistBody(body, baseUrl) {
 
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
-    sendText(res, 204, '');
+    applyCors(res);
+    res.statusCode = 204;
+    res.end('');
     return;
   }
 
@@ -73,15 +131,9 @@ export default async function handler(req, res) {
     return;
   }
 
-  const upstreamHeaders = {};
-  const rangeHeader = req.headers?.range;
-  if (rangeHeader) {
-    upstreamHeaders.Range = rangeHeader;
-  }
-
   const upstreamResponse = await fetch(parsedTarget.toString(), {
     method: req.method,
-    headers: upstreamHeaders
+    headers: buildUpstreamHeaders(req, parsedTarget.toString())
   });
 
   const contentType = upstreamResponse.headers.get('content-type') || '';
@@ -92,17 +144,17 @@ export default async function handler(req, res) {
     const rewritten = rewritePlaylistBody(text, responseUrl);
 
     applyCors(res);
-    res.status(upstreamResponse.status);
+    res.statusCode = upstreamResponse.status;
     res.setHeader('Content-Type', 'application/vnd.apple.mpegurl; charset=utf-8');
     res.setHeader('Cache-Control', 'no-store');
-    res.end(rewritten);
+    res.end(req.method === 'HEAD' ? '' : rewritten);
     return;
   }
 
   const buffer = Buffer.from(await upstreamResponse.arrayBuffer());
 
   applyCors(res);
-  res.status(upstreamResponse.status);
+  res.statusCode = upstreamResponse.status;
 
   for (const headerName of ['content-type', 'content-length', 'content-range', 'accept-ranges', 'cache-control', 'etag', 'last-modified']) {
     const headerValue = upstreamResponse.headers.get(headerName);
@@ -111,5 +163,5 @@ export default async function handler(req, res) {
     }
   }
 
-  res.end(buffer);
+  res.end(req.method === 'HEAD' ? '' : buffer);
 }
