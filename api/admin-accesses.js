@@ -1,5 +1,6 @@
 import { extractBearerToken } from '../lib/admin-auth.js';
 import { getAccessStatusDetails } from '../lib/access-status.js';
+import { getPlanById } from '../lib/plans.js';
 import { getAuth, getFirestore } from '../lib/firebase-admin.js';
 
 function applyCors(res) {
@@ -32,17 +33,23 @@ function formatDateLabel(value) {
 
 function normalizeEntry(doc) {
   const data = doc.data();
-  const details = getAccessStatusDetails(data);
+  const plan = getPlanById(data?.planId);
+  const details = getAccessStatusDetails({
+    ...data,
+    planDurationMonths: data?.planDurationMonths || plan?.durationMonths || null
+  });
   return {
     accessId: data?.accessId || doc.id,
     name: data?.name || 'Cliente',
     planName: data?.planName || 'Plano nao definido',
+    planId: data?.planId || 'manual',
     status: details.status,
     warning: details.warning,
     warningMessage: details.warningMessage,
     paymentLabel: data?.paymentLabel || 'Aguardando confirmacao',
     expiresAt: data?.expiresAt || null,
-    expiresAtLabel: details.expiresAtLabel
+    expiresAtLabel: details.expiresAtLabel,
+    createdAt: data?.createdAt || null
   };
 }
 

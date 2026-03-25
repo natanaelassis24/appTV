@@ -164,15 +164,40 @@ const formatDate = value => {
   }
 };
 
+const formatExpiryLabel = value => {
+  const label = formatDate(value);
+  return label === 'Nao definida' ? '' : label;
+};
+
+const computeFallbackExpiryLabel = entry => {
+  const rawCreatedAt = String(entry?.createdAt || '').trim();
+  const planId = String(entry?.planId || '').trim();
+  const plan = getPlanById(planId);
+  const durationMonths = Number.parseInt(plan?.durationMonths || '', 10);
+  if (!rawCreatedAt || !Number.isFinite(durationMonths) || durationMonths <= 0) {
+    return '';
+  }
+
+  const createdAtDate = new Date(`${rawCreatedAt}T00:00:00`);
+  if (Number.isNaN(createdAtDate.getTime())) {
+    return '';
+  }
+
+  createdAtDate.setMonth(createdAtDate.getMonth() + durationMonths);
+  return formatDate(createdAtDate.toISOString().slice(0, 10));
+};
+
 const normalizeAccessList = entries =>
   (Array.isArray(entries) ? entries : []).map(entry => ({
     accessId: entry.accessId || '',
     name: entry.name || 'Cliente',
     planName: entry.planName || 'Plano nao definido',
+    planId: entry.planId || 'manual',
     status: entry.status || 'pending',
     paymentLabel: entry.paymentLabel || 'Aguardando confirmacao',
     expiresAt: entry.expiresAt || null,
-    expiresAtLabel: entry.expiresAtLabel || formatDate(entry.expiresAt)
+    createdAt: entry.createdAt || null,
+    expiresAtLabel: entry.expiresAtLabel || formatExpiryLabel(entry.expiresAt) || computeFallbackExpiryLabel(entry)
   }));
 
 const computeAccessCounts = entries => {
@@ -242,10 +267,12 @@ export default function AdminPanel() {
     accessId: entry.accessId || '',
     name: entry.name || 'Cliente',
     planName: entry.planName || 'Plano nao definido',
+    planId: entry.planId || 'manual',
     status: entry.status || 'pending',
     paymentLabel: entry.paymentLabel || 'Aguardando confirmacao',
     expiresAt: entry.expiresAt || null,
-    expiresAtLabel: formatDate(entry.expiresAt)
+    createdAt: entry.createdAt || null,
+    expiresAtLabel: formatExpiryLabel(entry.expiresAt) || computeFallbackExpiryLabel(entry)
   });
 
   const upsertGeneratedRow = entry => {
@@ -762,9 +789,6 @@ export default function AdminPanel() {
             <p>Veja os acessos ativos e a data de vencimento de cada cliente.</p>
           </div>
           <div className="admin-topbar-actions">
-            <button type="button" className="secondary-btn" onClick={handleClose}>
-              Fechar
-            </button>
             <button type="button" className="secondary-btn" onClick={handleRefreshAccesses}>
               Atualizar
             </button>

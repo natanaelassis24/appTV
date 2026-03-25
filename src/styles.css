@@ -1370,6 +1370,11 @@ label {
   text-align: left;
 }
 
+.admin-table th:last-child,
+.admin-table td:last-child {
+  min-width: 190px;
+}
+
 .admin-table th {
   color: var(--muted);
   font-size: 0.8rem;
@@ -1395,8 +1400,10 @@ label {
 
 .admin-row-actions {
   display: flex;
+  align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 
 .admin-row-actions .secondary-btn {
