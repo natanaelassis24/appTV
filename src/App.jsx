@@ -779,6 +779,7 @@ export default function App() {
   }
 
   const playbackMode = getChannelPlaybackMode(selectedChannel);
+  const playbackModeForPlayer = playbackMode === 'browser' || playbackMode === 'page' ? 'hls' : playbackMode;
 
   if (playbackMode === 'embed') {
     setEmbedUrl(buildEmbedUrl(selectedChannel));
@@ -787,11 +788,10 @@ export default function App() {
   }
 
   if (playbackMode === 'browser' || playbackMode === 'page') {
-    playWithNativeSource('Abrindo canal de navegador...');
-    return;
+    setPlayerStatus('Canal de navegador carregado.');
   }
 
-  if (playbackMode === 'file') {
+  if (playbackModeForPlayer === 'file') {
     playWithNativeSource('Abrindo midia direta...');
     return;
   }
@@ -801,7 +801,7 @@ export default function App() {
       (player.canPlayType('application/vnd.apple.mpegurl') ||
         player.canPlayType('application/x-mpegURL'));
 
-    if (playbackMode === 'hls' && canPlayNativeHls) {
+    if (playbackModeForPlayer === 'hls' && canPlayNativeHls) {
       playWithNativeSource('Abrindo stream diretamente...');
       return;
     }
