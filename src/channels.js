@@ -6,9 +6,31 @@ export const CHANNEL_TEMPLATE = {
   logoImage: 'https://sua-logo.png',
   logo: 'NC',
   sourceType: 'hls',
-  description: 'Descricao curta do canal.'
+  description: 'Descricao curta do canal.',
+  note: 'Use sourceType hls para streams .m3u8, embed para YouTube e outros embeds.'
 };
 
+export function createChannel(overrides = {}) {
+  const base = { ...CHANNEL_TEMPLATE, ...overrides };
+
+  return {
+    name: String(base.name || '').trim(),
+    url: String(base.url || '').trim(),
+    number: String(base.number || '').trim(),
+    category: String(base.category || 'Canais').trim(),
+    logoImage: String(base.logoImage || '').trim(),
+    logo: String(base.logo || '').trim(),
+    sourceType: base.sourceType || 'hls',
+    description: String(base.description || '').trim(),
+    note: String(base.note || CHANNEL_TEMPLATE.note).trim()
+  };
+}
+
+// Para adicionar um canal novo:
+// 1. copie um item abaixo
+// 2. troque nome, link, numero e logo
+// 3. deixe sourceType como 'hls' para .m3u8 ou 'embed' para YouTube
+// 4. se quiser, use o mesmo bloco do Nick Jr. como modelo
 export const CHANNELS = [
   {
     name: 'Caze TV',
@@ -601,7 +623,7 @@ export const CHANNELS = [
   description: 'Descricao curta do canal.'
 },
 {
-  name: 'Nick Jr.S',
+  name: 'Nick Jr.',
   url: 'http://s.webdosdeuses.top/live/gub233/68nz2p/235068.m3u8',
   number: '60',
   category: 'Canais',

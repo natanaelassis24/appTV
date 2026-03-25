@@ -95,12 +95,12 @@ function readCachedChannelUrl() {
       return null;
     }
 
-    const cachedUrl = String(raw || '').trim();
+    const cachedUrl = normalizeChannelUrl(raw);
     if (!cachedUrl) {
       return null;
     }
 
-    return CHANNELS.some(channel => channel.url === cachedUrl) ? cachedUrl : null;
+    return CHANNELS.some(channel => normalizeChannelUrl(channel.url) === cachedUrl) ? cachedUrl : null;
   } catch {
     return null;
   }
@@ -111,8 +111,8 @@ function writeCachedChannelUrl(url) {
     return;
   }
 
-  const normalized = String(url || '').trim();
-  if (!normalized || !CHANNELS.some(channel => channel.url === normalized)) {
+  const normalized = normalizeChannelUrl(url);
+  if (!normalized || !CHANNELS.some(channel => normalizeChannelUrl(channel.url) === normalized)) {
     return;
   }
 
@@ -145,6 +145,10 @@ function parseLocalDate(value) {
 
   const parsed = new Date(`${raw}T00:00:00`);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function normalizeChannelUrl(url) {
+  return String(url || '').trim();
 }
 
 function getExpiryRefreshDelay(expiresAt) {
@@ -333,14 +337,16 @@ export default function App() {
 
   const selectedChannel = useMemo(() => {
     return (
-      filteredChannels.find(channel => channel.url === selectedChannelUrl) ||
+      filteredChannels.find(channel => normalizeChannelUrl(channel.url) === normalizeChannelUrl(selectedChannelUrl)) ||
       filteredChannels[0] ||
       null
     );
   }, [filteredChannels, selectedChannelUrl]);
 
   const selectedIndex = useMemo(() => {
-    return filteredChannels.findIndex(channel => channel.url === selectedChannel?.url);
+    return filteredChannels.findIndex(
+      channel => normalizeChannelUrl(channel.url) === normalizeChannelUrl(selectedChannel?.url)
+    );
   }, [filteredChannels, selectedChannel]);
 
   const publicChannelLoop = useMemo(() => {
@@ -350,7 +356,9 @@ export default function App() {
   function moveDrawerChannel(delta) {
     if (!filteredChannels.length) return;
 
-    const currentIndex = filteredChannels.findIndex(channel => channel.url === drawerChannelUrl);
+    const currentIndex = filteredChannels.findIndex(
+      channel => normalizeChannelUrl(channel.url) === normalizeChannelUrl(drawerChannelUrl)
+    );
     const nextIndex =
       currentIndex >= 0
         ? (currentIndex + delta + filteredChannels.length) % filteredChannels.length
@@ -360,7 +368,7 @@ export default function App() {
   }
 
   function confirmDrawerChannel(channelUrl) {
-    const normalizedUrl = String(channelUrl || '').trim();
+    const normalizedUrl = normalizeChannelUrl(channelUrl);
     if (!normalizedUrl) {
       return;
     }
@@ -435,11 +443,11 @@ export default function App() {
       return;
     }
 
-    if (!filteredChannels.some(channel => channel.url === selectedChannelUrl)) {
+    if (!filteredChannels.some(channel => normalizeChannelUrl(channel.url) === normalizeChannelUrl(selectedChannelUrl))) {
       setSelectedChannelUrl(filteredChannels[0].url);
     }
 
-    if (!filteredChannels.some(channel => channel.url === drawerChannelUrl)) {
+    if (!filteredChannels.some(channel => normalizeChannelUrl(channel.url) === normalizeChannelUrl(drawerChannelUrl))) {
       setDrawerChannelUrl(filteredChannels[0].url);
     }
   }, [drawerChannelUrl, filteredChannels, selectedChannelUrl]);
@@ -1147,7 +1155,9 @@ export default function App() {
               <aside className={`guide-sidebar${guideDrawerOpen ? ' open' : ''}`}>
                 <ul ref={channelListRef} className="guide-channel-list">
                   {filteredChannels.map((channel, index) => {
-                    const isActive = channel.url === (guideDrawerOpen ? drawerChannelUrl : selectedChannel?.url);
+                    const currentDrawerUrl = guideDrawerOpen ? drawerChannelUrl : selectedChannel?.url;
+                    const isActive =
+                      normalizeChannelUrl(channel.url) === normalizeChannelUrl(currentDrawerUrl);
 
                     return (
                       <li key={`${channel.name}-${channel.url}`}>
