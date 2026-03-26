@@ -4,11 +4,13 @@ import { CHANNELS } from './channels';
 import AdminPanel from './AdminPanel';
 import { PUBLIC_RUNTIME_CONFIG, buildApiUrl } from './runtime-config';
 import { PUBLIC_PLANS } from '../lib/plans.js';
+import { isTemporaryAccessPlan } from '../lib/access-status.js';
 
 const ACCESS_CACHE_KEY = 'app-tv-access-cache-v2';
 const LAST_CHANNEL_CACHE_KEY = 'app-tv-last-channel-v1';
 const ACTIVE_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const INACTIVE_CACHE_TTL_MS = 15 * 60 * 1000;
+const TEMPORARY_ACCESS_CACHE_TTL_MS = 30 * 60 * 1000;
 const EXPIRY_WARNING_WINDOW_DAYS = 3;
 
 function getAccessCacheTtl(accessGranted) {
@@ -18,6 +20,10 @@ function getAccessCacheTtl(accessGranted) {
 function getCachedAccessTtl(payload) {
   if (!payload?.accessGranted) {
     return getAccessCacheTtl(false);
+  }
+
+  if (isTemporaryAccessPlan(payload)) {
+    return TEMPORARY_ACCESS_CACHE_TTL_MS;
   }
 
   const expiresAt = parseAccessExpiryValue(payload.expiresAt);
@@ -189,6 +195,23 @@ function getExpiryRefreshDelay(expiresAt) {
   refreshAt.setHours(0, 0, 5, 0);
 
   return Math.max(refreshAt.getTime() - Date.now(), 60 * 1000);
+}
+
+function getAccessRevalidateDelay(access) {
+  if (!access?.accessGranted) {
+    return 5 * 60 * 1000;
+  }
+
+  if (isTemporaryAccessPlan(access)) {
+    return TEMPORARY_ACCESS_CACHE_TTL_MS;
+  }
+
+  const expiryDelay = getExpiryRefreshDelay(access.expiresAt);
+  if (Number.isFinite(expiryDelay) && expiryDelay > 0) {
+    return expiryDelay;
+  }
+
+  return 10 * 60 * 1000;
 }
 
 function formatDaysRemaining(daysRemaining) {
@@ -593,7 +616,7 @@ export default function App() {
       return;
     }
 
-      const delayMs = cachedAccess.accessGranted ? 2 * 60 * 1000 : 5 * 60 * 1000;
+      const delayMs = getAccessRevalidateDelay(cachedAccess);
       cacheRevalidateTimerRef.current = window.setTimeout(() => {
         lookupAccessById(cachedAccess.accessId)
           .then(result => {
@@ -608,6 +631,9 @@ export default function App() {
         .catch(error => {
           if (cachedAccess.accessGranted) {
             setAccessLookupError(error.message || 'Falha ao validar o ID salvo.');
+          } else {
+            clearCachedAccess();
+            setAuthorizedAccess(null);
           }
         });
     }, delayMs);
