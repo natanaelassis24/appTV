@@ -598,19 +598,48 @@ export default function App() {
       return;
     }
 
+    const isTemporaryCachedAccess = isTemporaryAccessPlan(cachedAccess);
     const cacheAge = Date.now() - Number(cachedAccess.checkedAt || 0);
     const cacheTtl = getCachedAccessTtl(cachedAccess);
     const isCacheFresh = cacheAge <= cacheTtl;
 
-      if (cachedAccess.accessGranted) {
-        setAuthorizedAccess(cachedAccess);
-        setAccessLookupState('success');
-      } else {
-        setAuthorizedAccess(null);
-        setAccessLookupState('success');
-      }
+        if (cachedAccess.accessGranted && !isTemporaryCachedAccess) {
+          setAuthorizedAccess(cachedAccess);
+          setAccessLookupState('success');
+        } else {
+          setAuthorizedAccess(null);
+          setAccessLookupState(isTemporaryCachedAccess ? 'loading' : 'success');
+        }
 
-    setAccessBootState('ready');
+      setAccessBootState('ready');
+
+    if (isTemporaryCachedAccess) {
+      cacheRevalidateTimerRef.current = window.setTimeout(() => {
+        lookupAccessById(cachedAccess.accessId)
+          .then(result => {
+            if (!result.accessGranted) {
+              clearCachedAccess();
+              setAuthorizedAccess(null);
+              setAccessLookupResult(result);
+              setAccessLookupState('success');
+              setAccessLookupError('');
+            }
+          })
+          .catch(error => {
+            clearCachedAccess();
+            setAuthorizedAccess(null);
+            setAccessLookupError(error.message || 'Falha ao validar o ID salvo.');
+            setAccessLookupState('error');
+          });
+      }, 1000);
+
+      return () => {
+        if (cacheRevalidateTimerRef.current) {
+          window.clearTimeout(cacheRevalidateTimerRef.current);
+          cacheRevalidateTimerRef.current = null;
+        }
+      };
+    }
 
     if (isCacheFresh) {
       return;
