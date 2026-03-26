@@ -20,7 +20,7 @@ function getCachedAccessTtl(payload) {
     return getAccessCacheTtl(false);
   }
 
-  const expiresAt = parseLocalDate(payload.expiresAt);
+  const expiresAt = parseAccessExpiryValue(payload.expiresAt);
   if (!expiresAt) {
     return getAccessCacheTtl(true);
   }
@@ -125,9 +125,13 @@ function isCachedAccessExpired(access) {
     return false;
   }
 
-  const parsed = new Date(`${expiresAt}T00:00:00`);
-  if (Number.isNaN(parsed.getTime())) {
+  const parsed = parseAccessExpiryValue(expiresAt);
+  if (!parsed) {
     return false;
+  }
+
+  if (/T\d{2}:\d{2}/.test(expiresAt) || /^\d+$/.test(expiresAt)) {
+    return Date.now() > parsed.getTime();
   }
 
   const today = new Date();
@@ -137,14 +141,29 @@ function isCachedAccessExpired(access) {
   return todayStart.getTime() > expiresStart.getTime();
 }
 
-function parseLocalDate(value) {
+function parseAccessExpiryValue(value) {
   const raw = String(value || '').trim();
   if (!raw) {
     return null;
   }
 
-  const parsed = new Date(`${raw}T00:00:00`);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
+  if (/^\d+$/.test(raw)) {
+    const numeric = new Date(Number(raw));
+    return Number.isNaN(numeric.getTime()) ? null : numeric;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    const parsed = new Date(`${raw}T00:00:00`);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  const parsed = new Date(raw);
+  if (!Number.isNaN(parsed.getTime())) {
+    return parsed;
+  }
+
+  const fallback = new Date(`${raw}T00:00:00`);
+  return Number.isNaN(fallback.getTime()) ? null : fallback;
 }
 
 function normalizeChannelUrl(url) {
@@ -152,12 +171,20 @@ function normalizeChannelUrl(url) {
 }
 
 function getExpiryRefreshDelay(expiresAt) {
-  const date = parseLocalDate(expiresAt);
+  const date = parseAccessExpiryValue(expiresAt);
   if (!date) {
     return null;
   }
 
+  const raw = String(expiresAt || '').trim();
+  const hasTime = /T\d{2}:\d{2}/.test(raw) || /^\d+$/.test(raw);
   const refreshAt = new Date(date);
+
+  if (hasTime) {
+    refreshAt.setTime(refreshAt.getTime() - 60 * 1000);
+    return Math.max(refreshAt.getTime() - Date.now(), 30 * 1000);
+  }
+
   refreshAt.setDate(refreshAt.getDate() + 1);
   refreshAt.setHours(0, 0, 5, 0);
 

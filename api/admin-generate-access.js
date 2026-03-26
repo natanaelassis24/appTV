@@ -1,5 +1,5 @@
 import { extractBearerToken } from '../lib/admin-auth.js';
-import { addMonthsToDate, generateAccessId } from '../lib/access-ids.js';
+import { addHoursToDate, addMonthsToDate, generateAccessId } from '../lib/access-ids.js';
 import { getAccessStatusDetails } from '../lib/access-status.js';
 import { getPlanById } from '../lib/plans.js';
 import { getAuth, getFirestore } from '../lib/firebase-admin.js';
@@ -16,6 +16,11 @@ function sendJson(res, statusCode, payload) {
 }
 
 function parseMonths(value) {
+  const parsed = Number.parseInt(String(value || '').trim(), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function parseHours(value) {
   const parsed = Number.parseInt(String(value || '').trim(), 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
@@ -65,10 +70,16 @@ export default async function handler(req, res) {
   const name = String(input?.name || 'Cliente').trim() || 'Cliente';
   const planId = String(input?.planId || 'mensal').trim() || 'mensal';
   const resolvedPlan = getPlanById(planId);
-  const planName = String(resolvedPlan?.name || input?.planName || 'Plano manual').trim() || 'Plano manual';
+  const isTemporaryAccess = planId === 'temporary_2h' || planId === 'temporario_2h';
+  const planName = String(
+    resolvedPlan?.name ||
+      input?.planName ||
+      (isTemporaryAccess ? 'Acesso temporario 2h' : 'Plano manual')
+  ).trim() || 'Plano manual';
   const paymentLabel = String(input?.paymentLabel || 'Gerado manualmente').trim() || 'Gerado manualmente';
   const expiresAtInput = parseDate(input?.expiresAt);
   const expiresInMonths = parseMonths(input?.expiresInMonths);
+  const expiresInHours = parseHours(input?.expiresInHours) || (isTemporaryAccess ? 2 : null);
 
   try {
     const firestore = getFirestore();
@@ -81,6 +92,7 @@ export default async function handler(req, res) {
     }
 
     let generated = null;
+    let generatedDetails = null;
 
     for (let attempt = 0; attempt < 20; attempt += 1) {
       const accessId = generateAccessId();
@@ -92,19 +104,24 @@ export default async function handler(req, res) {
       }
 
       const planDurationMonths = Number(resolvedPlan?.durationMonths || 0) || null;
+      const planDurationHours = isTemporaryAccess ? 2 : Number(resolvedPlan?.durationHours || 0) || null;
       const expiresAt =
         expiresAtInput ||
+        (expiresInHours ? addHoursToDate(new Date(), expiresInHours) : null) ||
         (expiresInMonths ? addMonthsToDate(new Date(), expiresInMonths) : null) ||
         (planDurationMonths ? addMonthsToDate(new Date(), planDurationMonths) : null);
       const details = getAccessStatusDetails({ expiresAt });
+      generatedDetails = details;
 
       await accessRef.set({
         accessId,
         name,
         planId,
         planName,
+        planDurationMonths,
+        planDurationHours,
         status: details.status,
-        paymentLabel,
+        paymentLabel: isTemporaryAccess ? 'Acesso temporario' : paymentLabel,
         expiresAt,
         paymentStatus: 'paid',
         createdAt: new Date().toISOString()
@@ -115,8 +132,10 @@ export default async function handler(req, res) {
         name,
         planId,
         planName,
+        planDurationMonths,
+        planDurationHours,
         status: details.status,
-        paymentLabel,
+        paymentLabel: isTemporaryAccess ? 'Acesso temporario' : paymentLabel,
         expiresAt,
         warning: details.warning,
         warningMessage: details.warningMessage
@@ -131,7 +150,7 @@ export default async function handler(req, res) {
 
     sendJson(res, 200, {
       ...generated,
-      expiresAtLabel: generated.expiresAt || 'Nao definida'
+      expiresAtLabel: generatedDetails?.expiresAtLabel || generated.expiresAt || 'Nao definida'
     });
   } catch (error) {
     sendJson(res, 500, {

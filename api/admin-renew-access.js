@@ -1,5 +1,5 @@
 import { extractBearerToken } from '../lib/admin-auth.js';
-import { addMonthsToDate } from '../lib/access-ids.js';
+import { addHoursToDate, addMonthsToDate } from '../lib/access-ids.js';
 import { getAccessStatusDetails } from '../lib/access-status.js';
 import { getPlanById } from '../lib/plans.js';
 import { getAuth, getFirestore } from '../lib/firebase-admin.js';
@@ -27,11 +27,21 @@ function parseDate(value) {
     return null;
   }
 
+  const direct = new Date(raw);
+  if (!Number.isNaN(direct.getTime())) {
+    return direct;
+  }
+
   const parsed = new Date(`${raw}T00:00:00`);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
 function parseMonths(value) {
+  const parsed = Number.parseInt(String(value || '').trim(), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function parseHours(value) {
   const parsed = Number.parseInt(String(value || '').trim(), 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
@@ -81,14 +91,25 @@ export default async function handler(req, res) {
 
     const data = snapshot.data() || {};
     const resolvedPlan = getPlanById(String(data.planId || '').trim());
-    const renewalMonths = parseMonths(req.body?.months || req.query?.months) || Number(resolvedPlan?.durationMonths || 0) || 1;
+    const renewalHours =
+      parseHours(req.body?.hours || req.query?.hours) ||
+      (String(data.planId || '').trim().toLowerCase() === 'temporary_2h' ||
+      String(data.planId || '').trim().toLowerCase() === 'temporario_2h'
+        ? Number(data.planDurationHours || 2) || 2
+        : null);
+    const renewalMonths =
+      parseMonths(req.body?.months || req.query?.months) ||
+      Number(resolvedPlan?.durationMonths || data.planDurationMonths || 0) ||
+      1;
     const currentExpiry = parseDate(data.expiresAt);
     const baseline = currentExpiry && currentExpiry.getTime() > Date.now() ? currentExpiry : new Date();
-    const expiresAt = addMonthsToDate(baseline, renewalMonths);
+    const expiresAt = renewalHours ? addHoursToDate(baseline, renewalHours) : addMonthsToDate(baseline, renewalMonths);
     const details = getAccessStatusDetails({ expiresAt });
 
     await accessRef.update({
       expiresAt,
+      planDurationHours: renewalHours || null,
+      planDurationMonths: renewalHours ? null : renewalMonths,
       status: details.status,
       paymentStatus: 'paid',
       paymentLabel: 'Plano renovado',
@@ -101,6 +122,8 @@ export default async function handler(req, res) {
       name: data.name || 'Cliente',
       planId: data.planId || resolvedPlan?.id || 'mensal',
       planName: data.planName || resolvedPlan?.name || 'Plano nao definido',
+      planDurationHours: renewalHours || null,
+      planDurationMonths: renewalHours ? null : renewalMonths,
       status: details.status,
       paymentLabel: 'Plano renovado',
       expiresAt,

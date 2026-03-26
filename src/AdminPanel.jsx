@@ -1,5 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
 import { getPlanById, PUBLIC_PLANS } from '../lib/plans.js';
+import { parseAccessDateValue } from '../lib/access-status.js';
 import { PUBLIC_RUNTIME_CONFIG, buildApiUrl } from './runtime-config';
 
 const ACCESS_STATUS_LABELS = {
@@ -48,6 +49,16 @@ const FIREBASE_AUTH_SESSION_KEY = 'app-tv-admin-firebase-session-v1';
 const ADMIN_ACCESS_CACHE_KEY = 'app-tv-admin-access-cache-v2';
 const ADMIN_ACCESS_CACHE_TTL_MS = 6 * 60 * 1000;
 const ADMIN_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
+const ADMIN_TEMPORARY_PLAN = {
+  id: 'temporario_2h',
+  name: 'Acesso temporario 2h',
+  price: 'Gratuito',
+  priceLabel: '2 horas',
+  period: '/2h',
+  durationHours: 2,
+  description: 'Acesso temporario com validade de 2 horas.'
+};
+const ADMIN_GENERATOR_PLANS = [...PUBLIC_PLANS, ADMIN_TEMPORARY_PLAN];
 const loadRequestTracker = { current: 0 };
 const adminIdleTimerRef = { current: null };
 
@@ -158,7 +169,14 @@ async function refreshFirebaseAuthSession(refreshToken) {
 const formatDate = value => {
   if (!value) return 'Nao definida';
   try {
-    return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(new Date(`${value}T00:00:00`));
+    const date = parseAccessDateValue(value);
+    if (!date) return 'Nao definida';
+    const raw = String(value || '').trim();
+    const hasTime = /T\d{2}:\d{2}/.test(raw) || (/:\d{2}/.test(raw) && !/^\d{4}-\d{2}-\d{2}$/.test(raw));
+    return new Intl.DateTimeFormat('pt-BR', {
+      dateStyle: 'short',
+      ...(hasTime ? { timeStyle: 'short' } : {})
+    }).format(date);
   } catch {
     return value;
   }
@@ -173,14 +191,23 @@ const computeFallbackExpiryLabel = entry => {
   const rawCreatedAt = String(entry?.createdAt || '').trim();
   const planId = String(entry?.planId || '').trim();
   const plan = getPlanById(planId);
-  const durationMonths = Number.parseInt(plan?.durationMonths || '', 10);
-  if (!rawCreatedAt || !Number.isFinite(durationMonths) || durationMonths <= 0) {
+  const durationHours = Number.parseInt(entry?.planDurationHours || plan?.durationHours || '', 10);
+  const durationMonths = Number.parseInt(entry?.planDurationMonths || plan?.durationMonths || '', 10);
+  if (
+    !rawCreatedAt ||
+    ((!Number.isFinite(durationHours) || durationHours <= 0) && (!Number.isFinite(durationMonths) || durationMonths <= 0))
+  ) {
     return '';
   }
 
-  const createdAtDate = new Date(`${rawCreatedAt}T00:00:00`);
-  if (Number.isNaN(createdAtDate.getTime())) {
+  const createdAtDate = parseAccessDateValue(rawCreatedAt);
+  if (!createdAtDate) {
     return '';
+  }
+
+  if (Number.isFinite(durationHours) && durationHours > 0) {
+    createdAtDate.setHours(createdAtDate.getHours() + durationHours);
+    return formatDate(createdAtDate.toISOString());
   }
 
   createdAtDate.setMonth(createdAtDate.getMonth() + durationMonths);
@@ -193,6 +220,8 @@ const normalizeAccessList = entries =>
     name: entry.name || 'Cliente',
     planName: entry.planName || 'Plano nao definido',
     planId: entry.planId || 'manual',
+    planDurationHours: entry.planDurationHours || null,
+    planDurationMonths: entry.planDurationMonths || null,
     status: entry.status || 'pending',
     paymentLabel: entry.paymentLabel || 'Aguardando confirmacao',
     expiresAt: entry.expiresAt || null,
@@ -268,6 +297,8 @@ export default function AdminPanel() {
     name: entry.name || 'Cliente',
     planName: entry.planName || 'Plano nao definido',
     planId: entry.planId || 'manual',
+    planDurationHours: entry.planDurationHours || null,
+    planDurationMonths: entry.planDurationMonths || null,
     status: entry.status || 'pending',
     paymentLabel: entry.paymentLabel || 'Aguardando confirmacao',
     expiresAt: entry.expiresAt || null,
@@ -453,7 +484,21 @@ export default function AdminPanel() {
     });
   }, [rows, searchTerm]);
 
-  const selectedPlan = useMemo(() => getPlanById(generatorPlanId) || PUBLIC_PLANS[0] || null, [generatorPlanId]);
+  const selectedPlan = useMemo(
+    () => ADMIN_GENERATOR_PLANS.find(plan => plan.id === generatorPlanId) || ADMIN_GENERATOR_PLANS[0] || null,
+    [generatorPlanId]
+  );
+
+  const selectedPlanLabel = useMemo(() => {
+    if (!selectedPlan) return '';
+    if (selectedPlan.durationHours) {
+      return `${selectedPlan.durationHours} hora(s)`;
+    }
+    if (selectedPlan.durationMonths) {
+      return `${selectedPlan.durationMonths} mês(es)`;
+    }
+    return '';
+  }, [selectedPlan]);
 
   const handleAuth = async () => {
     const normalizedEmail = String(email || '').trim().toLowerCase();
@@ -528,7 +573,9 @@ export default function AdminPanel() {
     setGenerateError('');
 
     const requestUrl = buildApiUrl(
-      `/api/admin-generate-access?name=${encodeURIComponent(generatorName)}&planId=${encodeURIComponent(generatorPlanId)}`
+      `/api/admin-generate-access?name=${encodeURIComponent(generatorName)}&planId=${encodeURIComponent(generatorPlanId)}${
+        generatorPlanId === ADMIN_TEMPORARY_PLAN.id ? '&expiresInHours=2' : ''
+      }`
     );
 
     try {
@@ -821,7 +868,7 @@ export default function AdminPanel() {
             <label className="admin-field">
               <span>Plano</span>
               <select value={generatorPlanId} onChange={event => setGeneratorPlanId(event.target.value)}>
-                {PUBLIC_PLANS.map(plan => (
+                {ADMIN_GENERATOR_PLANS.map(plan => (
                   <option key={plan.id} value={plan.id}>
                     {plan.name}
                   </option>
@@ -832,7 +879,7 @@ export default function AdminPanel() {
               <span>Validade do plano</span>
               <input
                 type="text"
-                value={selectedPlan ? `${selectedPlan.durationMonths} mês(es)` : ''}
+                value={selectedPlanLabel}
                 readOnly
               />
             </label>

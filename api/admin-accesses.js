@@ -1,5 +1,5 @@
 import { extractBearerToken } from '../lib/admin-auth.js';
-import { getAccessStatusDetails } from '../lib/access-status.js';
+import { getAccessStatusDetails, parseAccessDateValue } from '../lib/access-status.js';
 import { getPlanById } from '../lib/plans.js';
 import { getAuth, getFirestore } from '../lib/firebase-admin.js';
 
@@ -23,12 +23,17 @@ function formatDateLabel(value) {
     return 'Nao definida';
   }
 
-  const date = new Date(`${value}T00:00:00`);
-  if (Number.isNaN(date.getTime())) {
+  const date = parseAccessDateValue(value);
+  if (!date || Number.isNaN(date.getTime())) {
     return value;
   }
 
-  return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(date);
+  const raw = String(value || '').trim();
+  const hasTime = /T\d{2}:\d{2}/.test(raw) || /:\d{2}/.test(raw) && !/^\d{4}-\d{2}-\d{2}$/.test(raw);
+  return new Intl.DateTimeFormat('pt-BR', {
+    dateStyle: 'short',
+    ...(hasTime ? { timeStyle: 'short' } : {})
+  }).format(date);
 }
 
 function normalizeEntry(doc) {
@@ -36,7 +41,8 @@ function normalizeEntry(doc) {
   const plan = getPlanById(data?.planId);
   const details = getAccessStatusDetails({
     ...data,
-    planDurationMonths: data?.planDurationMonths || plan?.durationMonths || null
+    planDurationMonths: data?.planDurationMonths || plan?.durationMonths || null,
+    planDurationHours: data?.planDurationHours || plan?.durationHours || null
   });
   return {
     accessId: data?.accessId || doc.id,
@@ -77,8 +83,10 @@ export default async function handler(req, res) {
     const entries = snapshot.docs
       .map(normalizeEntry)
       .sort((left, right) => {
-        const leftStamp = left.expiresAt ? new Date(`${left.expiresAt}T00:00:00`).getTime() : 0;
-        const rightStamp = right.expiresAt ? new Date(`${right.expiresAt}T00:00:00`).getTime() : 0;
+        const leftDate = parseAccessDateValue(left.expiresAt);
+        const rightDate = parseAccessDateValue(right.expiresAt);
+        const leftStamp = leftDate ? leftDate.getTime() : 0;
+        const rightStamp = rightDate ? rightDate.getTime() : 0;
 
         if (rightStamp !== leftStamp) {
           return rightStamp - leftStamp;
