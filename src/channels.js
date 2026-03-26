@@ -670,39 +670,5 @@ export const CHANNELS = [
   logo: 'NC',
   sourceType: 'hls',
   description: 'Descricao curta do canal.'
-},
-{
-  name: 'Nick Jr.',
-  url: 'http://s.webdosdeuses.top/live/gub233/68nz2p/235068.m3u8',
-  number: '62',
-  category: 'Canais',
-  logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Nick_Jr._logo_2023_%28outline%29.svg/960px-Nick_Jr._logo_2023_%28outline%29.svg.png',
-  logo: 'MC',
-  sourceType: 'hls',
-  playbackTransport: 'browser',
-  description: 'Descricao curta'
-},
-{
-  name: 'Cartoonetwork',
-  url: 'http://s.webdosdeuses.top/live/gub233/68nz2p/38.m3u8',
-  number: '63',
-  category: 'Canais',
-  logoImage: 'https://upload.wikimedia.org/wikipedia/commons/4/40/Cartoon_network_modified_logo.PNG',
-  logo: 'MC',
-  sourceType: 'hls',
-  playbackTransport: 'browser',
-  description: 'Descricao curta'
-},
-{
-  name: 'Cartoonito',
-  url: 'http://s.webdosdeuses.top/live/gub233/68nz2p/234898.m3u8',
-  number: '64',
-  category: 'Canais',
-  logoImage: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_ZNNeTvpLDkX9D01bcUqP_6xiYDhqqUtJug&s',
-  logo: 'MC',
-  sourceType: 'hls',
-  playbackTransport: 'browser',
-  description: 'Descricao curta'
 }
-
 ];
