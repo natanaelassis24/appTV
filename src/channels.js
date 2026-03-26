@@ -670,5 +670,115 @@ export const CHANNELS = [
   logo: 'NC',
   sourceType: 'hls',
   description: 'Descricao curta do canal.'
+},
+{
+  name: 'Dragon Ball Z 24h',
+  url: 'https://streamverde.s27-usa-cloudfront-net.online/fontes/streamverde/24h_dragonball.m3u8',
+  number: '60',
+  category: 'Canais',
+  logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Dragon_Ball_Z_Logo.svg/1280px-Dragon_Ball_Z_Logo.svg.png',
+  logo: 'NC',
+  sourceType: 'hls',
+  description: 'Descricao curta do canal.'
+},
+{
+  name: 'Os Simpsons 24h',
+  url: 'https://streamverde.s27-usa-cloudfront-net.online/fontes/streamverde/24h_simpsons.m3u8',
+  number: '61',
+  category: 'Canais',
+  logoImage: 'https://static.wikia.nocookie.net/logopedia/images/5/56/Os-simpsons.jpg/revision/latest?cb=20180130030411',
+  logo: 'NC',
+  sourceType: 'hls',
+  description: 'Descricao curta do canal.'
+},
+{
+  name: 'Band Sports',
+  url: 'https://streamverde.s27-usa-cloudfront-net.online/fontes/streamverde/bandsports.m3u8',
+  number: '61',
+  category: 'Canais',
+  logoImage: 'https://upload.wikimedia.org/wikipedia/commons/f/f7/BandSports_logo.svg',
+  logo: 'NC',
+  sourceType: 'hls',
+  description: 'Descricao curta do canal.'
+},
+{
+  name: 'Premiere 1',
+  url: 'https://streamverde.s27-usa-cloudfront-net.online/fontes/streamverde/premiere.m3u8',
+  number: '63',
+  category: 'Canais',
+  logoImage: 'https://iconape.com/wp-content/files/zc/279842/png/279842.png',
+  logo: 'NC',
+  sourceType: 'hls',
+  description: 'Descricao curta do canal.'
+},
+{
+  name: 'Premiere 2',
+  url: 'https://streamverde.s27-usa-cloudfront-net.online/fontes/streamverde/premiere2.m3u8',
+  number: '64',
+  category: 'Canais',
+  logoImage: 'https://d1yjjnpx0p53s8.cloudfront.net/styles/logo-thumbnail/s3/0023/3103/brand.gif?itok=8x9EKnHX',
+  logo: 'NC',
+  sourceType: 'hls',
+  description: 'Descricao curta do canal.'
+},
+{
+  name: 'Premiere 3',
+  url: 'https://streamverde.s27-usa-cloudfront-net.online/fontes/streamverde/premiere3.m3u8',
+  number: '65',
+  category: 'Canais',
+  logoImage: 'https://iconape.com/wp-content/files/kz/279837/png/279837.png',
+  logo: 'NC',
+  sourceType: 'hls',
+  description: 'Descricao curta do canal.'
+},
+{
+  name: 'Premiere 4',
+  url: 'https://streamverde.s27-usa-cloudfront-net.online/fontes/streamverde/premiere4.m3u8',
+  number: '66',
+  category: 'Canais',
+  logoImage: 'https://iconape.com/wp-content/files/qe/279774/png/279774.png',
+  logo: 'NC',
+  sourceType: 'hls',
+  description: 'Descricao curta do canal.'
+},
+{
+  name: 'Premiere 5',
+  url: 'https://streamverde.s27-usa-cloudfront-net.online/fontes/streamverde/premiere5.m3u8',
+  number: '67',
+  category: 'Canais',
+  logoImage: 'https://iconape.com/wp-content/files/ep/278491/png/278491.png',
+  logo: 'NC',
+  sourceType: 'hls',
+  description: 'Descricao curta do canal.'
+},
+{
+  name: 'Premiere 6',
+  url: 'https://streamverde.s27-usa-cloudfront-net.online/fontes/streamverde/premiere6.m3u8',
+  number: '68',
+  category: 'Canais',
+  logoImage: 'https://d1yjjnpx0p53s8.cloudfront.net/styles/logo-thumbnail/s3/0023/4412/brand.gif?itok=bS4_hURf',
+  logo: 'NC',
+  sourceType: 'hls',
+  description: 'Descricao curta do canal.'
+},
+{
+  name: 'Premiere 7',
+  url: 'https://streamverde.s27-usa-cloudfront-net.online/fontes/streamverde/premiere7.m3u8',
+  number: '69',
+  category: 'Canais',
+  logoImage: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRV9H1moX_VI4fveLA9NkdWOr7F-kiNCechzw&s',
+  logo: 'NC',
+  sourceType: 'hls',
+  description: 'Descricao curta do canal.'
+},
+{
+  name: 'Premiere 8',
+  url: 'https://streamverde.s27-usa-cloudfront-net.online/fontes/streamverde/premiere8.m3u8',
+  number: '70',
+  category: 'Canais',
+  logoImage: 'https://i.pinimg.com/736x/73/df/cd/73dfcdf4e6c88fdcc86e80a05cf13048.jpg',
+  logo: 'NC',
+  sourceType: 'hls',
+  description: 'Descricao curta do canal.'
 }
 ];
