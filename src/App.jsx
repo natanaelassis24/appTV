@@ -208,20 +208,6 @@ function buildEmbedUrl(channel) {
   return url;
 }
 
-function buildPagePlayerUrl(channel) {
-  const url = String(channel?.url || '').trim();
-
-  if (!url) {
-    return '';
-  }
-
-  try {
-    return `https://app.iptvplayer.stream/?url=${encodeURIComponent(url)}`;
-  } catch (_) {
-    return url;
-  }
-}
-
 function getChannelPlaybackMode(channel) {
   const url = String(channel?.url || '').trim().toLowerCase();
   const explicitTransport = String(channel?.playbackTransport || '').trim().toLowerCase();
@@ -241,8 +227,7 @@ function getChannelPlaybackMode(channel) {
   if (
     channel?.sourceType === 'file' ||
     /\.mp4($|\?)/i.test(url) ||
-    /\.mp3($|\?)/i.test(url) ||
-    /\.ts($|\?)/i.test(url)
+    /\.mp3($|\?)/i.test(url)
   ) {
     return 'file';
   }
@@ -403,12 +388,6 @@ export default function App() {
     );
   }, [filteredChannels, selectedChannelUrl]);
 
-  const selectedChannelIsTsFile = useMemo(() => {
-    const playbackMode = getChannelPlaybackMode(selectedChannel);
-    const url = String(selectedChannel?.url || '').trim().toLowerCase();
-    return playbackMode === 'file' && /\.ts($|\?)/i.test(url);
-  }, [selectedChannel]);
-
   const selectedIndex = useMemo(() => {
     return filteredChannels.findIndex(
       channel => normalizeChannelUrl(channel.url) === normalizeChannelUrl(selectedChannel?.url)
@@ -418,10 +397,6 @@ export default function App() {
   const isBrowserChannel = useMemo(() => {
     const mode = getChannelPlaybackMode(selectedChannel);
     return mode === 'browser' || mode === 'page';
-  }, [selectedChannel]);
-
-  const isPageChannel = useMemo(() => {
-    return getChannelPlaybackMode(selectedChannel) === 'page';
   }, [selectedChannel]);
 
   const publicChannelLoop = useMemo(() => {
@@ -813,12 +788,6 @@ export default function App() {
   if (playbackMode === 'embed') {
     setEmbedUrl(buildEmbedUrl(selectedChannel));
     setPlayerStatus('Embed carregado.');
-    return;
-  }
-
-  if (playbackMode === 'page') {
-    setEmbedUrl(buildPagePlayerUrl(selectedChannel));
-    setPlayerStatus('Player da página carregado.');
     return;
   }
 
@@ -1309,23 +1278,15 @@ export default function App() {
                     disablePictureInPicture
                     controlsList="nodownload noplaybackrate noremoteplayback"
                     tabIndex={-1}
-                  >
-                    {selectedChannelIsTsFile ? (
-                      <source src={selectedChannel?.url || selectedChannelUrl} type="video/mp2t" />
-                    ) : null}
-                  </video>
+                  />
                 ) : (
                   <iframe
                     key={`embed:${embedUrl}:${playbackNonce}`}
                     id="tvEmbed"
                     title="Player incorporado"
                     src={embedUrl}
-                    allow={
-                      isPageChannel
-                        ? 'autoplay; encrypted-media; picture-in-picture'
-                        : 'autoplay; encrypted-media; picture-in-picture; fullscreen'
-                    }
-                    allowFullScreen={!isPageChannel}
+                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                    allowFullScreen
                     referrerPolicy="strict-origin-when-cross-origin"
                     tabIndex={-1}
                   />

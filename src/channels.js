@@ -658,7 +658,6 @@ export const CHANNELS = [
   logoImage: 'https://upload.wikimedia.org/wikipedia/commons/e/e5/Nickelodeon_2023_logo_%28outline%29.svg',
   logo: 'NC',
   sourceType: 'hls',
-  playbackTransport: 'browser',
   description: 'Descricao curta do canal.'
 },
 {
@@ -780,26 +779,5 @@ export const CHANNELS = [
   logo: 'NC',
   sourceType: 'hls',
   description: 'Descricao curta do canal.'
-},
-{
-  name: 'Nome do Canal',
-  url: 'http://lphas.click:80/4199922241/awsedc1485/27510367.ts',
-  number: '99',
-  category: 'Canais',
-  logoImage: 'https://logos-world.net/wp-content/uploads/2023/03/Space-Logo.png',
-  logo: 'NC',
-  sourceType: 'file',
-  description: 'Descricao curta do canal.'
-},
-{
-  name: 'Meu Canal',
-  url: 'http://lphas.click:80/4199922241/awsedc1485/27510366.ts',
-  number: '99',
-  category: 'Canais',
-  logoImage: 'https://link-da-logo.png',
-  logo: 'MC',
-  playbackTransport: 'page',
-  description: 'Canal que usa player web.'
 }
-
 ];
