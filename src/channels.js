@@ -676,7 +676,7 @@ export const CHANNELS = [
   url: 'https://streamverde.s27-usa-cloudfront-net.online/fontes/streamverde/24h_dragonball.m3u8',
   number: '60',
   category: 'Canais',
-  logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Dragon_Ball_Z_Logo.svg/1280px-Dragon_Ball_Z_Logo.svg.png',
+  logoImage: 'https://upload.wikimedia.org/wikipedia/commons/f/f2/Dragon_Ball_Z_Logo_A.png',
   logo: 'NC',
   sourceType: 'hls',
   description: 'Descricao curta do canal.'
