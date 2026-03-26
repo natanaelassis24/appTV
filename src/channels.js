@@ -185,7 +185,7 @@ export const CHANNELS = [
   url: 'https://streamverde.s27-usa-cloudfront-net.online/fontes/streamverde/combate.m3u8',
   number: '11',
   category: 'Canais',
-  logoImage: 'https://sua-logo.png',
+  logoImage: 'https://upload.wikimedia.org/wikipedia/commons/e/ed/Canal-combate-logo.png',
   logo: 'NC',
   sourceType: 'hls',
   description: 'Descricao curta do canal.'
@@ -585,7 +585,7 @@ export const CHANNELS = [
   url: 'https://streamverde.s27-usa-cloudfront-net.online/fontes/streamverde/tnt.m3u8',
   number: '51',
   category: 'Canais',
-  logoImage: 'https://sua-logo.png',
+  logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Warner_Bros_logo.svg/500px-Warner_Bros_logo.svg.png',
   logo: 'NC',
   sourceType: 'hls',
   description: 'Descricao curta do canal.'
