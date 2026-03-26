@@ -11,6 +11,7 @@ const LAST_CHANNEL_CACHE_KEY = 'app-tv-last-channel-v1';
 const ACTIVE_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const INACTIVE_CACHE_TTL_MS = 15 * 60 * 1000;
 const TEMPORARY_ACCESS_CACHE_TTL_MS = 30 * 60 * 1000;
+const STREAM_REFRESH_INTERVAL_MS = 3 * 60 * 1000;
 const EXPIRY_WARNING_WINDOW_DAYS = 3;
 
 function getAccessCacheTtl(accessGranted) {
@@ -429,6 +430,9 @@ export default function App() {
   const cacheRevalidateTimerRef = useRef(null);
   const streamRefreshTimerRef = useRef(null);
   const recoveryRef = useRef({ network: 0, media: 0, fallbackTried: false });
+  const refreshPlayback = () => {
+    setPlaybackNonce(current => current + 1);
+  };
 
   const selectedChannel = useMemo(() => {
     return (
@@ -481,7 +485,7 @@ export default function App() {
     setDrawerChannelUrl(normalizedUrl);
     setGuideDrawerOpen(false);
 
-    setPlaybackNonce(current => current + 1);
+    refreshPlayback();
   }
 
   async function lookupAccessById(accessId, { persist = true } = {}) {
@@ -955,14 +959,14 @@ export default function App() {
       return undefined;
     }
 
-    const refreshIntervalMs = 10 * 60 * 1000;
-    streamRefreshTimerRef.current = window.setInterval(() => {
-      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
-        return;
-      }
+      const refreshIntervalMs = STREAM_REFRESH_INTERVAL_MS;
+      streamRefreshTimerRef.current = window.setInterval(() => {
+        if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
+          return;
+        }
 
-      setPlaybackNonce(current => current + 1);
-    }, refreshIntervalMs);
+        refreshPlayback();
+      }, refreshIntervalMs);
 
     return () => {
       if (streamRefreshTimerRef.current) {
