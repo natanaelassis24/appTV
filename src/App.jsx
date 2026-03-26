@@ -389,6 +389,12 @@ export default function App() {
     );
   }, [filteredChannels, selectedChannelUrl]);
 
+  const selectedChannelIsTsFile = useMemo(() => {
+    const playbackMode = getChannelPlaybackMode(selectedChannel);
+    const url = String(selectedChannel?.url || '').trim().toLowerCase();
+    return playbackMode === 'file' && /\.ts($|\?)/i.test(url);
+  }, [selectedChannel]);
+
   const selectedIndex = useMemo(() => {
     return filteredChannels.findIndex(
       channel => normalizeChannelUrl(channel.url) === normalizeChannelUrl(selectedChannel?.url)
@@ -1279,7 +1285,11 @@ export default function App() {
                     disablePictureInPicture
                     controlsList="nodownload noplaybackrate noremoteplayback"
                     tabIndex={-1}
-                  />
+                  >
+                    {selectedChannelIsTsFile ? (
+                      <source src={selectedChannel?.url || selectedChannelUrl} type="video/mp2t" />
+                    ) : null}
+                  </video>
                 ) : (
                   <iframe
                     key={`embed:${embedUrl}:${playbackNonce}`}
