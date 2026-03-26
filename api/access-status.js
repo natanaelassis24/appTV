@@ -1,5 +1,5 @@
 import { getFirestore } from '../lib/firebase-admin.js';
-import { getAccessStatusDetails } from '../lib/access-status.js';
+import { getAccessStatusDetails, isTemporaryAccessPlan } from '../lib/access-status.js';
 
 const accessStatusCache = globalThis.__appTvAccessStatusCache || new Map();
 globalThis.__appTvAccessStatusCache = accessStatusCache;
@@ -95,6 +95,16 @@ export default async function handler(req, res) {
 
   const cachedPayload = getCacheEntry(accessId);
   if (cachedPayload) {
+    if (cachedPayload.status === 'blocked' && isTemporaryAccessPlan(cachedPayload)) {
+      try {
+        const firestore = getFirestore();
+        await firestore.collection('access_registry').doc(accessId).delete();
+      } catch {
+        // ignore cleanup failures on cached responses
+      }
+      accessStatusCache.delete(accessId);
+    }
+
     sendJson(res, 200, {
       ...cachedPayload,
       cacheHit: true
@@ -128,6 +138,15 @@ export default async function handler(req, res) {
       expiresAt: data.expiresAt || null,
       expiresAtLabel: details.expiresAtLabel
     };
+
+    if (details.status === 'blocked' && isTemporaryAccessPlan(data)) {
+      try {
+        await firestore.collection('access_registry').doc(accessId).delete();
+      } catch {
+        // ignore cleanup failures after validation
+      }
+      accessStatusCache.delete(accessId);
+    }
 
     setCacheEntry(accessId, payload, getCacheTtlMs(details));
     sendJson(res, 200, {

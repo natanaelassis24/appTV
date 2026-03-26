@@ -1,5 +1,9 @@
 import { extractBearerToken } from '../lib/admin-auth.js';
-import { getAccessStatusDetails, parseAccessDateValue } from '../lib/access-status.js';
+import {
+  getAccessStatusDetails,
+  isTemporaryAccessPlan,
+  parseAccessDateValue
+} from '../lib/access-status.js';
 import { getPlanById } from '../lib/plans.js';
 import { getAuth, getFirestore } from '../lib/firebase-admin.js';
 
@@ -80,7 +84,21 @@ export default async function handler(req, res) {
 
     const snapshot = await firestore.collection('access_registry').get();
 
+    const expiredTemporaryDocs = snapshot.docs.filter(doc => {
+      const data = doc.data();
+      return isTemporaryAccessPlan(data) && getAccessStatusDetails(data).status === 'blocked';
+    });
+
+    if (expiredTemporaryDocs.length > 0) {
+      await Promise.all(
+        expiredTemporaryDocs.map(doc => firestore.collection('access_registry').doc(doc.id).delete())
+      );
+    }
+
+    const expiredTemporaryIds = new Set(expiredTemporaryDocs.map(doc => doc.id));
+
     const entries = snapshot.docs
+      .filter(doc => !expiredTemporaryIds.has(doc.id))
       .map(normalizeEntry)
       .sort((left, right) => {
         const leftDate = parseAccessDateValue(left.expiresAt);
