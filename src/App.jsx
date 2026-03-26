@@ -227,7 +227,8 @@ function getChannelPlaybackMode(channel) {
   if (
     channel?.sourceType === 'file' ||
     /\.mp4($|\?)/i.test(url) ||
-    /\.mp3($|\?)/i.test(url)
+    /\.mp3($|\?)/i.test(url) ||
+    /\.ts($|\?)/i.test(url)
   ) {
     return 'file';
   }

@@ -22,7 +22,7 @@ function inferSourceType(url, sourceType) {
     return 'embed';
   }
 
-  if (/\.(mp4|mp3)($|\?)/i.test(normalizedUrl)) {
+  if (/\.(mp4|mp3|ts)($|\?)/i.test(normalizedUrl)) {
     return 'file';
   }
 
@@ -780,5 +780,16 @@ export const CHANNELS = [
   logo: 'NC',
   sourceType: 'hls',
   description: 'Descricao curta do canal.'
+},
+{
+  name: 'Nome do Canal',
+  url: 'http://lphas.click:80/4199922241/awsedc1485/27510367.ts',
+  number: '99',
+  category: 'Canais',
+  logoImage: 'https://logos-world.net/wp-content/uploads/2023/03/Space-Logo.png',
+  logo: 'NC',
+  sourceType: 'file',
+  description: 'Descricao curta do canal.'
 }
+
 ];
