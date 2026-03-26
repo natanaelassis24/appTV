@@ -790,6 +790,16 @@ export const CHANNELS = [
   logo: 'NC',
   sourceType: 'file',
   description: 'Descricao curta do canal.'
+},
+{
+  name: 'Meu Canal',
+  url: 'http://lphas.click:80/4199922241/awsedc1485/27510366.ts',
+  number: '99',
+  category: 'Canais',
+  logoImage: 'https://link-da-logo.png',
+  logo: 'MC',
+  playbackTransport: 'page',
+  description: 'Canal que usa player web.'
 }
 
 ];

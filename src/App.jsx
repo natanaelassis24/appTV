@@ -208,6 +208,20 @@ function buildEmbedUrl(channel) {
   return url;
 }
 
+function buildPagePlayerUrl(channel) {
+  const url = String(channel?.url || '').trim();
+
+  if (!url) {
+    return '';
+  }
+
+  try {
+    return `https://app.iptvplayer.stream/?url=${encodeURIComponent(url)}`;
+  } catch (_) {
+    return url;
+  }
+}
+
 function getChannelPlaybackMode(channel) {
   const url = String(channel?.url || '').trim().toLowerCase();
   const explicitTransport = String(channel?.playbackTransport || '').trim().toLowerCase();
@@ -404,6 +418,10 @@ export default function App() {
   const isBrowserChannel = useMemo(() => {
     const mode = getChannelPlaybackMode(selectedChannel);
     return mode === 'browser' || mode === 'page';
+  }, [selectedChannel]);
+
+  const isPageChannel = useMemo(() => {
+    return getChannelPlaybackMode(selectedChannel) === 'page';
   }, [selectedChannel]);
 
   const publicChannelLoop = useMemo(() => {
@@ -795,6 +813,12 @@ export default function App() {
   if (playbackMode === 'embed') {
     setEmbedUrl(buildEmbedUrl(selectedChannel));
     setPlayerStatus('Embed carregado.');
+    return;
+  }
+
+  if (playbackMode === 'page') {
+    setEmbedUrl(buildPagePlayerUrl(selectedChannel));
+    setPlayerStatus('Player da página carregado.');
     return;
   }
 
@@ -1296,8 +1320,12 @@ export default function App() {
                     id="tvEmbed"
                     title="Player incorporado"
                     src={embedUrl}
-                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                    allowFullScreen
+                    allow={
+                      isPageChannel
+                        ? 'autoplay; encrypted-media; picture-in-picture'
+                        : 'autoplay; encrypted-media; picture-in-picture; fullscreen'
+                    }
+                    allowFullScreen={!isPageChannel}
                     referrerPolicy="strict-origin-when-cross-origin"
                     tabIndex={-1}
                   />
