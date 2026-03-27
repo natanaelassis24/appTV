@@ -849,7 +849,41 @@ const PRIMARY_CHANNELS = [
     sourceType: 'file',
     playbackTransport: 'proxy',
     description: 'Stream TS direto compatível com VLC.'
-  }
+  },
+  {
+    name: 'Naruto Uzumaki 24h',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/38006.ts',
+    number: '73',
+    category: 'Canais',
+    logoImage: 'https://imgs.search.brave.com/8ag6mmvosBO2gjO1Q8IgJblkUmJ7kQnvALOAUZS1QL8/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/cG5nYWxsLmNvbS93/cC1jb250ZW50L3Vw/bG9hZHMvMTMvTmFy/dXRvLUxvZ28tUE5H/LVBob3Rvcy5wbmc',
+    logo: 'SM',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+  name: 'Naruto Shippuden 24h',
+  url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/38007.ts',
+  number: '74',
+  category: 'Canais',
+  logoImage: 'https://imgs.search.brave.com/1V9shWGc8xHRTTCyZM0CjNkCc97NHGxKF0Tww_th7-c/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/cG5nYWxsLmNvbS93/cC1jb250ZW50L3Vw/bG9hZHMvMTUvTmFy/dXRvLVNoaXBwdWRl/bi1Mb2dvLVBORy1J/bWFnZS1IRC5wbmc',
+  logo: 'SM',
+  sourceType: 'file',
+  playbackTransport: 'proxy',
+  description: 'Stream TS direto compatível com VLC.'
+},
+{
+  name: 'Dois Homens e Meio 24h',
+  url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/38004.ts',
+  number: '75',
+  category: 'Canais',
+  logoImage: 'https://imgs.search.brave.com/UkpePXf1TOrvZgRbsrfB5wPTx918IuXpdfkoBlpVRlQ/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWFn/ZXMuanVzdHdhdGNo/LmNvbS9wb3N0ZXIv/MzAxNTg0MTU3L3Mz/MzIvdGVtcG9yYWRh/LTUuanBn',
+  logo: 'SM',
+  sourceType: 'file',
+  playbackTransport: 'proxy',
+  description: 'Stream TS direto compatível com VLC.'
+}
+
 ];
 
 export const CHANNELS = PRIMARY_CHANNELS;
