@@ -326,23 +326,7 @@ label {
 }
 
 .guide-channel-number {
-  position: absolute;
-  top: -7px;
-  right: -7px;
-  z-index: 2;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
-  display: grid;
-  place-items: center;
-  border-radius: 999px;
-  background: rgba(225, 29, 46, 0.95);
-  color: #fff;
-  font-size: 0.64rem;
-  font-weight: 800;
-  line-height: 1;
-  border: 1px solid rgba(255, 255, 255, 0.26);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  display: none;
 }
 
 .guide-channel-logo,
@@ -353,20 +337,22 @@ label {
   place-items: center;
   object-fit: contain;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.08));
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 10px 20px rgba(0, 0, 0, 0.24);
+  transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+}
+
+.guide-channel-logo {
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.34));
 }
 
 .guide-channel-item.active .guide-channel-logo,
 .guide-channel-item.active .guide-channel-fallback {
-  border-color: rgba(255, 255, 255, 0.42);
-  box-shadow: 0 0 0 2px rgba(225, 29, 46, 0.45);
-  background: rgba(255, 255, 255, 0.16);
-}
-
-.guide-channel-item.active .guide-channel-number {
-  transform: translate(1px, -1px) scale(1.05);
+  border-color: rgba(225, 29, 46, 0.7);
+  box-shadow: 0 0 0 2px rgba(225, 29, 46, 0.28), 0 10px 22px rgba(0, 0, 0, 0.28);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.1));
+  transform: scale(1.03);
 }
 
 .guide-topbar {
