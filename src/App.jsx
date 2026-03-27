@@ -1140,7 +1140,7 @@ export default function App() {
         <>
           <header className="promo-landing">
             <div className="promo-landing-topbar">
-              <span className="promo-brand">App TV Android</span>
+              <span className="promo-brand"><img className="promo-brand-logo" src="/app-tv-logo.png" alt="App TV" /></span>
               <a
                 className="secondary-btn promo-admin-trigger"
                 href="/admin"
@@ -1149,7 +1149,7 @@ export default function App() {
               </a>
             </div>
             <div className="promo-copy promo-copy-public">
-              <span className="section-kicker">App TV Android</span>
+              <span className="section-kicker section-kicker-logo"><img className="promo-kicker-logo" src="/app-tv-logo.png" alt="App TV" /></span>
               <h1>TV ao vivo no Android TV com acesso liberado por assinatura.</h1>
               <p>
                 Este site apresenta o aplicativo, os canais disponiveis e os planos de acesso. A reproducao fica liberada somente no app Android TV, com interface adaptada para controle remoto e uso em tela cheia.
@@ -1325,7 +1325,7 @@ export default function App() {
 
               <footer className="promo-footer">
                 <div>
-                  <strong>App TV Android</strong>
+                  <img className="promo-footer-logo" src="/app-tv-logo.png" alt="App TV" />
                   <p>Site oficial de apresentacao e assinatura do App TV Android. A exibicao dos canais acontece exclusivamente dentro do aplicativo.</p>
                 </div>
                 <div className="promo-footer-links">
@@ -1526,6 +1526,7 @@ export default function App() {
     </div>
   );
 }
+
 
 
 
