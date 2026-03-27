@@ -1075,8 +1075,19 @@ const PRIMARY_CHANNELS = [
     playbackTransport: 'proxy',
     description: 'Stream TS direto compatível com VLC.'
   },
+  {
+    name: 'Record TV São Paulo HD',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/27061.ts',
+    number: '93',
+    category: 'Canais | Record TV',
+    logoImage: 'http://www.fontedecanais.tv/logos/canais/record.png',
+    logo: '',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
     {
-    name: '24H Filmes Comédia',
+    name: 'Filmes Comédia 24H',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/38030.ts',
     number: '86',
     category: 'Canais | 24H',
@@ -1087,7 +1098,7 @@ const PRIMARY_CHANNELS = [
     description: 'Stream TS direto compatível com VLC.'
   },
   {
-    name: '24H Futurama',
+    name: 'Futurama 24H',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/38023.ts',
     number: '87',
     category: 'Canais | 24H',
@@ -1098,7 +1109,7 @@ const PRIMARY_CHANNELS = [
     description: 'Stream TS direto compatível com VLC.'
   },
   {
-    name: '24H Boku no Hero Academia',
+    name: 'Boku no Hero Academia 24H',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/38019.ts',
     number: '88',
     category: 'Canais | 24H',
@@ -1109,7 +1120,7 @@ const PRIMARY_CHANNELS = [
     description: 'Stream TS direto compatível com VLC.'
   },
   {
-    name: '24H Big Bang Theory',
+    name: 'Big Bang Theory 24H',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/38018.ts',
     number: '89',
     category: 'Canais | 24H',
@@ -1120,7 +1131,7 @@ const PRIMARY_CHANNELS = [
     description: 'Stream TS direto compatível com VLC.'
   },
   {
-    name: '24H Dragon boll Z',
+    name: 'Dragon boll Z 24H',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/38015.ts',
     number: '90',
     category: 'Canais | 24H',
@@ -1131,7 +1142,7 @@ const PRIMARY_CHANNELS = [
     description: 'Stream TS direto compatível com VLC.'
   },
   {
-    name: '24H Bob Esponja',
+    name: 'Bob Esponja 24H',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/38005.ts',
     number: '91',
     category: 'Canais | 24H',
@@ -1142,7 +1153,7 @@ const PRIMARY_CHANNELS = [
     description: 'Stream TS direto compatível com VLC.'
   },
   {
-    name: '24H Chaves',
+    name: 'Chaves 24H',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/38001.ts',
     number: '92',
     category: 'Canais | 24H',
@@ -1155,4 +1166,3 @@ const PRIMARY_CHANNELS = [
 ];
 
 export const CHANNELS = PRIMARY_CHANNELS;
-
