@@ -450,7 +450,7 @@ const PRIMARY_CHANNELS = [
     logo: 'AE',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12002.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -462,7 +462,7 @@ const PRIMARY_CHANNELS = [
     logo: 'BI',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12005.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -474,7 +474,7 @@ const PRIMARY_CHANNELS = [
     logo: 'DH',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12014.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -486,7 +486,7 @@ const PRIMARY_CHANNELS = [
     logo: 'DT',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12017.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -498,7 +498,7 @@ const PRIMARY_CHANNELS = [
     logo: 'E!',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12020.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -510,7 +510,7 @@ const PRIMARY_CHANNELS = [
     logo: 'FN',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12026.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -522,7 +522,7 @@ const PRIMARY_CHANNELS = [
     logo: 'GN',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12029.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -534,7 +534,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12047.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -546,7 +546,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12050.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -555,7 +555,7 @@ const PRIMARY_CHANNELS = [
     number: '32',
     category: 'Canais | Variedades',
     logoImage: 'https://logodownload.org/wp-content/uploads/2016/09/tcl-logo-1.png',
-    logo: '',
+    logo: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12053.ts',
     sourceType: 'file',
     playbackTransport: 'proxy',
     sdUrl: '',
@@ -570,7 +570,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12062.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -582,7 +582,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13002.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -594,7 +594,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13005.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -606,7 +606,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13011.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -618,7 +618,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13017.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -630,7 +630,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13023.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -638,23 +638,11 @@ const PRIMARY_CHANNELS = [
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13025.ts',
     number: '39',
     category: 'Canais | Filmes e Séries',
-    logoImage: '',
+    logoImage: 'https://upload.wikimedia.org/wikipedia/commons/9/9b/Sony_Movies_Logo.svg',
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'USA HD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13034.ts',
-    number: '94',
-    category: 'Canais | Filmes e Séries',
-    logoImage: 'http://www.fontedecanais.tv/logos/canais/usa.png',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13035.ts',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13026.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -662,11 +650,11 @@ const PRIMARY_CHANNELS = [
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13028.ts',
     number: '40',
     category: 'Canais | Filmes e Séries',
-    logoImage: 'https://upload.wikimedia.org/wikipedia/commons/9/9b/Sony_Movies_Logo.svg',
+    logoImage: 'https://logos-world.net/wp-content/uploads/2023/03/Space-Logo.png',
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13029.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -678,7 +666,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13038.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -690,7 +678,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13041.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -702,7 +690,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13044.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -714,7 +702,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13047.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -723,10 +711,10 @@ const PRIMARY_CHANNELS = [
     number: '45',
     category: 'Canais | Filmes e Séries',
     logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Logo_Studio_Universal.svg/960px-Logo_Studio_Universal.svg.png',
-    logo: '',
+    logo: 'Studio Universal',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13050.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -735,10 +723,10 @@ const PRIMARY_CHANNELS = [
     number: '46',
     category: 'Canais | Filmes e Séries',
     logoImage: 'https://upload.wikimedia.org/wikipedia/commons/5/5e/Warner2018LA.png',
-    logo: '',
+    logo: 'Warner',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13053.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -747,10 +735,10 @@ const PRIMARY_CHANNELS = [
     number: '47',
     category: 'Canais | Filmes e Séries',
     logoImage: 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Turner_Classic_Movies_%28TCM%2C_Latin_America%29_-_2015_logo.png',
-    logo: '',
+    logo: 'TCM',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13056.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -759,10 +747,10 @@ const PRIMARY_CHANNELS = [
     number: '48',
     category: 'Canais | Filmes e Séries',
     logoImage: 'https://upload.wikimedia.org/wikipedia/commons/c/c4/FILMANDARTS.png',
-    logo: '',
+    logo: 'F&A',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13059.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -771,10 +759,10 @@ const PRIMARY_CHANNELS = [
     number: '49',
     category: 'Canais | HBO',
     logoImage: 'https://upload.wikimedia.org/wikipedia/commons/5/51/HBO_HD_logo.png',
-    logo: '',
+    logo: 'HBO',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14002.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -782,11 +770,11 @@ const PRIMARY_CHANNELS = [
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14004.ts',
     number: '50',
     category: 'Canais | HBO',
-    logoImage: '',
-    logo: '',
+    logoImage: 'https://upload.wikimedia.org/wikipedia/commons/3/3b/HBO2_logo.png',
+    logo: 'H2',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14005.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -794,11 +782,11 @@ const PRIMARY_CHANNELS = [
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14007.ts',
     number: '51',
     category: 'Canais | HBO',
-    logoImage: 'https://upload.wikimedia.org/wikipedia/commons/3/3b/HBO2_logo.png',
-    logo: '',
+    logoImage: 'https://upload.wikimedia.org/wikipedia/commons/3/3a/HBO_Family_logo.png',
+    logo: 'HF',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14008.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -806,11 +794,11 @@ const PRIMARY_CHANNELS = [
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14010.ts',
     number: '52',
     category: 'Canais | HBO',
-    logoImage: 'https://static.wikia.nocookie.net/tvpediabrasil/images/d/d3/Hbomundi.png/revision/latest?cb=20200216144600&path-prefix=pt-br',
-    logo: '',
+    logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/HBO_Mundi.svg/250px-HBO_Mundi.svg.png',
+    logo: 'HM',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14011.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -819,10 +807,10 @@ const PRIMARY_CHANNELS = [
     number: '53',
     category: 'Canais | HBO',
     logoImage: 'https://upload.wikimedia.org/wikipedia/commons/3/3d/HBO_Plus.png',
-    logo: '',
+    logo: 'HP',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14014.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -831,10 +819,10 @@ const PRIMARY_CHANNELS = [
     number: '54',
     category: 'Canais | HBO',
     logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/HBO_Pop.svg/960px-HBO_Pop.svg.png',
-    logo: '',
+    logo: 'HPP',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14017.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -846,7 +834,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14020.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -858,7 +846,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14023.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -867,10 +855,10 @@ const PRIMARY_CHANNELS = [
     number: '57',
     category: 'Canais | Telecine',
     logoImage: 'https://upload.wikimedia.org/wikipedia/commons/3/37/Telecine_Action_2.png',
-    logo: '',
+    logo: 'TCA',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/15002.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -882,7 +870,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/15005.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -894,7 +882,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/15008.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -906,7 +894,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/15011.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -918,7 +906,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/15014.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -930,7 +918,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/15017.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -942,7 +930,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/17005.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -954,7 +942,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/17008.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -966,7 +954,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/17038.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -978,7 +966,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/17041.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -990,7 +978,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/19008.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1014,7 +1002,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/23002.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1026,7 +1014,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/23023.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1038,7 +1026,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/23026.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1050,7 +1038,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/23029.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1062,7 +1050,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/23032.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1074,7 +1062,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/24008.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1086,7 +1074,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/24011.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1098,7 +1086,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/24017.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1110,7 +1098,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/24020.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1122,7 +1110,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/24029.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1134,7 +1122,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/25002.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1146,7 +1134,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/25005.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1158,7 +1146,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/25008.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1170,7 +1158,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/25014.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1182,7 +1170,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/25017.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1194,7 +1182,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/25023.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1206,7 +1194,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/28023.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1218,7 +1206,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
-    sdUrl: '',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/27062.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
     {
