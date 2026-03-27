@@ -428,6 +428,7 @@ label {
   border-radius: 0;
   transition: none;
   transform: translate(-72px, -50%);
+  z-index: 20;
 }
 
 .tv-mode .guide-channel-list {
@@ -436,7 +437,7 @@ label {
 
 .tv-mode .guide-handle {
   left: 12px;
-  z-index: 6;
+  z-index: 25;
 }
 
 .tv-mode .guide-handle.open {
