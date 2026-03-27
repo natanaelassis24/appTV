@@ -376,7 +376,7 @@ const PRIMARY_CHANNELS = [
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/22013.ts',
     number: '22',
     category: 'ESPN',
-    logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/1280px-ESPN_wordmark.svg.png',
+    logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/ESPN_5_logo.svg/500px-ESPN_5_logo.svg.png',
     logo: 'ES',
     sourceType: 'file',
     playbackTransport: 'proxy',
