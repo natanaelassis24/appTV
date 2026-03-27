@@ -646,6 +646,18 @@ const PRIMARY_CHANNELS = [
     description: 'Stream TS direto compatível com VLC.'
   },
   {
+    name: 'USA HD',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13034.ts',
+    number: '94',
+    category: 'Canais | Filmes e Séries',
+    logoImage: 'http://www.fontedecanais.tv/logos/canais/usa.png',
+    logo: '',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13035.ts',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
     name: 'Space HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13028.ts',
     number: '40',
