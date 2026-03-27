@@ -882,6 +882,39 @@ const PRIMARY_CHANNELS = [
   sourceType: 'file',
   playbackTransport: 'proxy',
   description: 'Stream TS direto compatível com VLC.'
+},
+{
+  name: 'Cartoon Network FHD',
+  url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/24003.ts',
+  number: '76',
+  category: 'Canais',
+  logoImage: 'https://imgs.search.brave.com/z2eXikdPkAbEV0rFQfUHbxGHxwdOORrxNcoywAnErj0/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly8xMDAw/bG9nb3MubmV0L3dw/LWNvbnRlbnQvdXBs/b2Fkcy8yMDE2LzEw/L1NoYXBlLW9mLXRo/ZS1DYXJ0b29uLU5l/dHdvcmstTG9nby01/MDB4MjU5LmpwZw',
+  logo: 'SM',
+  sourceType: 'file',
+  playbackTransport: 'proxy',
+  description: 'Stream TS direto compatível com VLC.'
+},
+{
+  name: 'Cartoon Network HD',
+  url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/24004.ts',
+  number: '77',
+  category: 'Canais',
+  logoImage: 'https://imgs.search.brave.com/z2eXikdPkAbEV0rFQfUHbxGHxwdOORrxNcoywAnErj0/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly8xMDAw/bG9nb3MubmV0L3dw/LWNvbnRlbnQvdXBs/b2Fkcy8yMDE2LzEw/L1NoYXBlLW9mLXRo/ZS1DYXJ0b29uLU5l/dHdvcmstTG9nby01/MDB4MjU5LmpwZw',
+  logo: 'SM',
+  sourceType: 'file',
+  playbackTransport: 'proxy',
+  description: 'Stream TS direto compatível com VLC.'
+},
+{
+  name: 'Cartoon Network SD',
+  url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/24005.ts',
+  number: '78',
+  category: 'Canais',
+  logoImage: 'https://imgs.search.brave.com/8ag6mmvosBO2gjO1Q8IgJblkUmJ7kQnvALOAUZS1QL8/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/cG5nYWxsLmNvbS93/cC1jb250ZW50L3Vw/bG9hZHMvMTMvTmFy/dXRvLUxvZ28tUE5H/LVBob3Rvcy5wbmc',
+  logo: 'SM',
+  sourceType: 'file',
+  playbackTransport: 'proxy',
+  description: 'Stream TS direto compatível com VLC.'
 }
 
 ];
