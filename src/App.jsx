@@ -333,18 +333,42 @@ function canUseAndroidStreamPlayer() {
   return typeof window.AndroidStreamPlayer?.playStream === 'function';
 }
 
-function buildLogoThumb(channel, index) {
+function ChannelThumb({
+  channel,
+  index,
+  wrapperClassName = '',
+  imageClassName = '',
+  fallbackClassName = ''
+}) {
+  const [imageFailed, setImageFailed] = useState(false);
   const itemName = channel?.name || `Canal ${index + 1}`;
+  const fallbackText = String(channel?.logo || itemName.slice(0, 2).toUpperCase()).trim() || itemName.slice(0, 2).toUpperCase();
+  const logoImage = String(channel?.logoImage || '').trim();
 
-  if (channel.logoImage) {
+  const wrapperProps = wrapperClassName ? { className: wrapperClassName } : {};
+
+  if (logoImage && !imageFailed) {
     return (
-      <span className="channel-thumb">
-        <img className="channel-thumb-image" src={channel.logoImage} alt={`Logo ${itemName}`} />
+      <span {...wrapperProps}>
+        <img
+          className={imageClassName}
+          src={logoImage}
+          alt={`Logo ${itemName}`}
+          onError={() => setImageFailed(true)}
+        />
       </span>
     );
   }
 
-  return <span className="channel-thumb">{channel.logo || itemName.slice(0, 2).toUpperCase()}</span>;
+  if (fallbackClassName) {
+    return (
+      <span {...wrapperProps}>
+        <span className={fallbackClassName}>{fallbackText}</span>
+      </span>
+    );
+  }
+
+  return <span {...wrapperProps}>{fallbackText}</span>;
 }
 
 async function readJsonResponse(response, fallbackMessage) {
@@ -1140,7 +1164,12 @@ export default function App() {
                       key={`${channel.name}-${index}`}
                       className={`promo-channel-badge${channel.url === selectedChannel?.url ? ' active' : ''}`}
                     >
-                      {buildLogoThumb(channel, index)}
+                      <ChannelThumb
+                        channel={channel}
+                        index={index}
+                        wrapperClassName="channel-thumb"
+                        imageClassName="channel-thumb-image"
+                      />
                       <div className="promo-channel-copy">
                         <strong>{channel.name}</strong>
                         <span>{channel.category || 'Canal'}</span>
@@ -1398,15 +1427,12 @@ export default function App() {
                           title={channel.name}
                         >
                           <span className="guide-channel-number">{channel.number || index + 1}</span>
-                          {channel.logoImage ? (
-                            <img
-                              className="guide-channel-logo"
-                              src={channel.logoImage}
-                              alt={`Logo ${channel.name}`}
-                            />
-                          ) : (
-                            <span className="guide-channel-fallback">{channel.logo || channel.name?.slice(0, 2)}</span>
-                          )}
+                          <ChannelThumb
+                            channel={channel}
+                            index={index}
+                            imageClassName="guide-channel-logo"
+                            fallbackClassName="guide-channel-fallback"
+                          />
                         </button>
                       </li>
                     );
