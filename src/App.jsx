@@ -1012,18 +1012,24 @@ export default function App() {
       streamRefreshTimerRef.current = null;
     }
 
+    const playbackMode = getChannelPlaybackMode(selectedChannel);
+
     if (!isPlaybackEnabled || !selectedChannel?.url) {
       return undefined;
     }
 
-      const refreshIntervalMs = STREAM_REFRESH_INTERVAL_MS;
-      streamRefreshTimerRef.current = window.setInterval(() => {
-        if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
-          return;
-        }
+    if (playbackMode !== 'hls') {
+      return undefined;
+    }
 
-        refreshPlayback();
-      }, refreshIntervalMs);
+    const refreshIntervalMs = STREAM_REFRESH_INTERVAL_MS;
+    streamRefreshTimerRef.current = window.setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
+        return;
+      }
+
+      refreshPlayback();
+    }, refreshIntervalMs);
 
     return () => {
       if (streamRefreshTimerRef.current) {
@@ -1031,7 +1037,7 @@ export default function App() {
         streamRefreshTimerRef.current = null;
       }
     };
-  }, [isPlaybackEnabled, selectedChannel?.url]);
+  }, [isPlaybackEnabled, selectedChannel]);
 
   async function handleAccessLookup(event) {
     event.preventDefault();

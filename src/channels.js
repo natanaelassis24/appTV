@@ -1,4 +1,4 @@
-﻿export const CHANNEL_TEMPLATE = {
+export const CHANNEL_TEMPLATE = {
   name: 'Nome do Canal',
   url: 'https://seu-link.m3u8?token=seu_token',
   number: '0',
@@ -39,6 +39,18 @@ export function isMediaFileUrl(url) {
   } catch {
     return /\.(mp4|mp3|ts)($|\?)/i.test(normalizedUrl);
   }
+}
+
+export function isHdChannel(channel) {
+  const normalizedName = String(channel?.name || '').toLowerCase();
+
+  if (!normalizedName) {
+    return false;
+  }
+
+  return normalizedName.includes('hd')
+    && !normalizedName.includes('fhd')
+    && !normalizedName.includes('sd');
 }
 
 export function isTransportStreamUrl(url) {
@@ -173,8 +185,8 @@ const PRIMARY_CHANNELS = [
     description: 'Stream TS direto compatível com VLC.'
   },
   {
-    name: 'Cartoon Network FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/24003.ts',
+    name: 'Cartoon Network HD',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/24004.ts',
     number: '5',
     category: 'Canais',
     logoImage: 'https://yt3.googleusercontent.com/K4BGYVFPK9QWZiLLP49cRkxl-QtR8gLvmjLTkiRS1e97fnrAfdmIjdFj4mmIgarHySptEdAs=s160-c-k-c0x00ffffff-no-rj',
@@ -184,133 +196,12 @@ const PRIMARY_CHANNELS = [
     description: 'Stream TS direto compatível com VLC.'
   },
   {
-    name: 'Cartoon Network HD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/24004.ts',
-    number: '6',
-    category: 'Canais',
-    logoImage: 'https://yt3.googleusercontent.com/K4BGYVFPK9QWZiLLP49cRkxl-QtR8gLvmjLTkiRS1e97fnrAfdmIjdFj4mmIgarHySptEdAs=s160-c-k-c0x00ffffff-no-rj',
-    logo: 'SM',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Cartoon Network SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/24005.ts',
-    number: '7',
-    category: 'Canais',
-    logoImage: 'https://yt3.googleusercontent.com/K4BGYVFPK9QWZiLLP49cRkxl-QtR8gLvmjLTkiRS1e97fnrAfdmIjdFj4mmIgarHySptEdAs=s160-c-k-c0x00ffffff-no-rj',
-    logo: 'SM',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Box Kids FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/24000.ts',
-    number: '8',
-    category: 'Canais',
-    logoImage: 'https://imgs.search.brave.com/VhMVTdU06jbk7nfeDvU2_WWmKXnDsfnu1DYuBmbutNo/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly91cGxv/YWQud2lraW1lZGlh/Lm9yZy93aWtpcGVk/aWEvY29tbW9ucy8x/LzE4L0JveGtpZHN0/di5wbmc',
-    logo: 'SM',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
     name: 'Box Kids HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/24001.ts',
-    number: '9',
+    number: '6',
     category: 'Canais',
     logoImage: 'https://imgs.search.brave.com/VhMVTdU06jbk7nfeDvU2_WWmKXnDsfnu1DYuBmbutNo/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly91cGxv/YWQud2lraW1lZGlh/Lm9yZy93aWtpcGVk/aWEvY29tbW9ucy8x/LzE4L0JveGtpZHN0/di5wbmc',
     logo: 'SM',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Box Kids SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/24002.ts',
-    number: '10',
-    category: 'Canais',
-    logoImage: 'https://imgs.search.brave.com/VhMVTdU06jbk7nfeDvU2_WWmKXnDsfnu1DYuBmbutNo/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly91cGxv/YWQud2lraW1lZGlh/Lm9yZy93aWtpcGVk/aWEvY29tbW9ucy8x/LzE4L0JveGtpZHN0/di5wbmc',
-    logo: 'SM',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Paramount+ 1',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/19071.ts',
-    number: '11',
-    category: 'Canais | Esportes PPV',
-    logoImage: 'https://www.fontedecanais.org/logos/canais/paramountplus.png',
-    logo: 'PM',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Paramount+ 2',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/19072.ts',
-    number: '12',
-    category: 'Canais | Esportes PPV',
-    logoImage: 'https://www.fontedecanais.org/logos/canais/paramountplus.png',
-    logo: 'PM',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Paramount+ 3',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/19073.ts',
-    number: '13',
-    category: 'Canais | Esportes PPV',
-    logoImage: 'https://www.fontedecanais.org/logos/canais/paramountplus.png',
-    logo: 'PM',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Paramount+ 4',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/19074.ts',
-    number: '14',
-    category: 'Canais | Esportes PPV',
-    logoImage: 'https://www.fontedecanais.org/logos/canais/paramountplus.png',
-    logo: 'PM',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Paramount+ 5',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/19075.ts',
-    number: '15',
-    category: 'Canais | Esportes PPV',
-    logoImage: 'https://www.fontedecanais.org/logos/canais/paramountplus.png',
-    logo: 'PM',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Paramount+ 6',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/19076.ts',
-    number: '16',
-    category: 'Canais | Esportes PPV',
-    logoImage: 'https://www.fontedecanais.org/logos/canais/paramountplus.png',
-    logo: 'PM',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'SPORTV alternativo HD3',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/21001.ts',
-    number: '17',
-    category: 'Canais | SPORTV',
-    logoImage: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg6B8xI6yIIbHsw_r3Ntr-US2ZCZ7s_a1PyDMTyXUrK9otZ_VAiLS5-cf6TIEc7ZZo-7az6AZV6YnBTHUeO6TdCC2T4RpTfClfzQkMdQ6wMoIE1j1Ojab8x6vZnjPJTKFF9x4-MQzjejnPYgaFX42C66j_FtM6whoOtQv_GDYmj5sd8JemsBrFHVuVWROs/s1600/sportv.webp',
-    logo: 'SP',
     sourceType: 'file',
     playbackTransport: 'proxy',
     description: 'Stream TS direto compatível com VLC.'
@@ -318,7 +209,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'SPORTV HD',
     url: 'http://46.151.196.223:14286',
-    number: '18',
+    number: '7',
     category: 'Canais | SPORTV',
     logoImage: 'http://smartvtcl.site:8080/images/43c36900b0aa86ded24077870df74926.png',
     logo: 'SP',
@@ -327,20 +218,9 @@ const PRIMARY_CHANNELS = [
     description: 'Canal SPORTV HD.'
   },
   {
-    name: 'SPORTV 2 alternativo HD3',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/21004.ts',
-    number: '19',
-    category: 'Canais | SPORTV',
-    logoImage: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg6B8xI6yIIbHsw_r3Ntr-US2ZCZ7s_a1PyDMTyXUrK9otZ_VAiLS5-cf6TIEc7ZZo-7az6AZV6YnBTHUeO6TdCC2T4RpTfClfzQkMdQ6wMoIE1j1Ojab8x6vZnjPJTKFF9x4-MQzjejnPYgaFX42C66j_FtM6whoOtQv_GDYmj5sd8JemsBrFHVuVWROs/s1600/sportv.webp',
-    logo: 'SP',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
     name: 'SPORTV 2 HD',
     url: 'http://2025easy.lat:80/live/rc8zew5u/21231sw2/1487667.ts',
-    number: '20',
+    number: '8',
     category: 'Canais | SPORTV',
     logoImage: 'http://smartvtcl.site:8080/images/86a8beda27c8e9d69d82f55e77e225d0.jpg',
     logo: 'SP',
@@ -349,20 +229,9 @@ const PRIMARY_CHANNELS = [
     description: 'Stream TS direto compatível com VLC.'
   },
   {
-    name: 'SPORTV 3 alternativo HD3',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/21007.ts',
-    number: '21',
-    category: 'Canais | SPORTV',
-    logoImage: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg6B8xI6yIIbHsw_r3Ntr-US2ZCZ7s_a1PyDMTyXUrK9otZ_VAiLS5-cf6TIEc7ZZo-7az6AZV6YnBTHUeO6TdCC2T4RpTfClfzQkMdQ6wMoIE1j1Ojab8x6vZnjPJTKFF9x4-MQzjejnPYgaFX42C66j_FtM6whoOtQv_GDYmj5sd8JemsBrFHVuVWROs/s1600/sportv.webp',
-    logo: 'SP',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
     name: 'SPORTV 3 HD',
     url: 'http://79.127.243.211:14473',
-    number: '22',
+    number: '9',
     category: 'Canais | SPORTV',
     logoImage: 'http://smartvtcl.site:8080/images/43c36900b0aa86ded24077870df74926.png',
     logo: 'SP',
@@ -371,20 +240,9 @@ const PRIMARY_CHANNELS = [
     description: 'Canal SPORTV 3 HD.'
   },
   {
-    name: 'PREMIERE CLUBES alternativo HD3',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/20001.ts',
-    number: '23',
-    category: 'Canais | PREMIERE',
-    logoImage: 'https://i.imgur.com/VlFYLLm.jpg',
-    logo: 'PR',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
     name: 'PREMIERE CLUBES HD',
     url: 'http://2025easy.lat:80/live/rc8zew5u/21231sw2/608078.ts',
-    number: '24',
+    number: '10',
     category: 'Canais | PREMIERE',
     logoImage: 'http://smartvtcl.site:8080/images/7420e409343fec2e3daad2f96051ece1.png',
     logo: 'PR',
@@ -393,20 +251,9 @@ const PRIMARY_CHANNELS = [
     description: 'Stream TS direto compatível com VLC.'
   },
   {
-    name: 'PREMIERE 2 alternativo HD3',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/20004.ts',
-    number: '25',
-    category: 'Canais | PREMIERE',
-    logoImage: 'https://prostore.app/logos/premiere.png',
-    logo: 'PR',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
     name: 'PREMIERE 2 HD',
     url: 'http://2025easy.lat:80/live/rc8zew5u/21231sw2/608085.ts',
-    number: '26',
+    number: '11',
     category: 'Canais | PREMIERE',
     logoImage: 'http://smartvtcl.site:8080/images/d8112913629b11433d5cee3c8630fe35.png',
     logo: 'PR',
@@ -415,20 +262,9 @@ const PRIMARY_CHANNELS = [
     description: 'Stream TS direto compatível com VLC.'
   },
   {
-    name: 'PREMIERE 3 alternativo HD3',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/20007.ts',
-    number: '27',
-    category: 'Canais | PREMIERE',
-    logoImage: 'https://prostore.app/logos/premiere.png',
-    logo: 'PR',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
     name: 'PREMIERE 3 HD',
     url: 'http://2025easy.lat:80/live/rc8zew5u/21231sw2/608092.ts',
-    number: '28',
+    number: '12',
     category: 'Canais | PREMIERE',
     logoImage: 'http://smartvtcl.site:8080/images/07bad40c2d6c237f403735d64e78ac5b.png',
     logo: 'PR',
@@ -437,20 +273,9 @@ const PRIMARY_CHANNELS = [
     description: 'Stream TS direto compatível com VLC.'
   },
   {
-    name: 'PREMIERE 4 alternativo HD3',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/20010.ts',
-    number: '29',
-    category: 'Canais | PREMIERE',
-    logoImage: 'https://prostore.app/logos/premiere.png',
-    logo: 'PR',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
     name: 'PREMIERE 4 HD',
     url: 'http://2025easy.lat:80/live/rc8zew5u/21231sw2/608099.ts',
-    number: '30',
+    number: '13',
     category: 'Canais | PREMIERE',
     logoImage: 'http://smartvtcl.site:8080/images/bfb9ac115c00dbfcba0dd0042c157d08.png',
     logo: 'PR',
@@ -459,20 +284,9 @@ const PRIMARY_CHANNELS = [
     description: 'Stream TS direto compatível com VLC.'
   },
   {
-    name: 'PREMIERE 5 alternativo HD3',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/20013.ts',
-    number: '31',
-    category: 'Canais | PREMIERE',
-    logoImage: 'https://prostore.app/logos/premiere.png',
-    logo: 'PR',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
     name: 'PREMIERE 5 HD',
     url: 'http://2025easy.lat:80/live/rc8zew5u/21231sw2/608106.ts',
-    number: '32',
+    number: '14',
     category: 'Canais | PREMIERE',
     logoImage: 'http://smartvtcl.site:8080/images/a6880809da2699ed61ad10ab34ab91f6.png',
     logo: 'PR',
@@ -481,20 +295,9 @@ const PRIMARY_CHANNELS = [
     description: 'Stream TS direto compatível com VLC.'
   },
   {
-    name: 'PREMIERE 6 alternativo HD3',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/20016.ts',
-    number: '33',
-    category: 'Canais | PREMIERE',
-    logoImage: 'https://prostore.app/logos/premiere.png',
-    logo: 'PR',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
     name: 'PREMIERE 6 HD',
     url: 'http://2025easy.lat:80/live/rc8zew5u/21231sw2/608119.ts',
-    number: '34',
+    number: '15',
     category: 'Canais | PREMIERE',
     logoImage: 'http://smartvtcl.site:8080/images/8e44ad550752a2fc57ec40db15039815.png',
     logo: 'PR',
@@ -503,20 +306,9 @@ const PRIMARY_CHANNELS = [
     description: 'Stream TS direto compatível com VLC.'
   },
   {
-    name: 'PREMIERE 7 alternativo HD3',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/20019.ts',
-    number: '35',
-    category: 'Canais | PREMIERE',
-    logoImage: 'https://prostore.app/logos/premiere.png',
-    logo: 'PR',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
     name: 'PREMIERE 7 HD',
     url: 'http://2025easy.lat:80/live/rc8zew5u/21231sw2/608126.ts',
-    number: '36',
+    number: '16',
     category: 'Canais | PREMIERE',
     logoImage: 'http://smartvtcl.site:8080/images/83ff9d5d3718c0ec268ae1ef48e70188.png',
     logo: 'PR',
@@ -525,20 +317,9 @@ const PRIMARY_CHANNELS = [
     description: 'Stream TS direto compatível com VLC.'
   },
   {
-    name: 'PREMIERE 8 alternativo HD3',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/20022.ts',
-    number: '37',
-    category: 'Canais | PREMIERE',
-    logoImage: 'https://prostore.app/logos/premiere.png',
-    logo: 'PR',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
     name: 'PREMIERE 8 HD',
     url: 'http://2025easy.lat:80/live/rc8zew5u/21231sw2/608131.ts',
-    number: '38',
+    number: '17',
     category: 'Canais | PREMIERE',
     logoImage: 'http://smartvtcl.site:8080/images/46d3879f79cb515460c45a9fee4c88b5.png',
     logo: 'PR',
@@ -547,20 +328,9 @@ const PRIMARY_CHANNELS = [
     description: 'Stream TS direto compatível com VLC.'
   },
   {
-    name: 'ESPN1 alternativo HD3',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/22001.ts',
-    number: '39',
-    category: 'ESPN',
-    logoImage: 'https://i.imgur.com/hJr0Ay6.png',
-    logo: 'ES',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
     name: 'ESPN HD',
     url: 'http://46.151.196.223:14432',
-    number: '40',
+    number: '18',
     category: 'ESPN',
     logoImage: 'http://smartvtcl.site:8080/images/865c0c0b4ab0e063e5caa3387c1a8741.png',
     logo: 'ES',
@@ -569,20 +339,9 @@ const PRIMARY_CHANNELS = [
     description: 'Canal ESPN HD.'
   },
   {
-    name: 'ESPN 2 alternativo HD3',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/22004.ts',
-    number: '41',
-    category: 'ESPN',
-    logoImage: 'https://i.imgur.com/hJr0Ay6.png',
-    logo: 'ES',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
     name: 'ESPN 2 HD',
     url: 'http://46.151.196.223:14438',
-    number: '42',
+    number: '19',
     category: 'ESPN',
     logoImage: 'http://smartvtcl.site:8080/images/865c0c0b4ab0e063e5caa3387c1a8741.png',
     logo: 'ES',
@@ -591,20 +350,9 @@ const PRIMARY_CHANNELS = [
     description: 'Canal ESPN 2 HD.'
   },
   {
-    name: 'ESPN 3 alternativo HD3',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/22007.ts',
-    number: '43',
-    category: 'ESPN',
-    logoImage: 'https://i.imgur.com/hJr0Ay6.png',
-    logo: 'ES',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
     name: 'ESPN 3 HD',
     url: 'http://46.151.196.223:14444',
-    number: '44',
+    number: '20',
     category: 'ESPN',
     logoImage: 'http://smartvtcl.site:8080/images/865c0c0b4ab0e063e5caa3387c1a8741.png',
     logo: 'ES',
@@ -613,20 +361,9 @@ const PRIMARY_CHANNELS = [
     description: 'Canal ESPN 3 HD.'
   },
   {
-    name: 'ESPN 4 alternativo HD3',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/22010.ts',
-    number: '45',
-    category: 'ESPN',
-    logoImage: 'https://i.imgur.com/hJr0Ay6.png',
-    logo: 'ES',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
     name: 'ESPN 4 HD',
     url: 'http://46.151.196.223:14450',
-    number: '46',
+    number: '21',
     category: 'ESPN',
     logoImage: 'http://smartvtcl.site:8080/images/865c0c0b4ab0e063e5caa3387c1a8741.png',
     logo: 'ES',
@@ -635,42 +372,9 @@ const PRIMARY_CHANNELS = [
     description: 'Canal ESPN 4 HD.'
   },
   {
-    name: 'ESPN 5 HD3',
-    url: 'http://46.151.196.223:14456',
-    number: '47',
-    category: 'ESPN',
-    logoImage: 'https://i.imgur.com/hJr0Ay6.png',
-    logo: 'ES',
-    sourceType: 'hls',
-    playbackTransport: 'direct',
-    description: 'Canal ESPN 5 HD.'
-  },
-  {
-    name: 'ESPN 5 alternativo HD3',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/22013.ts',
-    number: '48',
-    category: 'ESPN',
-    logoImage: 'https://i.imgur.com/hJr0Ay6.png',
-    logo: 'ES',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'ESPN 6 alternativo HD3',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/22016.ts',
-    number: '49',
-    category: 'ESPN',
-    logoImage: 'https://i.imgur.com/hJr0Ay6.png',
-    logo: 'ES',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
     name: 'ESPN 6 HD',
     url: 'http://hls1.sua.tv:80/live/espnextrafhd/s.m3u8',
-    number: '50',
+    number: '22',
     category: 'ESPN',
     logoImage: 'http://smartvtcl.site:8080/images/865c0c0b4ab0e063e5caa3387c1a8741.png',
     logo: 'ES',
@@ -679,45 +383,12 @@ const PRIMARY_CHANNELS = [
     description: 'Canal ESPN 6 HD.'
   },
   {
-    name: 'A&E FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12000.ts',
-    number: '51',
-    category: 'Canais | Variedades',
-    logoImage: 'http://www.fontedecanais.tv/logos/canais/ae.png',
-    logo: 'AE',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
     name: 'A&E HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12001.ts',
-    number: '52',
+    number: '23',
     category: 'Canais | Variedades',
     logoImage: 'http://www.fontedecanais.tv/logos/canais/ae.png',
     logo: 'AE',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'A&E SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12002.ts',
-    number: '53',
-    category: 'Canais | Variedades',
-    logoImage: 'http://www.fontedecanais.tv/logos/canais/ae.png',
-    logo: 'AE',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'BIS FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12003.ts',
-    number: '54',
-    category: 'Canais | Variedades',
-    logoImage: 'http://www.fontedecanais.tv/logos/canais/bis.png',
-    logo: 'BI',
     sourceType: 'file',
     playbackTransport: 'proxy',
     description: 'Stream TS direto compatível com VLC.'
@@ -725,32 +396,10 @@ const PRIMARY_CHANNELS = [
   {
     name: 'BIS HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12004.ts',
-    number: '55',
+    number: '24',
     category: 'Canais | Variedades',
     logoImage: 'http://www.fontedecanais.tv/logos/canais/bis.png',
     logo: 'BI',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'BIS SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12005.ts',
-    number: '56',
-    category: 'Canais | Variedades',
-    logoImage: 'http://www.fontedecanais.tv/logos/canais/bis.png',
-    logo: 'BI',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Discovery H&H FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12012.ts',
-    number: '57',
-    category: 'Canais | Variedades',
-    logoImage: 'http://www.fontedecanais.tv/logos/canais/discoveryhh.png',
-    logo: 'DH',
     sourceType: 'file',
     playbackTransport: 'proxy',
     description: 'Stream TS direto compatível com VLC.'
@@ -758,32 +407,10 @@ const PRIMARY_CHANNELS = [
   {
     name: 'Discovery H&H HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12013.ts',
-    number: '58',
+    number: '25',
     category: 'Canais | Variedades',
     logoImage: 'http://www.fontedecanais.tv/logos/canais/discoveryhh.png',
     logo: 'DH',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Discovery H&H SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12014.ts',
-    number: '59',
-    category: 'Canais | Variedades',
-    logoImage: 'http://www.fontedecanais.tv/logos/canais/discoveryhh.png',
-    logo: 'DH',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Discovery Turbo FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12015.ts',
-    number: '60',
-    category: 'Canais | Variedades',
-    logoImage: 'http://www.fontedecanais.tv/logos/canais/discoveryturbo.png',
-    logo: 'DT',
     sourceType: 'file',
     playbackTransport: 'proxy',
     description: 'Stream TS direto compatível com VLC.'
@@ -791,32 +418,10 @@ const PRIMARY_CHANNELS = [
   {
     name: 'Discovery Turbo HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12016.ts',
-    number: '61',
+    number: '26',
     category: 'Canais | Variedades',
     logoImage: 'http://www.fontedecanais.tv/logos/canais/discoveryturbo.png',
     logo: 'DT',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Discovery Turbo SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12017.ts',
-    number: '62',
-    category: 'Canais | Variedades',
-    logoImage: 'http://www.fontedecanais.tv/logos/canais/discoveryturbo.png',
-    logo: 'DT',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'E! FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12018.ts',
-    number: '63',
-    category: 'Canais | Variedades',
-    logoImage: 'http://www.fontedecanais.tv/logos/canais/e.png',
-    logo: 'E!',
     sourceType: 'file',
     playbackTransport: 'proxy',
     description: 'Stream TS direto compatível com VLC.'
@@ -824,32 +429,10 @@ const PRIMARY_CHANNELS = [
   {
     name: 'E! HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12019.ts',
-    number: '64',
+    number: '27',
     category: 'Canais | Variedades',
     logoImage: 'http://www.fontedecanais.tv/logos/canais/e.png',
     logo: 'E!',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'E! SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12020.ts',
-    number: '65',
-    category: 'Canais | Variedades',
-    logoImage: 'http://www.fontedecanais.tv/logos/canais/e.png',
-    logo: 'E!',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Food Network FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12024.ts',
-    number: '66',
-    category: 'Canais | Variedades',
-    logoImage: 'http://www.fontedecanais.tv/logos/canais/foodnetwork.png',
-    logo: 'FN',
     sourceType: 'file',
     playbackTransport: 'proxy',
     description: 'Stream TS direto compatível com VLC.'
@@ -857,32 +440,10 @@ const PRIMARY_CHANNELS = [
   {
     name: 'Food Network HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12025.ts',
-    number: '67',
+    number: '28',
     category: 'Canais | Variedades',
     logoImage: 'http://www.fontedecanais.tv/logos/canais/foodnetwork.png',
     logo: 'FN',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Food Network SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12026.ts',
-    number: '68',
-    category: 'Canais | Variedades',
-    logoImage: 'http://www.fontedecanais.tv/logos/canais/foodnetwork.png',
-    logo: 'FN',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'GNT FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12027.ts',
-    number: '69',
-    category: 'Canais | Variedades',
-    logoImage: 'http://www.fontedecanais.tv/logos/canais/gnt.png',
-    logo: 'GN',
     sourceType: 'file',
     playbackTransport: 'proxy',
     description: 'Stream TS direto compatível com VLC.'
@@ -890,32 +451,10 @@ const PRIMARY_CHANNELS = [
   {
     name: 'GNT HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12028.ts',
-    number: '70',
+    number: '29',
     category: 'Canais | Variedades',
     logoImage: 'http://www.fontedecanais.tv/logos/canais/gnt.png',
     logo: 'GN',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'GNT SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12029.ts',
-    number: '71',
-    category: 'Canais | Variedades',
-    logoImage: 'http://www.fontedecanais.tv/logos/canais/gnt.png',
-    logo: 'GN',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Multishow FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12045.ts',
-    number: '72',
-    category: 'Canais | Variedades',
-    logoImage: '',
-    logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
     description: 'Stream TS direto compatível com VLC.'
@@ -923,29 +462,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'Multishow HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12046.ts',
-    number: '73',
-    category: 'Canais | Variedades',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Multishow SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12047.ts',
-    number: '74',
-    category: 'Canais | Variedades',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Off FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12048.ts',
-    number: '75',
+    number: '30',
     category: 'Canais | Variedades',
     logoImage: '',
     logo: '',
@@ -956,29 +473,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'Off HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12049.ts',
-    number: '76',
-    category: 'Canais | Variedades',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Off SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12050.ts',
-    number: '77',
-    category: 'Canais | Variedades',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'TLC FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12051.ts',
-    number: '78',
+    number: '31',
     category: 'Canais | Variedades',
     logoImage: '',
     logo: '',
@@ -989,29 +484,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'TLC HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12052.ts',
-    number: '79',
-    category: 'Canais | Variedades',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'TLC SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12053.ts',
-    number: '80',
-    category: 'Canais | Variedades',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Globoplay Novelas FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12060.ts',
-    number: '81',
+    number: '32',
     category: 'Canais | Variedades',
     logoImage: '',
     logo: '',
@@ -1022,30 +495,8 @@ const PRIMARY_CHANNELS = [
   {
     name: 'Globoplay Novelas HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12061.ts',
-    number: '82',
+    number: '33',
     category: 'Canais | Variedades',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Globoplay Novelas SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/12062.ts',
-    number: '83',
-    category: 'Canais | Variedades',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'AMC FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13000.ts',
-    number: '84',
-    category: 'Canais | Filmes e Séries',
     logoImage: '',
     logo: '',
     sourceType: 'file',
@@ -1055,29 +506,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'AMC HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13001.ts',
-    number: '85',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'AMC SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13002.ts',
-    number: '86',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'AXN FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13003.ts',
-    number: '87',
+    number: '34',
     category: 'Canais | Filmes e Séries',
     logoImage: '',
     logo: '',
@@ -1088,29 +517,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'AXN HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13004.ts',
-    number: '88',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'AXN SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13005.ts',
-    number: '89',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Cinemax FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13009.ts',
-    number: '90',
+    number: '35',
     category: 'Canais | Filmes e Séries',
     logoImage: '',
     logo: '',
@@ -1121,29 +528,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'Cinemax HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13010.ts',
-    number: '91',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Cinemax SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13011.ts',
-    number: '92',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Megapix FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13015.ts',
-    number: '93',
+    number: '36',
     category: 'Canais | Filmes e Séries',
     logoImage: '',
     logo: '',
@@ -1154,29 +539,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'Megapix HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13016.ts',
-    number: '94',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Megapix SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13017.ts',
-    number: '95',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Sony Channel FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13021.ts',
-    number: '96',
+    number: '37',
     category: 'Canais | Filmes e Séries',
     logoImage: '',
     logo: '',
@@ -1187,29 +550,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'Sony Channel HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13022.ts',
-    number: '97',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Sony Channel SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13023.ts',
-    number: '98',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Sony Movies FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13024.ts',
-    number: '99',
+    number: '38',
     category: 'Canais | Filmes e Séries',
     logoImage: '',
     logo: '',
@@ -1220,29 +561,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'Sony Movies HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13025.ts',
-    number: '100',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Sony Movies SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13026.ts',
-    number: '101',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Space FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13027.ts',
-    number: '102',
+    number: '39',
     category: 'Canais | Filmes e Séries',
     logoImage: '',
     logo: '',
@@ -1253,29 +572,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'Space HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13028.ts',
-    number: '103',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Space SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13029.ts',
-    number: '104',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'TNT Novelas FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13036.ts',
-    number: '105',
+    number: '40',
     category: 'Canais | Filmes e Séries',
     logoImage: '',
     logo: '',
@@ -1286,29 +583,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'TNT Novelas HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13037.ts',
-    number: '106',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'TNT Novelas SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13038.ts',
-    number: '107',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'TNT FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13039.ts',
-    number: '108',
+    number: '41',
     category: 'Canais | Filmes e Séries',
     logoImage: '',
     logo: '',
@@ -1319,29 +594,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'TNT HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13040.ts',
-    number: '109',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'TNT SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13041.ts',
-    number: '110',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'TNT Séries FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13042.ts',
-    number: '111',
+    number: '42',
     category: 'Canais | Filmes e Séries',
     logoImage: '',
     logo: '',
@@ -1352,29 +605,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'TNT Séries HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13043.ts',
-    number: '112',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'TNT Séries SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13044.ts',
-    number: '113',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Universal TV FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13045.ts',
-    number: '114',
+    number: '43',
     category: 'Canais | Filmes e Séries',
     logoImage: '',
     logo: '',
@@ -1385,29 +616,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'Universal TV HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13046.ts',
-    number: '115',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Universal TV SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13047.ts',
-    number: '116',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Studio Universal FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13048.ts',
-    number: '117',
+    number: '44',
     category: 'Canais | Filmes e Séries',
     logoImage: '',
     logo: '',
@@ -1418,29 +627,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'Studio Universal HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13049.ts',
-    number: '118',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Studio Universal SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13050.ts',
-    number: '119',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Warner Channel FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13051.ts',
-    number: '120',
+    number: '45',
     category: 'Canais | Filmes e Séries',
     logoImage: '',
     logo: '',
@@ -1451,29 +638,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'Warner Channel HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13052.ts',
-    number: '121',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Warner Channel SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13053.ts',
-    number: '122',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'TCM FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13054.ts',
-    number: '123',
+    number: '46',
     category: 'Canais | Filmes e Séries',
     logoImage: '',
     logo: '',
@@ -1484,29 +649,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'TCM HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13055.ts',
-    number: '124',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'TCM SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13056.ts',
-    number: '125',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Film & Arts FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13057.ts',
-    number: '126',
+    number: '47',
     category: 'Canais | Filmes e Séries',
     logoImage: '',
     logo: '',
@@ -1517,30 +660,8 @@ const PRIMARY_CHANNELS = [
   {
     name: 'Film & Arts HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13058.ts',
-    number: '127',
+    number: '48',
     category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Film & Arts SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13059.ts',
-    number: '128',
-    category: 'Canais | Filmes e Séries',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'HBO FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14000.ts',
-    number: '129',
-    category: 'Canais | HBO',
     logoImage: '',
     logo: '',
     sourceType: 'file',
@@ -1550,29 +671,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'HBO HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14001.ts',
-    number: '130',
-    category: 'Canais | HBO',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'HBO SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14002.ts',
-    number: '131',
-    category: 'Canais | HBO',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'HBO 2 FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14003.ts',
-    number: '132',
+    number: '49',
     category: 'Canais | HBO',
     logoImage: '',
     logo: '',
@@ -1583,29 +682,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'HBO 2 HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14004.ts',
-    number: '133',
-    category: 'Canais | HBO',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'HBO 2 SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14005.ts',
-    number: '134',
-    category: 'Canais | HBO',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'HBO Family FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14006.ts',
-    number: '135',
+    number: '50',
     category: 'Canais | HBO',
     logoImage: '',
     logo: '',
@@ -1616,29 +693,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'HBO Family HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14007.ts',
-    number: '136',
-    category: 'Canais | HBO',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'HBO Family SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14008.ts',
-    number: '137',
-    category: 'Canais | HBO',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'HBO Mundi FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14009.ts',
-    number: '138',
+    number: '51',
     category: 'Canais | HBO',
     logoImage: '',
     logo: '',
@@ -1649,29 +704,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'HBO Mundi HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14010.ts',
-    number: '139',
-    category: 'Canais | HBO',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'HBO Mundi SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14011.ts',
-    number: '140',
-    category: 'Canais | HBO',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'HBO Plus FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14012.ts',
-    number: '141',
+    number: '52',
     category: 'Canais | HBO',
     logoImage: '',
     logo: '',
@@ -1682,29 +715,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'HBO Plus HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14013.ts',
-    number: '142',
-    category: 'Canais | HBO',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'HBO Plus SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14014.ts',
-    number: '143',
-    category: 'Canais | HBO',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'HBO Pop FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14015.ts',
-    number: '144',
+    number: '53',
     category: 'Canais | HBO',
     logoImage: '',
     logo: '',
@@ -1715,29 +726,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'HBO Pop HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14016.ts',
-    number: '145',
-    category: 'Canais | HBO',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'HBO Pop SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14017.ts',
-    number: '146',
-    category: 'Canais | HBO',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'HBO Signature FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14018.ts',
-    number: '147',
+    number: '54',
     category: 'Canais | HBO',
     logoImage: '',
     logo: '',
@@ -1748,29 +737,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'HBO Signature HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14019.ts',
-    number: '148',
-    category: 'Canais | HBO',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'HBO Signature SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14020.ts',
-    number: '149',
-    category: 'Canais | HBO',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'HBO Xtreme FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14021.ts',
-    number: '150',
+    number: '55',
     category: 'Canais | HBO',
     logoImage: '',
     logo: '',
@@ -1781,30 +748,8 @@ const PRIMARY_CHANNELS = [
   {
     name: 'HBO Xtreme HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14022.ts',
-    number: '151',
+    number: '56',
     category: 'Canais | HBO',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'HBO Xtreme SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/14023.ts',
-    number: '152',
-    category: 'Canais | HBO',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Telecine Action FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/15000.ts',
-    number: '153',
-    category: 'Canais | Telecine',
     logoImage: '',
     logo: '',
     sourceType: 'file',
@@ -1814,29 +759,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'Telecine Action HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/15001.ts',
-    number: '154',
-    category: 'Canais | Telecine',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Telecine Action SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/15002.ts',
-    number: '155',
-    category: 'Canais | Telecine',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Telecine Cult FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/15003.ts',
-    number: '156',
+    number: '57',
     category: 'Canais | Telecine',
     logoImage: '',
     logo: '',
@@ -1847,29 +770,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'Telecine Cult HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/15004.ts',
-    number: '157',
-    category: 'Canais | Telecine',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Telecine Cult SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/15005.ts',
-    number: '158',
-    category: 'Canais | Telecine',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Telecine Fun FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/15006.ts',
-    number: '159',
+    number: '58',
     category: 'Canais | Telecine',
     logoImage: '',
     logo: '',
@@ -1880,29 +781,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'Telecine Fun HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/15007.ts',
-    number: '160',
-    category: 'Canais | Telecine',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Telecine Fun SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/15008.ts',
-    number: '161',
-    category: 'Canais | Telecine',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Telecine Pipoca FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/15009.ts',
-    number: '162',
+    number: '59',
     category: 'Canais | Telecine',
     logoImage: '',
     logo: '',
@@ -1913,29 +792,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'Telecine Pipoca HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/15010.ts',
-    number: '163',
-    category: 'Canais | Telecine',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Telecine Pipoca SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/15011.ts',
-    number: '164',
-    category: 'Canais | Telecine',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Telecine Premium FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/15012.ts',
-    number: '165',
+    number: '60',
     category: 'Canais | Telecine',
     logoImage: '',
     logo: '',
@@ -1946,29 +803,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'Telecine Premium HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/15013.ts',
-    number: '166',
-    category: 'Canais | Telecine',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Telecine Premium SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/15014.ts',
-    number: '167',
-    category: 'Canais | Telecine',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Telecine Touch FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/15015.ts',
-    number: '168',
+    number: '61',
     category: 'Canais | Telecine',
     logoImage: '',
     logo: '',
@@ -1979,30 +814,8 @@ const PRIMARY_CHANNELS = [
   {
     name: 'Telecine Touch HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/15016.ts',
-    number: '169',
+    number: '62',
     category: 'Canais | Telecine',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Telecine Touch SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/15017.ts',
-    number: '170',
-    category: 'Canais | Telecine',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Cultura FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/17003.ts',
-    number: '171',
-    category: 'Canais | Abertos',
     logoImage: '',
     logo: '',
     sourceType: 'file',
@@ -2012,29 +825,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'Cultura HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/17004.ts',
-    number: '172',
-    category: 'Canais | Abertos',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Cultura SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/17005.ts',
-    number: '173',
-    category: 'Canais | Abertos',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Futura FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/17006.ts',
-    number: '174',
+    number: '63',
     category: 'Canais | Abertos',
     logoImage: '',
     logo: '',
@@ -2045,29 +836,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'Futura HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/17007.ts',
-    number: '175',
-    category: 'Canais | Abertos',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Futura SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/17008.ts',
-    number: '176',
-    category: 'Canais | Abertos',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'RedeTV! FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/17036.ts',
-    number: '177',
+    number: '64',
     category: 'Canais | Abertos',
     logoImage: '',
     logo: '',
@@ -2078,29 +847,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'RedeTV! HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/17037.ts',
-    number: '178',
-    category: 'Canais | Abertos',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'RedeTV! SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/17038.ts',
-    number: '179',
-    category: 'Canais | Abertos',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'SBT FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/17039.ts',
-    number: '180',
+    number: '65',
     category: 'Canais | Abertos',
     logoImage: '',
     logo: '',
@@ -2111,30 +858,8 @@ const PRIMARY_CHANNELS = [
   {
     name: 'SBT HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/17040.ts',
-    number: '181',
+    number: '66',
     category: 'Canais | Abertos',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'SBT SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/17041.ts',
-    number: '182',
-    category: 'Canais | Abertos',
-    logoImage: '',
-    logo: '',
-    sourceType: 'file',
-    playbackTransport: 'proxy',
-    description: 'Stream TS direto compatível com VLC.'
-  },
-  {
-    name: 'Combate FHD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/19006.ts',
-    number: '183',
-    category: 'Canais | Esportes',
     logoImage: '',
     logo: '',
     sourceType: 'file',
@@ -2144,7 +869,7 @@ const PRIMARY_CHANNELS = [
   {
     name: 'Combate HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/19007.ts',
-    number: '184',
+    number: '67',
     category: 'Canais | Esportes',
     logoImage: '',
     logo: '',
@@ -2153,16 +878,204 @@ const PRIMARY_CHANNELS = [
     description: 'Stream TS direto compatível com VLC.'
   },
   {
-    name: 'Combate SD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/19008.ts',
-    number: '185',
+    name: 'CazeTV 01',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/19068.ts',
+    number: '68',
     category: 'Canais | Esportes',
-    logoImage: '',
+    logoImage: 'http://www.fontedecanais.tv/logos/canais/cazetv.png',
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
     description: 'Stream TS direto compatível com VLC.'
-  }
+  },
+  {
+    name: 'Animal Planet HD',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/23001.ts',
+    number: '69',
+    category: 'Canais | Documentários',
+    logoImage: 'http://www.fontedecanais.tv/logos/canais/animalplanet.png',
+    logo: '',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: 'H2 HD',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/23022.ts',
+    number: '70',
+    category: 'Canais | Documentários',
+    logoImage: 'http://www.fontedecanais.tv/logos/canais/h2.png',
+    logo: '',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: 'HGTV HD',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/23025.ts',
+    number: '71',
+    category: 'Canais | Documentários',
+    logoImage: 'http://www.fontedecanais.tv/logos/canais/hgtv.png',
+    logo: '',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: 'History HD',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/23028.ts',
+    number: '72',
+    category: 'Canais | Documentários',
+    logoImage: 'http://www.fontedecanais.tv/logos/canais/history.png',
+    logo: '',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: 'ID: Investigação Discovery HD',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/23031.ts',
+    number: '73',
+    category: 'Canais | Documentários',
+    logoImage: 'http://www.fontedecanais.tv/logos/canais/id.png',
+    logo: '',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: 'Cartoonito HD',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/24007.ts',
+    number: '74',
+    category: 'Canais | Infantis',
+    logoImage: 'http://www.fontedecanais.tv/logos/canais/cartoonito.png',
+    logo: '',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: 'Discovery Kids HD',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/24010.ts',
+    number: '75',
+    category: 'Canais | Infantis',
+    logoImage: 'http://www.fontedecanais.tv/logos/canais/discoverykids.png',
+    logo: '',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: 'Gloob HD',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/24016.ts',
+    number: '76',
+    category: 'Canais | Infantis',
+    logoImage: 'http://www.fontedecanais.tv/logos/canais/gloob.png',
+    logo: '',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: 'Gloobinho HD',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/24019.ts',
+    number: '77',
+    category: 'Canais | Infantis',
+    logoImage: 'http://www.fontedecanais.tv/logos/canais/gloobinho.png',
+    logo: '',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: 'Tooncast HD',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/24028.ts',
+    number: '78',
+    category: 'Canais | Infantis',
+    logoImage: 'http://www.fontedecanais.tv/logos/canais/tooncast.png',
+    logo: '',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: 'Band News HD',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/25001.ts',
+    number: '79',
+    category: 'Canais | Notícias',
+    logoImage: 'http://www.fontedecanais.tv/logos/canais/bandnews.png',
+    logo: '',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: 'CNN Brasil HD',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/25004.ts',
+    number: '80',
+    category: 'Canais | Notícias',
+    logoImage: 'http://www.fontedecanais.tv/logos/canais/cnnbrasil.png',
+    logo: '',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: 'Globo News HD',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/25007.ts',
+    number: '81',
+    category: 'Canais | Notícias',
+    logoImage: 'http://www.fontedecanais.tv/logos/canais/globonews.png',
+    logo: '',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: 'Record News HD',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/25013.ts',
+    number: '82',
+    category: 'Canais | Notícias',
+    logoImage: 'http://www.fontedecanais.tv/logos/canais/recordnews.png',
+    logo: '',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: 'CNN Money HD',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/25016.ts',
+    number: '83',
+    category: 'Canais | Notícias',
+    logoImage: 'http://www.fontedecanais.tv/logos/canais/cnnmoney.png',
+    logo: '',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: 'SBT News HD',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/25022.ts',
+    number: '84',
+    category: 'Canais | Notícias',
+    logoImage: 'http://www.fontedecanais.tv/logos/canais/sbtnews.png',
+    logo: '',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: 'Band Sao Paulo HD',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/28022.ts',
+    number: '85',
+    category: 'Canais | Band',
+    logoImage: 'http://www.fontedecanais.tv/logos/canais/band.png',
+    logo: '',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
 ];
 
 export const CHANNELS = PRIMARY_CHANNELS;
+
