@@ -340,10 +340,10 @@ const PRIMARY_CHANNELS = [
   },
   {
     name: 'ESPN 2 HD',
-    url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/ESPN2_logo.svg/960px-ESPN2_logo.svg.png',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/22004.ts',
     number: '19',
     category: 'ESPN',
-    logoImage: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ99S46AptMJtnVRIcGopBYycpJwTS6AeYcrQ&s',
+    logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/ESPN2_logo.svg/960px-ESPN2_logo.svg.png',
     logo: 'ES',
     sourceType: 'hls',
     playbackTransport: 'direct',

@@ -316,16 +316,33 @@ label {
   scroll-snap-align: start;
   justify-self: center;
   transition: transform 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+  position: relative;
 }
 
 .guide-channel-item.active {
   background: rgba(255, 255, 255, 0.12);
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.18);
-  transform: scale(1.05);
+  transform: scale(1.08);
 }
 
 .guide-channel-number {
-  display: none;
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  z-index: 2;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(225, 29, 46, 0.95);
+  color: #fff;
+  font-size: 0.64rem;
+  font-weight: 800;
+  line-height: 1;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
 }
 
 .guide-channel-logo,
@@ -346,6 +363,10 @@ label {
   border-color: rgba(255, 255, 255, 0.42);
   box-shadow: 0 0 0 2px rgba(225, 29, 46, 0.45);
   background: rgba(255, 255, 255, 0.16);
+}
+
+.guide-channel-item.active .guide-channel-number {
+  transform: translate(1px, -1px) scale(1.05);
 }
 
 .guide-topbar {
