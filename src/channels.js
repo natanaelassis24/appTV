@@ -829,22 +829,22 @@ const PRIMARY_CHANNELS = [
     description: 'Descricao curta do canal.'
   },
   {
-    name: 'Teste 1',
-    url: 'https://stream.sinalmycn.com/38000/video.m3u8?token=adHqtsh3lu9hYM2SNCCoJ7YAll3IDl7LKCiDP4JjvrRBRwuums',
+    name: 'South Park 24h',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/38010.ts',
     number: '71',
     category: 'Canais',
-    logoImage: '',
+    logoImage: 'http://www.fontedecanais.tv/logos/canais/24h.png',
     logo: 'T1',
-    sourceType: 'hls',
+    sourceType: 'file',
     playbackTransport: 'direct',
-    description: 'Canal de teste para validar links com token.'
+    description: 'Stream TS direto compatível com VLC.'
   },
   {
-    name: 'Sinalmycn 38000',
+    name: 'Os Simpsons 24h',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/38000.ts',
     number: '72',
     category: 'Canais',
-    logoImage: '',
+    logoImage: 'http://www.fontedecanais.tv/logos/canais/24h.png',
     logo: 'SM',
     sourceType: 'file',
     playbackTransport: 'proxy',
