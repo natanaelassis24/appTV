@@ -202,6 +202,18 @@ const PRIMARY_CHANNELS = [
     description: 'Stream TS direto compatível com VLC.'
   },
   {
+    name: 'NickOnline',
+    url: 'https://x1co.com.br:8443/hls/stream.m3u8',
+    number: '94',
+    category: 'Canais | Infantis',
+    logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Nickelodeon_2023_logo_%28outline%29.svg/960px-Nickelodeon_2023_logo_%28outline%29.svg.png',
+    logo: 'NO',
+    sourceType: 'hls',
+    playbackTransport: 'direct',
+    sdUrl: '',
+    description: 'Canal NickOnline.'
+  },
+  {
     name: 'Dois Homens e Meio 24h',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/38004.ts',
     number: '4',
