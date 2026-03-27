@@ -1,6 +1,6 @@
 ﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import Hls from 'hls.js';
-import { CHANNELS, isHlsUrl, isMediaFileUrl } from './channels';
+import { CHANNELS, isHlsUrl, isMediaFileUrl, isTransportStreamUrl } from './channels';
 import AdminPanel from './AdminPanel';
 import { PUBLIC_RUNTIME_CONFIG, buildApiUrl } from './runtime-config';
 import { PUBLIC_PLANS } from '../lib/plans.js';
@@ -302,6 +302,10 @@ function shouldUseStreamProxy(channel) {
   const transport = String(channel?.playbackTransport || '').trim().toLowerCase();
 
   if (transport === 'proxy') {
+    return true;
+  }
+
+  if (isTransportStreamUrl(channel?.url)) {
     return true;
   }
 

@@ -128,6 +128,8 @@ export default async function handler(req, res) {
   }
 
   const buffer = Buffer.from(await upstreamResponse.arrayBuffer());
+  const isTransportStream = /\.ts($|\?)/i.test(String(responseUrl || targetUrl || ''));
+  const fallbackContentType = isTransportStream ? 'video/mp2t' : 'application/octet-stream';
 
   applyCors(res);
   res.statusCode = upstreamResponse.status;
@@ -137,6 +139,10 @@ export default async function handler(req, res) {
     if (headerValue) {
       res.setHeader(headerName, headerValue);
     }
+  }
+
+  if (!res.getHeader('Content-Type')) {
+    res.setHeader('Content-Type', fallbackContentType);
   }
 
   res.end(req.method === 'HEAD' ? '' : buffer);

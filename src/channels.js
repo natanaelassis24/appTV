@@ -41,6 +41,20 @@ export function isMediaFileUrl(url) {
   }
 }
 
+export function isTransportStreamUrl(url) {
+  const normalizedUrl = String(url || '').trim().toLowerCase();
+  if (!normalizedUrl) {
+    return false;
+  }
+
+  try {
+    const parsed = new URL(normalizedUrl);
+    return parsed.pathname.toLowerCase().endsWith('.ts');
+  } catch {
+    return /\.ts($|\?)/i.test(normalizedUrl);
+  }
+}
+
 function inferSourceType(url, sourceType) {
   const explicitType = String(sourceType || '').trim();
   if (explicitType) {
@@ -827,7 +841,7 @@ const PRIMARY_CHANNELS = [
   },
   {
     name: 'Teste 2',
-    url: 'https://seu-servidor.exemplo/live/canal.m3u8?token=coloque_aqui',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/38000.ts',
     number: '72',
     category: 'Canais',
     logoImage: '',
