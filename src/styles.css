@@ -106,35 +106,37 @@ label {
   letter-spacing: 0.02em;
 }
 
-.promo-brand-logo {
-  display: block;
-  height: 22px;
-  width: auto;
-  max-width: 180px;
-  object-fit: contain;
+.promo-brand-text,
+.promo-kicker-text,
+.promo-footer-text {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.promo-brand-text {
+  font-size: 1.05rem;
+  color: #f4f7ff;
+}
+
+.promo-kicker-text {
+  font-size: clamp(2.2rem, 5vw, 4.2rem);
+  color: #f4f7ff;
+  margin-bottom: 0.2rem;
+}
+
+.promo-footer-text {
+  font-size: 1.5rem;
+  color: #f4f7ff;
+  margin-bottom: 10px;
 }
 
 .section-kicker-logo {
   display: inline-flex;
   align-items: center;
   line-height: 1;
-}
-
-.promo-kicker-logo {
-  display: block;
-  height: 28px;
-  width: auto;
-  max-width: 220px;
-  object-fit: contain;
-}
-
-.promo-footer-logo {
-  display: block;
-  height: 28px;
-  width: auto;
-  max-width: 220px;
-  object-fit: contain;
-  margin-bottom: 10px;
 }
 
 .promo-admin-trigger {
