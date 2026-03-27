@@ -1,6 +1,12 @@
 ﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import Hls from 'hls.js';
-import { CHANNELS, isHlsUrl, isMediaFileUrl, isTransportStreamUrl } from './channels';
+import {
+  CHANNELS,
+  isHlsUrl,
+  isMediaFileUrl,
+  isTransportStreamUrl,
+  resolveChannelPlaybackSource
+} from './channels';
 import AdminPanel from './AdminPanel';
 import { PUBLIC_RUNTIME_CONFIG, buildApiUrl } from './runtime-config';
 import { PUBLIC_PLANS } from '../lib/plans.js';
@@ -440,6 +446,7 @@ export default function App() {
   const [accessBootState, setAccessBootState] = useState(isAndroidTv ? 'booting' : 'idle');
   const [authorizedAccess, setAuthorizedAccess] = useState(null);
   const isPlaybackEnabled = isAndroidTv && authorizedAccess?.accessGranted === true;
+  const [preferLowBandwidth, setPreferLowBandwidth] = useState(false);
   const filteredChannels = useMemo(() => {
     const collator = new Intl.Collator('pt-BR', {
       sensitivity: 'base',
@@ -473,6 +480,36 @@ export default function App() {
     setPlaybackNonce(current => current + 1);
   };
 
+  useEffect(() => {
+    if (typeof navigator === 'undefined') {
+      return undefined;
+    }
+
+    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (!connection) {
+      return undefined;
+    }
+
+    const evaluateConnection = () => {
+      const effectiveType = String(connection.effectiveType || '').toLowerCase();
+      const downlink = Number(connection.downlink);
+      const slowConnection =
+        connection.saveData === true ||
+        effectiveType === 'slow-2g' ||
+        effectiveType === '2g' ||
+        (Number.isFinite(downlink) && downlink > 0 && downlink < 2.5);
+
+      setPreferLowBandwidth(slowConnection);
+    };
+
+    evaluateConnection();
+    connection.addEventListener?.('change', evaluateConnection);
+
+    return () => {
+      connection.removeEventListener?.('change', evaluateConnection);
+    };
+  }, []);
+
   const stopAndroidPlayer = () => {
     const bridge = window.AndroidStreamPlayer;
     if (bridge && typeof bridge.stopNativePlayer === 'function') {
@@ -488,6 +525,11 @@ export default function App() {
     );
   }, [filteredChannels, selectedChannelUrl]);
 
+  const selectedPlaybackChannel = useMemo(
+    () => resolveChannelPlaybackSource(selectedChannel, { preferLowBandwidth }),
+    [preferLowBandwidth, selectedChannel]
+  );
+
   const selectedIndex = useMemo(() => {
     return filteredChannels.findIndex(
       channel => normalizeChannelUrl(channel.url) === normalizeChannelUrl(selectedChannel?.url)
@@ -495,9 +537,9 @@ export default function App() {
   }, [filteredChannels, selectedChannel]);
 
   const isBrowserChannel = useMemo(() => {
-    const mode = getChannelPlaybackMode(selectedChannel);
+    const mode = getChannelPlaybackMode(selectedPlaybackChannel);
     return mode === 'browser' || mode === 'page';
-  }, [selectedChannel]);
+  }, [selectedPlaybackChannel]);
 
   const publicChannelLoop = useMemo(() => {
     return [...filteredChannels, ...filteredChannels];
@@ -870,13 +912,13 @@ export default function App() {
       return;
     }
 
-    if (!player || !selectedChannel?.url) {
+    if (!player || !selectedPlaybackChannel?.url) {
       return;
     }
 
-    const playbackMode = getChannelPlaybackMode(selectedChannel);
+    const playbackMode = getChannelPlaybackMode(selectedPlaybackChannel);
 
-    const playbackUrl = buildPlaybackUrl(selectedChannel);
+    const playbackUrl = buildPlaybackUrl(selectedPlaybackChannel);
 
     const setPlayerStatus = (text, isError = false) => {
       setStatus(text);
@@ -890,7 +932,7 @@ export default function App() {
       }
     };
 
-    const playInAndroidPlayer = (message, sourceUrl = selectedChannel?.url || playbackUrl) => {
+    const playInAndroidPlayer = (message, sourceUrl = selectedPlaybackChannel?.url || playbackUrl) => {
       const bridge = window.AndroidStreamPlayer;
       if (!bridge || typeof bridge.playStream !== 'function') {
         return false;
@@ -937,31 +979,31 @@ export default function App() {
     player.load();
     setPlayerStatus('Conectando transmissao...');
 
-    if (!isTransportStreamUrl(selectedChannel?.url)) {
+    if (!isTransportStreamUrl(selectedPlaybackChannel?.url)) {
       stopAndroidPlayer();
     }
 
-  if (selectedChannel.unavailable) {
-    setPlayerStatus('Canal indisponivel no momento.', true);
-    return;
-  }
-
-  if (playbackMode === 'embed') {
-    setEmbedUrl(buildEmbedUrl(selectedChannel));
-    setPlayerStatus('Embed carregado.');
-    return;
-  }
-
-  if (playbackMode === 'file') {
-    if (canUseAndroidStreamPlayer() && isTransportStreamUrl(selectedChannel?.url)) {
-      if (playInAndroidPlayer('Abrindo no player do sistema...')) {
-        return;
-      }
+    if (selectedChannel?.unavailable) {
+      setPlayerStatus('Canal indisponivel no momento.', true);
+      return;
     }
 
-    playWithNativeSource('Abrindo midia direta...');
-    return;
-  }
+    if (playbackMode === 'embed') {
+      setEmbedUrl(buildEmbedUrl(selectedPlaybackChannel));
+      setPlayerStatus('Embed carregado.');
+      return;
+    }
+
+    if (playbackMode === 'file') {
+      if (canUseAndroidStreamPlayer() && isTransportStreamUrl(selectedPlaybackChannel?.url)) {
+        if (playInAndroidPlayer('Abrindo no player do sistema...')) {
+          return;
+        }
+      }
+
+      playWithNativeSource('Abrindo midia direta...');
+      return;
+    }
 
     const canPlayNativeHls =
       typeof player.canPlayType === 'function' &&
@@ -1028,7 +1070,7 @@ export default function App() {
     return () => {
       cleanupHls();
     };
-  }, [isPlaybackEnabled, playbackNonce, selectedChannel]);
+  }, [isPlaybackEnabled, playbackNonce, selectedChannel, selectedPlaybackChannel]);
 
   useEffect(() => {
     if (streamRefreshTimerRef.current) {
@@ -1036,9 +1078,9 @@ export default function App() {
       streamRefreshTimerRef.current = null;
     }
 
-    const playbackMode = getChannelPlaybackMode(selectedChannel);
+    const playbackMode = getChannelPlaybackMode(selectedPlaybackChannel);
 
-    if (!isPlaybackEnabled || !selectedChannel?.url) {
+    if (!isPlaybackEnabled || !selectedPlaybackChannel?.url) {
       return undefined;
     }
 
@@ -1061,7 +1103,7 @@ export default function App() {
         streamRefreshTimerRef.current = null;
       }
     };
-  }, [isPlaybackEnabled, selectedChannel]);
+  }, [isPlaybackEnabled, selectedPlaybackChannel]);
 
   async function handleAccessLookup(event) {
     event.preventDefault();
@@ -1443,7 +1485,7 @@ export default function App() {
               <div className="guide-player-shell">
                 {!embedUrl ? (
                   <video
-                    key={`video:${selectedChannel?.url || selectedChannelUrl}:${playbackNonce}`}
+                    key={`video:${selectedPlaybackChannel?.url || selectedChannel?.url || selectedChannelUrl}:${playbackNonce}`}
                     ref={playerRef}
                     id="tvPlayer"
                     autoPlay

@@ -7,8 +7,9 @@
   logo: 'NC',
   sourceType: 'hls',
   playbackTransport: 'direct',
+  sdUrl: '',
   description: 'Descricao curta do canal.',
-  note: 'Para adicionar um canal novo, copie um bloco existente e troque nome, numero, logo e link. URLs HLS com token, como .m3u8?token=..., funcionam. Se precisar de proxy, mude playbackTransport para proxy.'
+  note: 'Para adicionar um canal novo, copie um bloco existente e troque nome, numero, logo e link. Se quiser troca automatica entre qualidade alta e baixa, adicione sdUrl. URLs HLS com token, como .m3u8?token=..., funcionam. Se precisar de proxy, mude playbackTransport para proxy.'
 };
 
 export function isHlsUrl(url) {
@@ -115,6 +116,7 @@ export function createChannel(overrides = {}) {
     logo: String(base.logo || '').trim(),
     sourceType: inferSourceType(base.url, base.sourceType),
     playbackTransport: inferPlaybackTransport(base.playbackTransport),
+    sdUrl: String(base.sdUrl || '').trim(),
     description: String(base.description || '').trim(),
     note: String(base.note || CHANNEL_TEMPLATE.note).trim()
   };
@@ -134,6 +136,29 @@ export function createEmbedChannel(overrides = {}) {
   });
 }
 
+export function resolveChannelPlaybackSource(channel, { preferLowBandwidth = false } = {}) {
+  const baseUrl = String(channel?.url || '').trim();
+  const lowUrl = String(channel?.sdUrl || '').trim();
+  const useLowBandwidth = Boolean(preferLowBandwidth && lowUrl);
+  const chosenUrl = useLowBandwidth ? lowUrl : baseUrl;
+  const chosenSourceType = useLowBandwidth
+    ? inferSourceType(lowUrl, channel?.sourceType)
+    : inferSourceType(baseUrl, channel?.sourceType);
+  const chosenPlaybackTransport = useLowBandwidth
+    ? inferPlaybackTransport(channel?.playbackTransport)
+    : inferPlaybackTransport(channel?.playbackTransport);
+
+  return {
+    ...(channel || {}),
+    url: chosenUrl,
+    sourceType: chosenSourceType,
+    playbackTransport: chosenPlaybackTransport,
+    originalUrl: baseUrl,
+    lowBandwidthUrl: lowUrl,
+    bandwidthProfile: useLowBandwidth ? 'low' : 'high'
+  };
+}
+
 // Para adicionar um canal novo:
 // 1. copie um item abaixo
 // 2. troque nome, link, numero e logo
@@ -149,6 +174,7 @@ const PRIMARY_CHANNELS = [
     logo: 'SM',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -160,6 +186,7 @@ const PRIMARY_CHANNELS = [
     logo: 'SM',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -171,6 +198,7 @@ const PRIMARY_CHANNELS = [
     logo: 'SM',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -182,6 +210,7 @@ const PRIMARY_CHANNELS = [
     logo: 'SM',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -193,6 +222,7 @@ const PRIMARY_CHANNELS = [
     logo: 'SM',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -204,43 +234,47 @@ const PRIMARY_CHANNELS = [
     logo: 'SM',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
     name: 'SPORTV HD',
-    url: 'http://46.151.196.223:14286',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/21001.ts',
     number: '7',
     category: 'Canais | SPORTV',
     logoImage: 'https://upload.wikimedia.org/wikipedia/commons/2/2e/Sport_TV1_%282023%29.svg',
     logo: 'SP',
     sourceType: 'hls',
     playbackTransport: 'direct',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/21002.ts',
     description: 'Canal SPORTV HD.'
   },
   {
     name: 'SPORTV 2 HD',
-    url: 'http://2025easy.lat:80/live/rc8zew5u/21231sw2/1487667.ts',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/21004.ts',
     number: '8',
     category: 'Canais | SPORTV',
     logoImage: 'https://upload.wikimedia.org/wikipedia/commons/2/20/Sport_TV2_%282023%29.svg',
     logo: 'SP',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/21005.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
     name: 'SPORTV 3 HD',
-    url: 'http://79.127.243.211:14473',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/21007.ts',
     number: '9',
     category: 'Canais | SPORTV',
     logoImage: 'https://upload.wikimedia.org/wikipedia/commons/9/9c/Sport_TV3_%282023%29.svg',
     logo: 'SP',
     sourceType: 'hls',
     playbackTransport: 'direct',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/21008.ts',
     description: 'Canal SPORTV 3 HD.'
   },
   {
-    name: 'PREMIERE CLUBES HD',
+    name: 'PREMIERE 1 HD',
     url: 'http://2025easy.lat:80/live/rc8zew5u/21231sw2/608078.ts',
     number: '10',
     category: 'Canais | PREMIERE',
@@ -248,6 +282,7 @@ const PRIMARY_CHANNELS = [
     logo: 'PR',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/20002.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -259,6 +294,7 @@ const PRIMARY_CHANNELS = [
     logo: 'PR',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/20005.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -270,6 +306,7 @@ const PRIMARY_CHANNELS = [
     logo: 'PR',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/20008.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -281,6 +318,7 @@ const PRIMARY_CHANNELS = [
     logo: 'PR',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/20011.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -292,6 +330,7 @@ const PRIMARY_CHANNELS = [
     logo: 'PR',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/20014.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -303,17 +342,19 @@ const PRIMARY_CHANNELS = [
     logo: 'PR',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/20017.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
     name: 'PREMIERE 7 HD',
-    url: 'http://2025easy.lat:80/live/rc8zew5u/21231sw2/608126.ts',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/20019.ts',
     number: '16',
     category: 'Canais | PREMIERE',
     logoImage: 'https://s3.glbimg.com/v1/AUTH_36abb2af534644878388f516c38b89ac/prod/home-share-1b75cdaa.png',
     logo: 'PR',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/20020.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -325,6 +366,7 @@ const PRIMARY_CHANNELS = [
     logo: 'PR',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/20023.ts',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -336,6 +378,7 @@ const PRIMARY_CHANNELS = [
     logo: 'ES',
     sourceType: 'hls',
     playbackTransport: 'direct',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/22002.ts',
     description: 'Canal ESPN HD.'
   },
   {
@@ -347,6 +390,7 @@ const PRIMARY_CHANNELS = [
     logo: 'ES',
     sourceType: 'hls',
     playbackTransport: 'direct',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/22005.ts',
     description: 'Canal ESPN 2 HD.'
   },
   {
@@ -358,6 +402,7 @@ const PRIMARY_CHANNELS = [
     logo: 'ES',
     sourceType: 'hls',
     playbackTransport: 'direct',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/22008.ts',
     description: 'Canal ESPN 3 HD.'
   },
   {
@@ -369,6 +414,7 @@ const PRIMARY_CHANNELS = [
     logo: 'ES',
     sourceType: 'hls',
     playbackTransport: 'direct',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/22011.ts',
     description: 'Canal ESPN 4 HD.'
   },
   {
@@ -380,6 +426,7 @@ const PRIMARY_CHANNELS = [
     logo: 'ES',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/22014.ts',
     description: 'Canal ESPN 5 HD.'
   },
   {
@@ -391,6 +438,7 @@ const PRIMARY_CHANNELS = [
     logo: 'ES',
     sourceType: 'hls',
     playbackTransport: 'direct',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/22017.ts',
     description: 'Canal ESPN 6 HD.'
   },
   {
@@ -402,6 +450,7 @@ const PRIMARY_CHANNELS = [
     logo: 'AE',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -413,6 +462,7 @@ const PRIMARY_CHANNELS = [
     logo: 'BI',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -424,6 +474,7 @@ const PRIMARY_CHANNELS = [
     logo: 'DH',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -435,6 +486,7 @@ const PRIMARY_CHANNELS = [
     logo: 'DT',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -446,6 +498,7 @@ const PRIMARY_CHANNELS = [
     logo: 'E!',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -457,6 +510,7 @@ const PRIMARY_CHANNELS = [
     logo: 'FN',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -468,6 +522,7 @@ const PRIMARY_CHANNELS = [
     logo: 'GN',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -479,6 +534,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -490,6 +546,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -501,6 +558,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -512,6 +570,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -523,6 +582,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -534,6 +594,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -545,6 +606,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -556,6 +618,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -567,6 +630,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -578,6 +642,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -589,6 +654,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -600,6 +666,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -611,6 +678,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -622,6 +690,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -633,6 +702,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -644,6 +714,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -655,6 +726,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -666,6 +738,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -677,6 +750,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -688,6 +762,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -699,6 +774,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -710,6 +786,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -721,6 +798,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -732,6 +810,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -743,6 +822,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -754,6 +834,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -765,6 +846,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -776,6 +858,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -787,6 +870,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -798,6 +882,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -809,6 +894,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -820,6 +906,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -831,6 +918,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -842,6 +930,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -853,6 +942,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -864,6 +954,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -875,6 +966,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -886,6 +978,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -897,6 +990,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -908,6 +1002,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -919,6 +1014,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -930,6 +1026,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -941,6 +1038,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -952,6 +1050,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -963,6 +1062,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -974,6 +1074,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -985,6 +1086,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -996,6 +1098,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1007,6 +1110,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1018,6 +1122,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1029,6 +1134,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1040,6 +1146,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1051,6 +1158,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1062,6 +1170,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1073,6 +1182,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1084,6 +1194,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1095,6 +1206,7 @@ const PRIMARY_CHANNELS = [
     logo: '',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
     {
@@ -1106,6 +1218,7 @@ const PRIMARY_CHANNELS = [
     logo: 'FC',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1117,6 +1230,7 @@ const PRIMARY_CHANNELS = [
     logo: 'FA',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1128,6 +1242,7 @@ const PRIMARY_CHANNELS = [
     logo: 'BHA',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1139,6 +1254,7 @@ const PRIMARY_CHANNELS = [
     logo: 'BBT',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1150,6 +1266,7 @@ const PRIMARY_CHANNELS = [
     logo: 'DBZ',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1161,6 +1278,7 @@ const PRIMARY_CHANNELS = [
     logo: 'BE',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
   {
@@ -1172,6 +1290,7 @@ const PRIMARY_CHANNELS = [
     logo: 'CS',
     sourceType: 'file',
     playbackTransport: 'proxy',
+    sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
 ];
