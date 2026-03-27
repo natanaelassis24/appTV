@@ -15,9 +15,17 @@ function proxiedUrl(url) {
   return `/api/stream-proxy?url=${encodeURIComponent(url)}`;
 }
 
-function buildUpstreamHeaders(req) {
+function buildUpstreamHeaders(req, targetUrl) {
+  const targetOrigin = (() => {
+    try {
+      return new URL(targetUrl).origin;
+    } catch {
+      return '';
+    }
+  })();
+
   const headers = {
-    Accept: '*/*',
+    Accept: 'video/mp2t,application/vnd.apple.mpegurl,application/x-mpegURL,*/*',
     'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
     'Cache-Control': 'no-cache',
     Pragma: 'no-cache',
@@ -25,6 +33,11 @@ function buildUpstreamHeaders(req) {
       req.headers?.['user-agent'] ||
       'Mozilla/5.0 (Linux; Android 11; Android TV) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
   };
+
+  if (targetOrigin) {
+    headers.Referer = `${targetOrigin}/`;
+    headers.Origin = targetOrigin;
+  }
 
   const rangeHeader = req.headers?.range;
   if (rangeHeader) {
@@ -109,7 +122,7 @@ export default async function handler(req, res) {
 
   const upstreamResponse = await fetch(parsedTarget.toString(), {
     method: req.method,
-    headers: buildUpstreamHeaders(req)
+    headers: buildUpstreamHeaders(req, parsedTarget.toString())
   });
 
   const contentType = upstreamResponse.headers.get('content-type') || '';

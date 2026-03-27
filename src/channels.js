@@ -840,15 +840,15 @@ const PRIMARY_CHANNELS = [
     description: 'Canal de teste para validar links com token.'
   },
   {
-    name: 'Teste 2',
+    name: 'Sinalmycn 38000',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/38000.ts',
     number: '72',
     category: 'Canais',
     logoImage: '',
-    logo: 'T2',
-    sourceType: 'hls',
-    playbackTransport: 'direct',
-    description: 'Canal de teste para novos links HLS.'
+    logo: 'SM',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
   }
 ];
 
