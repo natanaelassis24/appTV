@@ -449,6 +449,13 @@ export default function App() {
     setPlaybackNonce(current => current + 1);
   };
 
+  const stopAndroidPlayer = () => {
+    const bridge = window.AndroidStreamPlayer;
+    if (bridge && typeof bridge.stopNativePlayer === 'function') {
+      bridge.stopNativePlayer();
+    }
+  };
+
   const selectedChannel = useMemo(() => {
     return (
       filteredChannels.find(channel => normalizeChannelUrl(channel.url) === normalizeChannelUrl(selectedChannelUrl)) ||
@@ -496,6 +503,7 @@ export default function App() {
       return;
     }
 
+    stopAndroidPlayer();
     setSelectedChannelUrl(normalizedUrl);
     setDrawerChannelUrl(normalizedUrl);
     setGuideDrawerOpen(false);
@@ -904,6 +912,10 @@ export default function App() {
     player.removeAttribute('src');
     player.load();
     setPlayerStatus('Conectando transmissao...');
+
+    if (!isTransportStreamUrl(selectedChannel?.url)) {
+      stopAndroidPlayer();
+    }
 
   if (selectedChannel.unavailable) {
     setPlayerStatus('Canal indisponivel no momento.', true);
