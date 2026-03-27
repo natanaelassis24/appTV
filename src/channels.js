@@ -204,6 +204,105 @@ const PRIMARY_CHANNELS = [
     sourceType: 'file',
     playbackTransport: 'proxy',
     description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: 'Box Kids FHD',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/24000.ts',
+    number: '8',
+    category: 'Canais',
+    logoImage: 'https://imgs.search.brave.com/VhMVTdU06jbk7nfeDvU2_WWmKXnDsfnu1DYuBmbutNo/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly91cGxv/YWQud2lraW1lZGlh/Lm9yZy93aWtpcGVk/aWEvY29tbW9ucy8x/LzE4L0JveGtpZHN0/di5wbmc',
+    logo: 'SM',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: 'Box Kids HD',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/24001.ts',
+    number: '9',
+    category: 'Canais',
+    logoImage: 'https://imgs.search.brave.com/VhMVTdU06jbk7nfeDvU2_WWmKXnDsfnu1DYuBmbutNo/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly91cGxv/YWQud2lraW1lZGlh/Lm9yZy93aWtpcGVk/aWEvY29tbW9ucy8x/LzE4L0JveGtpZHN0/di5wbmc',
+    logo: 'SM',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: 'Box Kids SD',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/24002.ts',
+    number: '10',
+    category: 'Canais',
+    logoImage: 'https://imgs.search.brave.com/VhMVTdU06jbk7nfeDvU2_WWmKXnDsfnu1DYuBmbutNo/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly91cGxv/YWQud2lraW1lZGlh/Lm9yZy93aWtpcGVk/aWEvY29tbW9ucy8x/LzE4L0JveGtpZHN0/di5wbmc',
+    logo: 'SM',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: 'Paramount+ 1',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/19071.ts',
+    number: '11',
+    category: 'Canais | Esportes PPV',
+    logoImage: 'https://www.fontedecanais.org/logos/canais/paramountplus.png',
+    logo: 'PM',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: 'Paramount+ 2',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/19072.ts',
+    number: '12',
+    category: 'Canais | Esportes PPV',
+    logoImage: 'https://www.fontedecanais.org/logos/canais/paramountplus.png',
+    logo: 'PM',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: 'Paramount+ 3',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/19073.ts',
+    number: '13',
+    category: 'Canais | Esportes PPV',
+    logoImage: 'https://www.fontedecanais.org/logos/canais/paramountplus.png',
+    logo: 'PM',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: 'Paramount+ 4',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/19074.ts',
+    number: '14',
+    category: 'Canais | Esportes PPV',
+    logoImage: 'https://www.fontedecanais.org/logos/canais/paramountplus.png',
+    logo: 'PM',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: 'Paramount+ 5',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/19075.ts',
+    number: '15',
+    category: 'Canais | Esportes PPV',
+    logoImage: 'https://www.fontedecanais.org/logos/canais/paramountplus.png',
+    logo: 'PM',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: 'Paramount+ 6',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/19076.ts',
+    number: '16',
+    category: 'Canais | Esportes PPV',
+    logoImage: 'https://www.fontedecanais.org/logos/canais/paramountplus.png',
+    logo: 'PM',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
   }
 ];
 
