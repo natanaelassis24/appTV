@@ -1,6 +1,6 @@
 ﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import Hls from 'hls.js';
-import { CHANNELS } from './channels';
+import { CHANNELS, isHlsUrl, isMediaFileUrl } from './channels';
 import AdminPanel from './AdminPanel';
 import { PUBLIC_RUNTIME_CONFIG, buildApiUrl } from './runtime-config';
 import { PUBLIC_PLANS } from '../lib/plans.js';
@@ -277,10 +277,13 @@ function getChannelPlaybackMode(channel) {
 
   if (
     channel?.sourceType === 'file' ||
-    /\.mp4($|\?)/i.test(url) ||
-    /\.mp3($|\?)/i.test(url)
+    isMediaFileUrl(url)
   ) {
     return 'file';
+  }
+
+  if (channel?.sourceType === 'hls' || isHlsUrl(url)) {
+    return 'hls';
   }
 
   return 'hls';

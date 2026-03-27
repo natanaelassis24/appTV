@@ -1,6 +1,8 @@
+import { TEST_CHANNELS } from './channels-test.js';
+
 export const CHANNEL_TEMPLATE = {
   name: 'Nome do Canal',
-  url: 'https://seu-link.m3u8',
+  url: 'https://seu-link.m3u8?token=seu_token',
   number: '0',
   category: 'Canais',
   logoImage: 'https://sua-logo.png',
@@ -8,8 +10,38 @@ export const CHANNEL_TEMPLATE = {
   sourceType: 'hls',
   playbackTransport: 'direct',
   description: 'Descricao curta do canal.',
-  note: 'Para adicionar um canal novo, copie um bloco existente e troque nome, numero, logo e link. Se precisar de proxy, mude playbackTransport para proxy.'
+  note: 'Para adicionar um canal novo, copie um bloco existente e troque nome, numero, logo e link. URLs HLS com token, como .m3u8?token=..., funcionam. Se precisar de proxy, mude playbackTransport para proxy.'
 };
+
+export function isHlsUrl(url) {
+  const normalizedUrl = String(url || '').trim().toLowerCase();
+  if (!normalizedUrl) {
+    return false;
+  }
+
+  try {
+    const parsed = new URL(normalizedUrl);
+    const pathname = parsed.pathname.toLowerCase();
+    return pathname.endsWith('.m3u8') || pathname.endsWith('.m3u');
+  } catch {
+    return /\.m3u8($|\?)/i.test(normalizedUrl) || /\.m3u($|\?)/i.test(normalizedUrl);
+  }
+}
+
+export function isMediaFileUrl(url) {
+  const normalizedUrl = String(url || '').trim().toLowerCase();
+  if (!normalizedUrl) {
+    return false;
+  }
+
+  try {
+    const parsed = new URL(normalizedUrl);
+    const pathname = parsed.pathname.toLowerCase();
+    return pathname.endsWith('.mp4') || pathname.endsWith('.mp3') || pathname.endsWith('.ts');
+  } catch {
+    return /\.(mp4|mp3|ts)($|\?)/i.test(normalizedUrl);
+  }
+}
 
 function inferSourceType(url, sourceType) {
   const explicitType = String(sourceType || '').trim();
@@ -22,8 +54,12 @@ function inferSourceType(url, sourceType) {
     return 'embed';
   }
 
-  if (/\.(mp4|mp3|ts)($|\?)/i.test(normalizedUrl)) {
+  if (isMediaFileUrl(normalizedUrl)) {
     return 'file';
+  }
+
+  if (isHlsUrl(normalizedUrl)) {
+    return 'hls';
   }
 
   return 'hls';
@@ -77,9 +113,9 @@ export function createEmbedChannel(overrides = {}) {
 // Para adicionar um canal novo:
 // 1. copie um item abaixo
 // 2. troque nome, link, numero e logo
-// 3. se for .m3u8 ou YouTube, o app detecta sozinho
+// 3. se for .m3u8, .m3u8?token=... ou YouTube, o app detecta sozinho
 // 4. se quiser, deixe sourceType somente para casos especiais
-export const CHANNELS = [
+const PRIMARY_CHANNELS = [
   {
     name: 'Caze TV',
     url: 'https://amg01391-amg01391c10-tcl-br-9630.playouts.now.amagi.tv/playlist.m3u8',
@@ -770,14 +806,16 @@ export const CHANNELS = [
   sourceType: 'hls',
   description: 'Descricao curta do canal.'
 },
-{
-  name: 'Premiere 8',
-  url: 'https://streamverde.s27-usa-cloudfront-net.online/fontes/streamverde/premiere8.m3u8',
-  number: '70',
-  category: 'Canais',
+  {
+    name: 'Premiere 8',
+    url: 'https://streamverde.s27-usa-cloudfront-net.online/fontes/streamverde/premiere8.m3u8',
+    number: '70',
+    category: 'Canais',
   logoImage: 'https://i.pinimg.com/736x/73/df/cd/73dfcdf4e6c88fdcc86e80a05cf13048.jpg',
   logo: 'NC',
-  sourceType: 'hls',
-  description: 'Descricao curta do canal.'
-}
+    sourceType: 'hls',
+    description: 'Descricao curta do canal.'
+  }
 ];
+
+export const CHANNELS = [...PRIMARY_CHANNELS, ...TEST_CHANNELS];
