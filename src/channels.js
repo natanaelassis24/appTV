@@ -1075,6 +1075,83 @@ const PRIMARY_CHANNELS = [
     playbackTransport: 'proxy',
     description: 'Stream TS direto compatível com VLC.'
   },
+    {
+    name: '24H Filmes Comédia',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/38030.ts',
+    number: '86',
+    category: 'Canais | 24H',
+    logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Logo_canal_24h.svg/960px-Logo_canal_24h.svg.png',
+    logo: 'FC',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: '24H Futurama',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/38023.ts',
+    number: '87',
+    category: 'Canais | 24H',
+    logoImage: 'https://pngimg.com/d/futurama_PNG26.png',
+    logo: 'FA',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: '24H Boku no Hero Academia',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/38019.ts',
+    number: '88',
+    category: 'Canais | 24H',
+    logoImage: 'https://upload.wikimedia.org/wikipedia/commons/1/18/My_Hero_Academia_logo_in_Japan_20150106.png',
+    logo: 'BHA',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: '24H Big Bang Theory',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/38018.ts',
+    number: '89',
+    category: 'Canais | 24H',
+    logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/TBBT_logo.svg/500px-TBBT_logo.svg.png',
+    logo: 'BBT',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: '24H Dragon boll Z',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/38015.ts',
+    number: '90',
+    category: 'Canais | 24H',
+    logoImage: 'https://upload.wikimedia.org/wikipedia/commons/0/0b/Dragon_Ball_Z_logo.svg',
+    logo: 'DBZ',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: '24H Bob Esponja',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/38005.ts',
+    number: '91',
+    category: 'Canais | 24H',
+    logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Bob_esponja_logotipo.svg/960px-Bob_esponja_logotipo.svg.png',
+    logo: 'BE',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: '24H Chaves',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/38001.ts',
+    number: '92',
+    category: 'Canais | 24H',
+    logoImage: 'https://static.wikia.nocookie.net/chespirito/images/9/93/Chaves_Logo_SBT_1993.png/revision/latest?cb=20180922203713&path-prefix=pt',
+    logo: 'CS',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Stream TS direto compatível com VLC.'
+  },
 ];
 
 export const CHANNELS = PRIMARY_CHANNELS;
