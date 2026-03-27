@@ -328,7 +328,7 @@ const PRIMARY_CHANNELS = [
     description: 'Stream TS direto compatível com VLC.'
   },
   {
-    name: 'ESPN HD',
+    name: 'ESPN 1 HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/22001.ts',
     number: '18',
     category: 'ESPN',
@@ -340,7 +340,7 @@ const PRIMARY_CHANNELS = [
   },
   {
     name: 'ESPN 2 HD',
-    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/22004.ts',
+    url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/ESPN2_logo.svg/960px-ESPN2_logo.svg.png',
     number: '19',
     category: 'ESPN',
     logoImage: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ99S46AptMJtnVRIcGopBYycpJwTS6AeYcrQ&s',
