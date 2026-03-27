@@ -182,7 +182,7 @@ label {
 
 .tv-mode {
   background: transparent;
-  --channel-rail-width: 156px;
+  --channel-rail-width: 72px;
 }
 
 .tv-mode .app-shell {
@@ -443,10 +443,6 @@ label {
 }
 
 .tv-mode .guide-channel-list {
-  grid-template-columns: repeat(2, 44px);
-  justify-content: center;
-  gap: 10px 8px;
-  padding: 0 8px;
   align-content: start;
 }
 
