@@ -1,5 +1,3 @@
-import { TEST_CHANNELS } from './channels-test.js';
-
 export const CHANNEL_TEMPLATE = {
   name: 'Nome do Canal',
   url: 'https://seu-link.m3u8?token=seu_token',
@@ -811,11 +809,33 @@ const PRIMARY_CHANNELS = [
     url: 'https://streamverde.s27-usa-cloudfront-net.online/fontes/streamverde/premiere8.m3u8',
     number: '70',
     category: 'Canais',
-  logoImage: 'https://i.pinimg.com/736x/73/df/cd/73dfcdf4e6c88fdcc86e80a05cf13048.jpg',
-  logo: 'NC',
+    logoImage: 'https://i.pinimg.com/736x/73/df/cd/73dfcdf4e6c88fdcc86e80a05cf13048.jpg',
+    logo: 'NC',
     sourceType: 'hls',
     description: 'Descricao curta do canal.'
+  },
+  {
+    name: 'Teste 1',
+    url: 'https://stream.sinalmycn.com/38000/video.m3u8?token=adHqtsh3lu9hYM2SNCCoJ7YAll3IDl7LKCiDP4JjvrRBRwuums',
+    number: '71',
+    category: 'Canais',
+    logoImage: '',
+    logo: 'T1',
+    sourceType: 'hls',
+    playbackTransport: 'direct',
+    description: 'Canal de teste para validar links com token.'
+  },
+  {
+    name: 'Teste 2',
+    url: 'https://seu-servidor.exemplo/live/canal.m3u8?token=coloque_aqui',
+    number: '72',
+    category: 'Canais',
+    logoImage: '',
+    logo: 'T2',
+    sourceType: 'hls',
+    playbackTransport: 'direct',
+    description: 'Canal de teste para novos links HLS.'
   }
 ];
 
-export const CHANNELS = [...PRIMARY_CHANNELS, ...TEST_CHANNELS];
+export const CHANNELS = PRIMARY_CHANNELS;
