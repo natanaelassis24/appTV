@@ -471,12 +471,6 @@ label {
   background: #000;
 }
 
-.guide-native-player-placeholder {
-  position: absolute;
-  inset: 0;
-  background: transparent;
-}
-
 .tv-mode .guide-player-shell #tvPlayer,
 .tv-mode .guide-player-shell #tvEmbed {
   object-fit: cover;

@@ -468,10 +468,6 @@ export default function App() {
     return mode === 'browser' || mode === 'page';
   }, [selectedChannel]);
 
-  const useAndroidNativePlayer = useMemo(() => {
-    return isPlaybackEnabled && canUseAndroidStreamPlayer() && isTransportStreamUrl(selectedChannel?.url);
-  }, [isPlaybackEnabled, selectedChannel?.url]);
-
   const publicChannelLoop = useMemo(() => {
     return [...filteredChannels, ...filteredChannels];
   }, [filteredChannels]);
@@ -1401,7 +1397,7 @@ export default function App() {
               </aside>
 
               <div className="guide-player-shell">
-                {!embedUrl && !useAndroidNativePlayer ? (
+                {!embedUrl ? (
                   <video
                     key={`video:${selectedChannel?.url || selectedChannelUrl}:${playbackNonce}`}
                     ref={playerRef}
@@ -1414,8 +1410,6 @@ export default function App() {
                     controlsList="nodownload noplaybackrate noremoteplayback"
                     tabIndex={-1}
                   />
-                ) : useAndroidNativePlayer ? (
-                  <div className="guide-native-player-placeholder" aria-hidden="true" />
                 ) : (
                   <iframe
                     key={`embed:${embedUrl}:${playbackNonce}`}
