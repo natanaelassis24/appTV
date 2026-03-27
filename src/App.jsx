@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import Hls from 'hls.js';
 import {
   CHANNELS,
@@ -339,7 +339,7 @@ function canUseAndroidStreamPlayer() {
   return typeof window.AndroidStreamPlayer?.playStream === 'function';
 }
 
-function ChannelThumb({
+const ChannelThumb = memo(function ChannelThumb({
   channel,
   index,
   wrapperClassName = '',
@@ -375,7 +375,7 @@ function ChannelThumb({
   }
 
   return <span {...wrapperProps}>{fallbackText}</span>;
-}
+});
 
 async function readJsonResponse(response, fallbackMessage) {
   const raw = await response.text();
@@ -837,10 +837,12 @@ export default function App() {
         return;
       }
 
-      const activeItem = channelListRef.current.querySelector('.guide-channel-item.active');
-      if (activeItem) {
-        activeItem.scrollIntoView({ block: 'center', behavior: 'auto' });
-      }
+      const frame = window.requestAnimationFrame(() => {
+        const activeItem = channelListRef.current?.querySelector('.guide-channel-item.active');
+        activeItem?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' });
+      });
+
+      return () => window.cancelAnimationFrame(frame);
     }, [drawerChannelUrl, guideDrawerOpen]);
 
   useEffect(() => {
@@ -1524,6 +1526,7 @@ export default function App() {
     </div>
   );
 }
+
 
 
 

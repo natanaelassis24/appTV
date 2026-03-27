@@ -260,7 +260,9 @@ label {
   opacity: 0;
   pointer-events: none;
   transform: translateX(calc(-1 * var(--channel-rail-width)));
-  transition: transform 0.22s ease, opacity 0.18s ease;
+  transition: transform 0.18s ease, opacity 0.14s ease;
+  contain: layout paint style;
+  will-change: transform, opacity;
 }
 
 .guide-sidebar .guide-channel-list {
@@ -291,6 +293,7 @@ label {
   overflow-x: hidden;
   overflow-y: auto;
   scroll-snap-type: y proximity;
+  contain: content;
 }
 
 .guide-channel-list::-webkit-scrollbar {
@@ -315,8 +318,9 @@ label {
   cursor: pointer;
   scroll-snap-align: start;
   justify-self: center;
-  transition: transform 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+  transition: transform 0.14s ease, background 0.14s ease, box-shadow 0.14s ease;
   position: relative;
+  will-change: transform;
 }
 
 .guide-channel-item.active {
@@ -2569,3 +2573,4 @@ label {
     min-width: 640px;
   }
 }
+
