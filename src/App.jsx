@@ -325,6 +325,14 @@ function buildPlaybackUrl(channel) {
   return buildStreamProxyUrl(directUrl) || directUrl;
 }
 
+function canUseAndroidStreamPlayer() {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  return typeof window.AndroidStreamPlayer?.playStream === 'function';
+}
+
 function buildLogoThumb(channel, index) {
   const itemName = channel?.name || `Canal ${index + 1}`;
 
@@ -850,6 +858,30 @@ export default function App() {
       }
     };
 
+    const playInAndroidPlayer = (message, sourceUrl = selectedChannel?.url || playbackUrl) => {
+      const bridge = window.AndroidStreamPlayer;
+      if (!bridge || typeof bridge.playStream !== 'function') {
+        return false;
+      }
+
+      cleanupHls();
+      recoveryRef.current.fallbackTried = true;
+      player.pause();
+      player.removeAttribute('src');
+      player.load();
+      setPlayerStatus(message);
+
+      try {
+        const handled = bridge.playStream(sourceUrl, selectedChannel?.name || '');
+        if (!handled) {
+          return false;
+        }
+        return true;
+      } catch (_) {
+        return false;
+      }
+    };
+
     const playWithNativeSource = (message, sourceUrl = playbackUrl) => {
       cleanupHls();
       recoveryRef.current.fallbackTried = true;
@@ -885,6 +917,12 @@ export default function App() {
   }
 
   if (playbackMode === 'file') {
+    if (canUseAndroidStreamPlayer() && isTransportStreamUrl(selectedChannel?.url)) {
+      if (playInAndroidPlayer('Abrindo no player do sistema...')) {
+        return;
+      }
+    }
+
     playWithNativeSource('Abrindo midia direta...');
     return;
   }
