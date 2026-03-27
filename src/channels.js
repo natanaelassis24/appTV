@@ -646,9 +646,21 @@ const PRIMARY_CHANNELS = [
     description: 'Stream TS direto compatível com VLC.'
   },
   {
+    name: 'USA HD',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13034.ts',
+    number: '40',
+    category: 'Canais | Filmes e Séries',
+    logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/USA_Network_logo_%282016%29.svg/250px-USA_Network_logo_%282016%29.svg.png',
+    logo: '',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    sdUrl: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13035.ts',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
     name: 'Space HD',
     url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/13028.ts',
-    number: '40',
+    number: '41',
     category: 'Canais | Filmes e Séries',
     logoImage: 'https://logos-world.net/wp-content/uploads/2023/03/Space-Logo.png',
     logo: '',
