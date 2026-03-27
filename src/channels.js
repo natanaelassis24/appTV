@@ -329,7 +329,7 @@ const PRIMARY_CHANNELS = [
   },
   {
     name: 'ESPN HD',
-    url: 'http://46.151.196.223:14432',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/22001.ts',
     number: '18',
     category: 'ESPN',
     logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/1280px-ESPN_wordmark.svg.png',
@@ -340,7 +340,7 @@ const PRIMARY_CHANNELS = [
   },
   {
     name: 'ESPN 2 HD',
-    url: 'http://46.151.196.223:14438',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/22004.ts',
     number: '19',
     category: 'ESPN',
     logoImage: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ99S46AptMJtnVRIcGopBYycpJwTS6AeYcrQ&s',
@@ -351,7 +351,7 @@ const PRIMARY_CHANNELS = [
   },
   {
     name: 'ESPN 3 HD',
-    url: 'http://46.151.196.223:14444',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/22007.ts',
     number: '20',
     category: 'ESPN',
     logoImage: 'https://upload.wikimedia.org/wikipedia/commons/5/51/ESPN3_Logo.png',
@@ -362,7 +362,7 @@ const PRIMARY_CHANNELS = [
   },
   {
     name: 'ESPN 4 HD',
-    url: 'http://46.151.196.223:14450',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/22010.ts',
     number: '21',
     category: 'ESPN',
     logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/ESPN_4_logo.svg/3840px-ESPN_4_logo.svg.png',
@@ -372,9 +372,20 @@ const PRIMARY_CHANNELS = [
     description: 'Canal ESPN 4 HD.'
   },
   {
-    name: 'ESPN 6 HD',
-    url: 'http://hls1.sua.tv:80/live/espnextrafhd/s.m3u8',
+    name: 'ESPN 5 HD',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/22013.ts',
     number: '22',
+    category: 'ESPN',
+    logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/1280px-ESPN_wordmark.svg.png',
+    logo: 'ES',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    description: 'Canal ESPN 5 HD.'
+  },
+  {
+    name: 'ESPN 6 HD',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/22016.ts',
+    number: '24',
     category: 'ESPN',
     logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/ESPN_6_logo.svg/1280px-ESPN_6_logo.svg.png',
     logo: 'ES',
