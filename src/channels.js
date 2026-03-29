@@ -1317,6 +1317,30 @@ const PRIMARY_CHANNELS = [
     sdUrl: '',
     description: 'Stream TS direto compatível com VLC.'
   },
+  {
+    name: 'BoJack Horseman 24H',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/38021.ts',
+    number: '95',
+    category: 'Canais | 24H',
+    logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Logo_canal_24h.svg/960px-Logo_canal_24h.svg.png',
+    logo: 'BJ',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    sdUrl: '',
+    description: 'Stream TS direto compatível com VLC.'
+  },
+  {
+    name: 'Apenas um Show 24H',
+    url: 'http://sinalmycn.com:80/live/632035/GqGcFV4ntu/38020.ts',
+    number: '96',
+    category: 'Canais | 24H',
+    logoImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Logo_canal_24h.svg/960px-Logo_canal_24h.svg.png',
+    logo: 'AU',
+    sourceType: 'file',
+    playbackTransport: 'proxy',
+    sdUrl: '',
+    description: 'Stream TS direto compatível com VLC.'
+  },
 ];
 
 export const CHANNELS = PRIMARY_CHANNELS;
