@@ -349,7 +349,7 @@ label {
   background: rgba(255, 255, 255, 0.08);
   color: var(--text);
   cursor: pointer;
-  scroll-snap-align: start;
+  scroll-snap-align: center;
   justify-self: center;
   transition: transform 0.14s ease, background 0.14s ease, box-shadow 0.14s ease;
   position: relative;
@@ -491,6 +491,8 @@ label {
 
 .tv-mode .guide-channel-list {
   align-content: start;
+  padding-block: calc(50% - 22px);
+  scroll-padding-block: calc(50% - 22px);
 }
 
 .tv-mode .guide-handle {

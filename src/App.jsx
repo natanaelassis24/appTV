@@ -839,7 +839,7 @@ export default function App() {
 
       const frame = window.requestAnimationFrame(() => {
         const activeItem = channelListRef.current?.querySelector('.guide-channel-item.active');
-        activeItem?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' });
+        activeItem?.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'auto' });
       });
 
       return () => window.cancelAnimationFrame(frame);
