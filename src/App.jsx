@@ -545,6 +545,10 @@ export default function App() {
     return [...filteredChannels, ...filteredChannels];
   }, [filteredChannels]);
 
+  const drawerChannelLoop = useMemo(() => {
+    return [...filteredChannels, ...filteredChannels, ...filteredChannels];
+  }, [filteredChannels]);
+
   function moveDrawerChannel(delta) {
     if (!filteredChannels.length) return;
 
@@ -1445,13 +1449,18 @@ export default function App() {
             <div className={`guide-stage-frame${guideDrawerOpen ? ' open' : ''}`}>
               <aside className={`guide-sidebar${guideDrawerOpen ? ' open' : ''}`}>
                 <ul ref={channelListRef} className="guide-channel-list">
-                  {filteredChannels.map((channel, index) => {
+                  {drawerChannelLoop.map((channel, index) => {
+                    const loopSize = filteredChannels.length || 1;
+                    const loopIndex = index % loopSize;
+                    const isMiddleCopy =
+                      index >= loopSize && index < loopSize * 2 && filteredChannels.length > 0;
                     const currentDrawerUrl = guideDrawerOpen ? drawerChannelUrl : selectedChannel?.url;
                     const isActive =
+                      isMiddleCopy &&
                       normalizeChannelUrl(channel.url) === normalizeChannelUrl(currentDrawerUrl);
 
                     return (
-                      <li key={`${channel.name}-${channel.url}`}>
+                      <li key={`${channel.name}-${channel.url}-${index}`}>
                         <button
                           type="button"
                           className={`guide-channel-item${isActive ? ' active' : ''}`}
@@ -1470,10 +1479,10 @@ export default function App() {
                           aria-label={channel.name}
                           title={channel.name}
                         >
-                          <span className="guide-channel-number">{channel.number || index + 1}</span>
+                          <span className="guide-channel-number">{channel.number || loopIndex + 1}</span>
                           <ChannelThumb
                             channel={channel}
-                            index={index}
+                            index={loopIndex}
                             imageClassName="guide-channel-logo"
                             fallbackClassName="guide-channel-fallback"
                           />
