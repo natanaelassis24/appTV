@@ -339,14 +339,14 @@ label {
 }
 
 .guide-channel-item {
-  width: 52px;
-  height: 52px;
+  width: 54px;
+  height: 54px;
   display: grid;
   place-items: center;
   padding: 0;
   box-sizing: border-box;
   border: 0;
-  border-radius: 16px;
+  border-radius: 15px;
   background: #ffffff;
   color: var(--text);
   cursor: pointer;
@@ -364,7 +364,7 @@ label {
 .guide-channel-item.active {
   background: #ffffff;
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.42);
-  transform: scale(1.02);
+  transform: scale(1.01);
   z-index: 3;
 }
 
@@ -378,10 +378,12 @@ label {
 
 .guide-channel-logo,
 .guide-channel-fallback {
-  width: 42px;
-  height: 42px;
+  width: 48px;
+  height: 48px;
   display: grid;
   place-items: center;
+  box-sizing: border-box;
+  padding: 2px;
   object-fit: contain;
   border-radius: 12px;
   background: #ffffff;
