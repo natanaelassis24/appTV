@@ -352,6 +352,7 @@ label {
   cursor: pointer;
   scroll-snap-align: center;
   justify-self: center;
+  overflow: hidden;
   transition:
     transform 0.14s ease,
     background 0.14s ease,
@@ -402,6 +403,7 @@ label {
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
     0 12px 24px rgba(0, 0, 0, 0.32);
   transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+  mix-blend-mode: normal;
 }
 
 .guide-channel-logo {
@@ -508,14 +510,11 @@ label {
   transition: none;
   transform: translate(calc(-1 * var(--channel-rail-width)), -50%);
   z-index: 20;
-  background:
-    linear-gradient(180deg, rgba(18, 20, 28, 0.96) 0%, rgba(7, 8, 12, 0.94) 100%);
+  background: rgba(10, 12, 18, 0.98);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow:
     0 28px 78px rgba(0, 0, 0, 0.52),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(18px) saturate(125%);
-  -webkit-backdrop-filter: blur(18px) saturate(125%);
 }
 
 .tv-mode .guide-sidebar::before,
@@ -527,17 +526,12 @@ label {
 }
 
 .tv-mode .guide-sidebar::before {
-  background:
-    radial-gradient(circle at 50% 12%, rgba(255, 255, 255, 0.16), transparent 22%),
-    radial-gradient(circle at 50% 92%, rgba(225, 29, 46, 0.18), transparent 24%);
-  opacity: 0.85;
+  background: transparent;
 }
 
 .tv-mode .guide-sidebar::after {
   border-radius: inherit;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    inset 0 -18px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .tv-mode .guide-channel-list {
