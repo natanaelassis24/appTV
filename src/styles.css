@@ -339,11 +339,11 @@ label {
 }
 
 .guide-channel-item {
-  width: 58px;
-  height: 58px;
+  width: 60px;
+  height: 60px;
   display: grid;
   place-items: center;
-  padding: 3px;
+  padding: 2px;
   box-sizing: border-box;
   border: 0;
   border-radius: 15px;
@@ -388,15 +388,15 @@ label {
 
 .guide-channel-logo,
 .guide-channel-fallback {
-  width: calc(100% - 8px);
-  height: calc(100% - 8px);
+  width: calc(100% - 12px);
+  height: calc(100% - 12px);
   display: grid;
   place-items: center;
   box-sizing: border-box;
   padding: 0;
   object-fit: contain;
   object-position: center;
-  border-radius: 10px;
+  border-radius: 11px;
   background: #ffffff;
   border: 0;
   box-shadow: none;
