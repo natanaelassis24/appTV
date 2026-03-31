@@ -339,39 +339,47 @@ label {
 }
 
 .guide-channel-item {
-  width: 44px;
+  width: 52px;
+  height: 52px;
   display: grid;
   place-items: center;
   padding: 0;
   box-sizing: border-box;
   border: 0;
-  border-radius: 16px;
+  border-radius: 18px;
   background: #ffffff;
   color: var(--text);
   cursor: pointer;
   scroll-snap-align: center;
   justify-self: center;
-  transition: transform 0.14s ease, background 0.14s ease, box-shadow 0.14s ease;
+  transition:
+    transform 0.14s ease,
+    background 0.14s ease,
+    box-shadow 0.14s ease,
+    filter 0.14s ease;
   position: relative;
   will-change: transform;
 }
 
 .guide-channel-item.active {
   background: #ffffff;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
-  transform: scale(1.08);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.68),
+    0 0 18px rgba(255, 255, 255, 0.12),
+    0 16px 28px rgba(0, 0, 0, 0.34);
+  transform: scale(1.1);
   z-index: 3;
 }
 
 .guide-channel-item.active::before {
   content: '';
   position: absolute;
-  inset: -7px;
-  border-radius: 22px;
-  border: 2px solid rgba(255, 255, 255, 0.94);
+  inset: -8px;
+  border-radius: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.98);
   box-shadow:
-    0 0 0 2px rgba(225, 29, 46, 0.32),
-    0 0 18px rgba(225, 29, 46, 0.36),
+    0 0 0 2px rgba(225, 29, 46, 0.28),
+    0 0 22px rgba(225, 29, 46, 0.4),
     0 0 34px rgba(255, 255, 255, 0.12);
   pointer-events: none;
 }
@@ -382,15 +390,17 @@ label {
 
 .guide-channel-logo,
 .guide-channel-fallback {
-  width: 44px;
-  height: 44px;
+  width: 52px;
+  height: 52px;
   display: grid;
   place-items: center;
   object-fit: contain;
-  border-radius: 14px;
+  border-radius: 16px;
   background: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.94);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 12px 24px rgba(0, 0, 0, 0.32);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 12px 24px rgba(0, 0, 0, 0.32);
   transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
 }
 
@@ -493,20 +503,51 @@ label {
   top: 50%;
   bottom: auto;
   height: min(74vh, calc(100vh - 88px));
-  padding: 18px 6px;
-  border-radius: 22px;
+  padding: 16px 10px;
+  border-radius: 24px;
   transition: none;
   transform: translate(calc(-1 * var(--channel-rail-width)), -50%);
   z-index: 20;
-  background: rgba(8, 10, 16, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.48);
+  background:
+    linear-gradient(180deg, rgba(18, 20, 28, 0.96) 0%, rgba(7, 8, 12, 0.94) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 28px 78px rgba(0, 0, 0, 0.52),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px) saturate(125%);
+  -webkit-backdrop-filter: blur(18px) saturate(125%);
+}
+
+.tv-mode .guide-sidebar::before,
+.tv-mode .guide-sidebar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.tv-mode .guide-sidebar::before {
+  background:
+    radial-gradient(circle at 50% 12%, rgba(255, 255, 255, 0.16), transparent 22%),
+    radial-gradient(circle at 50% 92%, rgba(225, 29, 46, 0.18), transparent 24%);
+  opacity: 0.85;
+}
+
+.tv-mode .guide-sidebar::after {
+  border-radius: inherit;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -18px 30px rgba(0, 0, 0, 0.2);
 }
 
 .tv-mode .guide-channel-list {
   align-content: start;
-  padding-block: calc(50% - 22px);
-  scroll-padding-block: calc(50% - 22px);
+  justify-content: center;
+  gap: 10px;
+  padding-block: calc(50% - 26px);
+  scroll-padding-block: calc(50% - 26px);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
 }
 
 .tv-mode .guide-handle {
