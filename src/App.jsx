@@ -351,7 +351,7 @@ const ChannelThumb = memo(function ChannelThumb({
   const fallbackText = String(channel?.logo || itemName.slice(0, 2).toUpperCase()).trim() || itemName.slice(0, 2).toUpperCase();
   const logoImage = String(channel?.logoImage || '').trim();
 
-  const wrapperProps = wrapperClassName ? { className: wrapperClassName } : {};
+  const wrapperProps = { className: wrapperClassName || 'guide-channel-thumb' };
 
   if (logoImage && !imageFailed) {
     return (

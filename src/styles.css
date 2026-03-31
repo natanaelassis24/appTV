@@ -339,11 +339,11 @@ label {
 }
 
 .guide-channel-item {
-  width: 54px;
-  height: 54px;
+  width: 58px;
+  height: 58px;
   display: grid;
   place-items: center;
-  padding: 0;
+  padding: 3px;
   box-sizing: border-box;
   border: 0;
   border-radius: 15px;
@@ -359,12 +359,13 @@ label {
     filter 0.14s ease;
   position: relative;
   will-change: transform;
+  overflow: visible;
 }
 
 .guide-channel-item.active {
   background: #ffffff;
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.42);
-  transform: scale(1.01);
+  transform: scale(1);
   z-index: 3;
 }
 
@@ -376,16 +377,26 @@ label {
   display: none;
 }
 
+.guide-channel-thumb {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
 .guide-channel-logo,
 .guide-channel-fallback {
-  width: 48px;
-  height: 48px;
+  width: calc(100% - 8px);
+  height: calc(100% - 8px);
   display: grid;
   place-items: center;
   box-sizing: border-box;
-  padding: 2px;
+  padding: 0;
   object-fit: contain;
-  border-radius: 12px;
+  object-position: center;
+  border-radius: 10px;
   background: #ffffff;
   border: 0;
   box-shadow: none;
@@ -396,6 +407,7 @@ label {
 
 .guide-channel-logo {
   filter: none;
+  display: block;
 }
 
 .guide-channel-item.active .guide-channel-logo,
