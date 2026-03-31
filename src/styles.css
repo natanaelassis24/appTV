@@ -339,8 +339,8 @@ label {
 }
 
 .guide-channel-item {
-  width: 56px;
-  height: 56px;
+  width: 62px;
+  height: 62px;
   display: grid;
   place-items: center;
   padding: 0;
@@ -352,7 +352,6 @@ label {
   cursor: pointer;
   scroll-snap-align: center;
   justify-self: center;
-  overflow: hidden;
   transition:
     transform 0.14s ease,
     background 0.14s ease,
@@ -368,15 +367,15 @@ label {
     0 0 0 2px rgba(255, 255, 255, 0.68),
     0 0 18px rgba(255, 255, 255, 0.12),
     0 16px 28px rgba(0, 0, 0, 0.34);
-  transform: scale(1.1);
+  transform: scale(1.06);
   z-index: 3;
 }
 
 .guide-channel-item.active::before {
   content: '';
   position: absolute;
-  inset: -8px;
-  border-radius: 24px;
+  inset: -6px;
+  border-radius: 22px;
   border: 2px solid rgba(255, 255, 255, 0.98);
   box-shadow:
     0 0 0 2px rgba(225, 29, 46, 0.28),
@@ -391,12 +390,12 @@ label {
 
 .guide-channel-logo,
 .guide-channel-fallback {
-  width: 46px;
-  height: 46px;
+  width: 54px;
+  height: 54px;
   display: grid;
   place-items: center;
   object-fit: contain;
-  border-radius: 14px;
+  border-radius: 15px;
   background: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.94);
   box-shadow:
@@ -416,7 +415,7 @@ label {
   border-color: #ffffff;
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.72), 0 12px 24px rgba(0, 0, 0, 0.34);
   background: #ffffff;
-  transform: scale(1.03);
+  transform: scale(1.01);
 }
 
 .guide-topbar {
