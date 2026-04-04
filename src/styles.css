@@ -16,7 +16,7 @@
   --radius-lg: 28px;
   --radius-md: 22px;
   --radius-sm: 16px;
-  --channel-rail-width: 88px;
+  --channel-rail-width: 76px;
   --channel-handle-size: 36px;
 }
 
@@ -215,7 +215,7 @@ label {
 
 .tv-mode {
   background: transparent;
-  --channel-rail-width: 88px;
+  --channel-rail-width: 76px;
 }
 
 .tv-mode .app-shell {
@@ -339,14 +339,14 @@ label {
 }
 
 .guide-channel-item {
-  width: 80px;
-  height: 80px;
+  width: 68px;
+  height: 68px;
   display: grid;
   place-items: center;
-  padding: 10px;
+  padding: 7px;
   box-sizing: border-box;
   border: 0;
-  border-radius: 20px;
+  border-radius: 18px;
   background: transparent;
   color: var(--text);
   cursor: pointer;
@@ -378,29 +378,29 @@ label {
 }
 
 .guide-channel-thumb {
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  border-radius: 16px;
+  border-radius: 15px;
   background: #ffffff;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.24);
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.2);
   overflow: hidden;
 }
 
 .guide-channel-logo,
 .guide-channel-fallback {
-  width: 72%;
-  height: 72%;
+  width: 74%;
+  height: 74%;
   display: grid;
   place-items: center;
   box-sizing: border-box;
   padding: 0;
   object-fit: contain;
   object-position: center;
-  border-radius: 10px;
+  border-radius: 8px;
   background: transparent;
   border: 0;
   box-shadow: none;
