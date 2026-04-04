@@ -1211,6 +1211,8 @@ export default function App() {
                     <article
                       key={`${channel.name}-${index}`}
                       className={`promo-channel-badge${channel.url === selectedChannel?.url ? ' active' : ''}`}
+                      aria-label={channel.name}
+                      title={channel.name}
                     >
                       <ChannelThumb
                         channel={channel}
@@ -1218,10 +1220,6 @@ export default function App() {
                         wrapperClassName="channel-thumb"
                         imageClassName="channel-thumb-image"
                       />
-                      <div className="promo-channel-copy">
-                        <strong>{channel.name}</strong>
-                        <span>{channel.category || 'Canal'}</span>
-                      </div>
                     </article>
                   ))}
                 </div>
