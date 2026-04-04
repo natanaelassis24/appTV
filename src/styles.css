@@ -294,7 +294,7 @@ label {
   pointer-events: none;
   transform: translateX(calc(-1 * var(--channel-rail-width)));
   transition: transform 0.18s ease, opacity 0.14s ease;
-  contain: layout paint style;
+  contain: layout style;
   will-change: transform, opacity;
 }
 
@@ -323,10 +323,10 @@ label {
   height: 100%;
   align-content: start;
   justify-items: center;
-  overflow-x: hidden;
+  overflow-x: visible;
   overflow-y: auto;
   scroll-snap-type: y proximity;
-  contain: content;
+  contain: layout style;
 }
 
 .guide-channel-list::-webkit-scrollbar {
